@@ -32,7 +32,7 @@ and the kinds are drawn as the butterflies are (§5).
   chickens), the **glass jar and territories** (§4, which this mod switches on; rule "flower"), the creature guide's
   pages and morphs (§7).
 - It copies the wandering trader (goals only), with a tiny box: 0.25 × 0.15 blocks ✅.
-- Drawn as the butterfly ❓: a greyscale shell tinted by its colour, its spots a pattern texture over it (common/SPECS.md
+- Drawn as the butterfly ✅: a greyscale shell tinted by its colour, its spots a pattern texture over it (common/SPECS.md
   §5), so a kind is a colour and a pattern rather than a texture of its own; the model's texture stays the seven-spot
   until then.
 - Its own sounds: almost silent; a soft buzz of wings as it takes off, from freesound, CC0, cut by
@@ -101,8 +101,7 @@ None of its own ✅: the jar is the library's, the spawn egg the series'.
 
 ## 9. Open questions
 
-- Q1: Drawn as the butterfly (a tinted shell and a spot pattern, §1) or a texture per kind? Proposal: tinted, so the
-  five kinds are five colours and five patterns of one model.
+- ~~Q1: Drawn as the butterfly, or a texture per kind?~~ As the butterfly: a tinted shell and a spot pattern (§1).
 - Q2: Landing on the player: one chance in 20 a minute while still, once a day each (§4)?
 - Q3: Shown on the shoulder as a passenger of the player, or as a small mark by the player's HUD if Sunrise doesn't
   draw a mob riding a player (§4)?
