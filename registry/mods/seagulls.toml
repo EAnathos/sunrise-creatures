@@ -5,7 +5,7 @@ summary = "Noisy gulls of the coasts that float on the waves, follow your boat a
 description = """
 > **Beta.** Played and tested in single player; multiplayer and balance come later. Reports are welcome on the [issues](https://github.com/EAnathos/sunrise-creatures/issues).
 
-A mod of the [Sunrise Creatures](https://github.com/EAnathos/sunrise-creatures/blob/seagulls-0.1.0/README.md) series: noisy gulls of beaches and stony shores that glide along the
+A mod of the [Sunrise Creatures](https://github.com/EAnathos/sunrise-creatures/blob/seagulls-0.1.1/README.md) series: noisy gulls of beaches and stony shores that glide along the
 coast, bob on the waves, follow your boat and snatch food from your hand. Befriend one with fish and it becomes a
 fishing companion. **Requires** [Sunrise Creatures](https://playsunrise.net/mods/creature), the series' library.
 
@@ -22,7 +22,7 @@ Hold food in your main hand near a wild seagull and now and then it swoops down 
 bread above all, then flies off with it. Hit it and it drops it. It also takes food lying on the ground, and sometimes
 the fish you just reeled in. Sneak, or keep the food in your off hand, and it leaves you alone. Sail out in a boat and
 a seagull may follow you for a while, hovering behind you. Over warm seas, a seagull snatches a gliding flying fish in
-the air when the [Flying Fish](https://github.com/EAnathos/sunrise-creatures/blob/seagulls-0.1.0/mods/flying_fish/README.md) are installed.
+the air when the [Flying Fish](https://github.com/EAnathos/sunrise-creatures/blob/seagulls-0.1.1/mods/flying_fish/README.md) are installed.
 
 ## A fishing companion
 
@@ -46,6 +46,24 @@ categories = ["mobs"]
 tags = ["seagull", "bird", "coast", "ocean", "fishing"]
 screenshots = ["screenshots/seagulls/1-seagulls-seagull-front.png", "screenshots/seagulls/2-seagulls-seagull-back.png"]
 key = "RWR7Wf0HwHmw6+OGAJGXZcp5ccpovW1ONwQb7knb3YqMpWGTi+gpP0Jn"
+
+[[versions]]
+version = "0.1.1"
+published = "2026-11-21"
+game = "26.3"
+file = "seagulls-0.1.1.smod"
+sha256 = "7010cf951ce4aa354212733bace83a1faa41a36c3acf158945894caf46b16583"
+signature = """
+untrusted comment: signature from minisign secret key
+RUR7Wf0HwHmw686nF6RySp0x8gNHstPJPRrwVZqWhJz+7RFw2DS8U7/Gy2C66/tRkH1M5HdwC98e1ELF3JKG68jHurLKXjsf4go=
+trusted comment: timestamp:1795304912	file:seagulls-0.1.1.smod	hashed
+4nnPx3+9OtrtcEtwkrnMXFHnXlHljoeo/bmS6MYE69/DmeLjXtmloV8X1v8wwa6wD4jhVDEw53jxVP0Svmy1Aw==
+"""
+changelog = """
+- A seagull roams the coast: its circle drifts along a random way and it lands on any side (they all went the same
+  way).
+- Needs Sunrise Creatures 0.3.3.
+"""
 
 [[versions]]
 version = "0.1.0"

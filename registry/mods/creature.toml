@@ -5,7 +5,7 @@ summary = "The library of the Sunrise Creatures mods: the creature guide and its
 description = """
 > **Beta.** Played and tested in single player; multiplayer and balance come later. Reports are welcome on the [issues](https://github.com/EAnathos/sunrise-creatures/issues).
 
-The library every mod of the [Sunrise Creatures](https://github.com/EAnathos/sunrise-creatures/blob/creature-0.3.2/README.md) series needs. It adds no creature of its own, but what
+The library every mod of the [Sunrise Creatures](https://github.com/EAnathos/sunrise-creatures/blob/creature-0.3.3/README.md) series needs. It adds no creature of its own, but what
 the creatures share:
 
 - **The creature guide**, given to every player the first time they join a world. Right-click it to open the
@@ -13,7 +13,7 @@ the creatures share:
   and what you found out about it. A lost one is crafted again from a book, a feather and leather. Operators can fill
   it to look through it: `/bestiary unlock <species>` (or `all`) writes down everything about a species, and
   `/bestiary reset` empties it.
-- **The glass jar** (3 glass in a U and an oak slab, makes 2), with Butterflies, Worms, Fireflies or Fairies installed: it
+- **The glass jar** (3 glass in a U and an oak slab, makes 2), with Butterflies, Worms, Fireflies, Fairies, Scorpions, Ladybugs, Phasmids or Dung Beetles installed: it
   catches their creatures and releases them where you want them to stay. Sneak + right-click places a filled jar on
   display.
 - **The "Sunrise Creatures" creative tab**, with every item of the series.
@@ -21,7 +21,7 @@ the creatures share:
   as a feather does.
 - Monsters leave the series' creatures alone.
 
-For developers: [SPECS.md](https://github.com/EAnathos/sunrise-creatures/blob/creature-0.3.2/common/SPECS.md) and [CONTRIBUTING.md](https://github.com/EAnathos/sunrise-creatures/blob/creature-0.3.2/CONTRIBUTING.md).
+For developers: [SPECS.md](https://github.com/EAnathos/sunrise-creatures/blob/creature-0.3.3/common/SPECS.md) and [CONTRIBUTING.md](https://github.com/EAnathos/sunrise-creatures/blob/creature-0.3.3/CONTRIBUTING.md).
 """
 authors = ["EAnathos"]
 owners = ["EAnathos"]
@@ -32,6 +32,35 @@ categories = ["library"]
 tags = ["creatures", "bestiary", "glass-jar", "guide"]
 screenshots = ["screenshots/creature/1-bestiary.jpg"]
 key = "RWR7Wf0HwHmw6+OGAJGXZcp5ccpovW1ONwQb7knb3YqMpWGTi+gpP0Jn"
+
+[[versions]]
+version = "0.3.3"
+published = "2026-11-21"
+game = "26.3"
+file = "creature-0.3.3.smod"
+sha256 = "64b761427b235d98aae03a14a2ed91b246d3dac8a5310b07c94ae0cd34d2ee7f"
+signature = """
+untrusted comment: signature from minisign secret key
+RUR7Wf0HwHmw62oy1EhFIr3x7WwizvZwE2APUltkwRRSveogfHGdRSLpmYA6X8cQKQgd5pshCcwDjtkvxDlFOa+/syb/sqdwLQo=
+trusted comment: timestamp:1795304910	file:creature-0.3.3.smod	hashed
+x94Vnnrr46tiAUlEKIppsxpISTw5bEhrlVu9klmN+K7f+UTxieMl/WefUox7m18p9Uqvf0sy24mhkwBi3ApNBg==
+"""
+changelog = """
+- Body helpers shared by the mods: `body::flat_distance`, `body::turned`, `body::unit`, `Rand::between`.
+- The glass jar's pasture rule (`territory::Rule::Pasture`: a creature released among at least 3 grazing animals
+  settles there) and its recipe with the Dung Beetles installed; small creatures that come out on the blocks a mod
+  chooses (`flutter::spawns_on`); creeping that doesn't climb (a `climb` of 0).
+- A jar holding each creature a mod catches follows the empty glass jar in the creative tab.
+- Soaring (`flight::Soar`): a flier lands on one of the high points near it at random (over a flat sea it always went
+  the same way), and a roaming one's circle drifts along a random way (`Soar::roaming`: the seagull).
+- Creeping (`creature::creep`): a crawl moved by hand that climbs up the block in its way or a trunk, through leaves
+  (the Ladybugs, the Phasmids).
+- `mob::give_effect_level`: an effect at a level above the first (the ladybugs' Luck II).
+- The glass jar's recipe also comes with the Scorpions (which it catches: a fix), the Ladybugs or the Phasmids
+  installed.
+- Small creatures that come out on top of leaves (`flutter::spawns_on_leaves`), and the glass jar's tree rule
+  (`territory::Rule::Tree`: a creature released on leaves or a log settles in that tree): the Phasmids.
+"""
 
 [[versions]]
 version = "0.3.2"

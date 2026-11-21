@@ -5,7 +5,7 @@ summary = "Shoals of flying fish in warm seas that burst out of the water and gl
 description = """
 > **Beta.** Played and tested in single player; multiplayer and balance come later. Reports are welcome on the [issues](https://github.com/EAnathos/sunrise-creatures/issues).
 
-A mod of the [Sunrise Creatures](https://github.com/EAnathos/sunrise-creatures/blob/flying_fish-0.1.1/README.md) series: shoals of flying fish in warm seas that burst out of the
+A mod of the [Sunrise Creatures](https://github.com/EAnathos/sunrise-creatures/blob/flying_fish-0.1.2/README.md) series: shoals of flying fish in warm seas that burst out of the
 water and glide over the waves on their wing-like fins. **Requires**
 [Sunrise Creatures](https://playsunrise.net/mods/creature), the series' library.
 
@@ -43,6 +43,25 @@ categories = ["mobs", "food"]
 tags = ["flying-fish", "fish", "ocean", "aquatic"]
 screenshots = ["screenshots/flying_fish/1-flying_fish-flying_fish-front.png", "screenshots/flying_fish/2-flying_fish-flying_fish-back.png"]
 key = "RWR7Wf0HwHmw6+OGAJGXZcp5ccpovW1ONwQb7knb3YqMpWGTi+gpP0Jn"
+
+[[versions]]
+version = "0.1.2"
+published = "2026-11-21"
+game = "26.3"
+file = "flying_fish-0.1.2.smod"
+sha256 = "b00264cb10c21c625a1155f64d910e953f1d434558746c9783bb990458a3850f"
+signature = """
+untrusted comment: signature from minisign secret key
+RUR7Wf0HwHmw6xk7zFhsWn5j6lMBVVdzq3KNrb3A2NI0Nk+TAaoVFUQF4NtC36L9RoeWqMqov/i5M0b/hoRAyiHWl69P+IGCKAg=
+trusted comment: timestamp:1795304910	file:flying_fish-0.1.2.smod	hashed
+hU2Hz/4Gu29W2YakvhCsnW5VFCkpp//jW+IVU5BiXnpIgemG+v+KN3bEn1bBjazlNbDx7LZCAS2nSWJ+wi+qBA==
+"""
+changelog = """
+- A shoal wanders about: each fish's heading veers and turns now and then (they all swam the same way).
+- A frightened fish takes off only along open water, turns along the water as a shore nears and drops back in before
+  land: it no longer glides onto the shore and dies there.
+- Needs Sunrise Creatures 0.3.3.
+"""
 
 [[versions]]
 version = "0.1.1"
