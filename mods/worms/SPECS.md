@@ -24,7 +24,7 @@ Done and tested in game (single player).
 - **Sounds**: its own, from CC0 freesound recordings (`assets/sounds.toml`): a soft digging now and then as it
   crawls, hurt and death.
 
-Left: chickens pecking worms (§2), planned with the Dung Beetles.
+Left: chickens pecking worms (§2), through the library's prey as the Ladybugs and the Dung Beetles use it.
 
 ## 1. Technical context
 

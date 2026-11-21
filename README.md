@@ -58,6 +58,7 @@ shepherd, shy fairies, scorpions, spirits of living lightning, jellyfish, flying
 | ![](docs/models/seagulls-seagull-front.png) | [Seagulls](mods/seagulls/README.md) | Noisy gulls of the coasts that float on the waves, follow your boat and snatch food from your hand; befriend one with fish and it dives for fish for you |
 | ![](docs/models/ladybugs-ladybug-front.png) | [Ladybugs](mods/ladybugs/README.md) | Ladybugs on the flowers in five kinds; one that lands on you brings luck for as many minutes as it has spots |
 | ![](docs/models/phasmids-stick_insect-front.png) | [Phasmids](mods/phasmids/README.md) | Stick and leaf insects hiding in the trees as twigs and leaves: spot them, and settle them on your own tree |
+| ![](docs/models/dung_beetles-dung_beetle-front.png) | [Dung Beetles](mods/dung_beetles/README.md) | Beetles that follow the herds and roll dung balls under the stars, turning worn pastures back into grass |
 | ![](common/assets/creature/textures/item/guide.png) | [Vanilla Bestiary](mods/vanilla_bestiary/README.md) | Minecraft's own creatures in the creature guide's bestiary, found out as you meet them |
 
 Every mod needs **[Sunrise Creatures](common/README.md)**, the library: it adds the glass jar, the creature guide and
@@ -66,8 +67,6 @@ the "Sunrise Creatures" creative tab, where all the series' items are.
 <details>
 <summary><b>Planned</b></summary>
 
-- [Dung Beetles](mods/dung_beetles/README.md): beetles that roll dung balls under the stars and turn worn pastures
-  back into grass.
 - [Sporelins](mods/sporelins/README.md): shy mushroom sprites that tend a mushroom patch.
 - [Living Flowers](mods/living_flowers/README.md): every small and tall vanilla flower come alive, to ambush you or
   guard you.

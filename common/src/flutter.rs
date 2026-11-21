@@ -139,18 +139,26 @@ pub fn spawns(spawning: &'static Spawning) {
     }
 }
 
-/// The kinds that come out only on top of leaves, at the leaves (the phasmids).
-static ON_LEAVES: Mutex<Vec<&'static str>> = Mutex::new(Vec::new());
+/// Which blocks a group may come out on (the block at the given position, under the open one).
+pub type On = fn(Ground<'_>, [i32; 3]) -> bool;
 
-/// From a mod's `hooks()`: `spawns`, its groups placed on top of leaves instead of over the ground (a try where the top
-/// isn't leaves brings none). Its `flight`'s hours are when it comes out; a kind that doesn't fly (the phasmids) gives
-/// a `Kind` for its hours only.
-pub fn spawns_on_leaves(spawning: &'static Spawning) {
+/// The kinds that come out only on some blocks, on their top (the phasmids on leaves, the dung beetles on grass).
+static ON: Mutex<Vec<(&'static str, On)>> = Mutex::new(Vec::new());
+
+/// From a mod's `hooks()`: `spawns`, its groups placed on top of the block under the spot, all together, when `on`
+/// says it is one of theirs (a try where it isn't brings none), instead of spread over the ground. Its `flight`'s hours
+/// are when it comes out; a kind that doesn't fly (the phasmids, the dung beetles) gives a `Kind` for its hours only.
+pub fn spawns_on(spawning: &'static Spawning, on: On) {
     spawns(spawning);
-    let mut leaves = ON_LEAVES.lock().unwrap();
-    if !leaves.contains(&spawning.kind) {
-        leaves.push(spawning.kind);
+    let mut all = ON.lock().unwrap();
+    if !all.iter().any(|(k, _)| *k == spawning.kind) {
+        all.push((spawning.kind, on));
     }
+}
+
+/// `spawns_on` leaves (the phasmids).
+pub fn spawns_on_leaves(spawning: &'static Spawning) {
+    spawns_on(spawning, |ground, p| ground.block(p).ends_with("leaves"));
 }
 
 /// Whether a kind out at `hours` is about now in `level` (from a hook: its day time and rain).
@@ -214,12 +222,14 @@ pub fn spawn(host: &mut dyn ServerHost, level: LevelRef) {
             ) else {
                 continue;
             };
-            let on_leaves = ON_LEAVES.lock().unwrap().contains(&s.kind);
-            if on_leaves
-                && !Ground::new(&*host, level)
-                    .block([x.floor() as i32, ground - 1, z.floor() as i32])
-                    .ends_with("leaves")
-            {
+            let on = ON.lock().unwrap().iter().find(|(k, _)| *k == s.kind).map(|(_, on)| *on);
+            let on_top = on.is_some();
+            if on.is_some_and(|on| {
+                !on(
+                    Ground::new(&*host, level),
+                    [x.floor() as i32, ground - 1, z.floor() as i32],
+                )
+            }) {
                 continue;
             }
             if !level
@@ -230,8 +240,8 @@ pub fn spawn(host: &mut dyn ServerHost, level: LevelRef) {
             }
             let count = s.group.0 + (float() * f64::from(s.group.1 - s.group.0 + 1)) as u32;
             for _ in 0..count.min(s.group.1) {
-                // On leaves, all on that block's top; over the ground, spread and a little up.
-                let at = if on_leaves {
+                // On its blocks, all on that block's top; over the ground, spread and a little up.
+                let at = if on_top {
                     [
                         x.floor() + 0.2 + float() * 0.6,
                         f64::from(ground),

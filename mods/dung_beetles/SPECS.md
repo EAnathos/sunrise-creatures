@@ -10,32 +10,36 @@ grass. Simple, like Worms ✅.
 
 ## 0. Status
 
-Planned: the spec and the model, no code yet.
+Playable on Sunrise (0.1.0, unreleased), tested in game: spawning on grassy ground, following a herd, shaping,
+rolling (straight under a clear night sky, wandering otherwise, turning aside at a fence) and burying a ball, the ground
+turned greener (coarse dirt to dirt, dirt to grass, grass to flowers), taking a ball, the dung ball on the ground and
+in a composter, chickens pecking beetles, the glass jar's catch and its release in a pasture.
 
-- **The model** (`assets/models/dung_beetle.bbmodel`, pictures in docs/models/), after a photo of a dung beetle at
+- **The model** (`sources/models/dung_beetle.bbmodel`, pictures in docs/models/), after a photo of a dung beetle at
   work: a domed, matte black-brown beetle (the wing cases and the pronotum rounded from stacked cubes, faint straw
   specks, reddish hairs underneath), standing high and head down (the body tilted 12°), a flat semicircular head shield
   and short antennae. Six thin two-part legs: the front ones short and planted under the head, the middle ones long and
   swept back, the hind ones reaching back onto the ball. The ball behind it, about as big as the beetle (7 texels,
   three crossed cubes, `ball`), and a small one for while it shapes it (`ball_small`); the game shows one ball or none
   (`draw_shown`) and poses it all.
-
-Next: the code, on Sunrise. The library's side comes with it: the small
-crawlers and the chickens' pecking (common/SPECS.md §3.6, §3.7), and the pasture rule (§4.2).
+- **The code**: `src/lib.rs` (spawning, the dung ball, the drawing, the bestiary page), `src/roll.rs` (the herd, the
+  ball). From the library: the spawning of small creatures on given blocks, creeping (its crawl, which doesn't climb),
+  prey (the chickens), the glass jar and its pasture rule (common/SPECS.md §3.6, §3.7, §3.16, §4).
 
 ## 1. Technical context
 
 - **Mod id**: `dung_beetles` ✅. Entity `dung_beetles:dung_beetle`, spawn egg `dung_beetles:dung_beetle_spawn_egg`, item
   `dung_beetles:dung_ball` ✅ (§5). No jar item of its own: a caught beetle is in the library's `creature:glass_jar` ✅
   (library §4.1).
-- Uses from the library: model drawing and sounds (§3.1, §3.2), hitbox size (§3.4, tiny), **small crawlers** (§3.6),
+- Uses from the library: model drawing and sounds (§3.1, §3.2), hitbox size (§3.4, tiny), **creeping** (§3.16, its
+  crawl, which doesn't climb), the **spawning of small creatures** on given blocks (§3.5),
   **chickens' pecking** (§3.7), the **glass jar and territories** (§4, which this mod switches on; rule "pasture"),
   the creature guide's pages (§7).
 - The beetle copies the wandering trader (goals only) with a tiny hitbox, like the worm.
 - **The ball is drawn with the beetle** ✅: a part of its model, growing as it is shaped and turning as it rolls, not an
   entity of its own (no physics, nothing to save apart, no stray balls left in the world).
-- The dung ball in a composter: through Sunrise's `compost_item` hook (its chance in `ItemsHost::item_compost_chance`;
-  to check when implementing).
+- The dung ball in a composter: its own right-click on a composter raises its level (the last one makes it ready at
+  once), rather than a `compostable` component.
 
 ## 2. The dung beetle ✅
 

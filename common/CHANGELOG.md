@@ -4,6 +4,9 @@ Each version's section is its registry changelog (`cargo creature release`).
 
 ## Unreleased
 
+- The glass jar's pasture rule (`territory::Rule::Pasture`: a creature released among at least 3 grazing animals
+  settles there) and its recipe with the Dung Beetles installed; small creatures that come out on the blocks a mod
+  chooses (`flutter::spawns_on`); creeping that doesn't climb (a `climb` of 0).
 - A jar holding each creature a mod catches follows the empty glass jar in the creative tab.
 - Soaring (`flight::Soar`): a flier lands on one of the high points near it at random (over a flat sea it always went
   the same way), and a roaming one's circle drifts along a random way (`Soaring::wander`: the seagull).

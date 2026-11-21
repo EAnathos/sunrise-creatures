@@ -1,0 +1,9 @@
+{
+  "template": "minecraft:clay_ball",
+  "components": {
+    "minecraft:item_model": "dung_beetles:dung_ball",
+    "minecraft:item_name": {
+      "translate": "item.dung_beetles.dung_ball"
+    }
+  }
+}

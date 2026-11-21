@@ -13,7 +13,8 @@ use crate::body::{Behaviour, Body, Vec3, World};
 
 /// How a creature creeps.
 pub struct Creeping {
-    /// Its speed on a top and up a side (blocks a tick).
+    /// Its speed on a top and up a side (blocks a tick); one that doesn't climb (a dung beetle) has 0 up a side and
+    /// gives up at a wall.
     pub speed: f64,
     pub climb: f64,
     /// How long a crawl and a pause last (ticks).
@@ -164,7 +165,7 @@ impl Behaviour for Creep {
             && [[1, 0], [-1, 0], [0, 1], [0, -1]]
                 .iter()
                 .any(|d| !passable(cx, [cell[0] + d[0], cell[1], cell[2] + d[1]]));
-        if above && (wall || side || self.climbing) {
+        if self.how.climb > 0.0 && above && (wall || side || self.climbing) {
             // Up, through foliage as an insect goes (leaves don't stop it); a solid ceiling ends the crawl.
             let head = [cell[0], (m.position.y + 0.3).floor() as i32 + 1, cell[2]];
             let ceiling = !passable(cx, head) && !cx.block(head).ends_with("leaves");

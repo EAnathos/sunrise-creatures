@@ -14,7 +14,7 @@ on it.
 | Worms | `mods/worms/` | `worms` | playable | [mods/worms/SPECS.md](../mods/worms/SPECS.md) |
 | Cyclops | `mods/cyclops/` | `cyclops` | playable | [mods/cyclops/SPECS.md](../mods/cyclops/SPECS.md) |
 | Fireflies | `mods/fireflies/` | `fireflies` | playable | [mods/fireflies/SPECS.md](../mods/fireflies/SPECS.md) |
-| Dung Beetles | `mods/dung_beetles/` | `dung_beetles` | planned | [mods/dung_beetles/SPECS.md](../mods/dung_beetles/SPECS.md) |
+| Dung Beetles | `mods/dung_beetles/` | `dung_beetles` | playable | [mods/dung_beetles/SPECS.md](../mods/dung_beetles/SPECS.md) |
 | Sporelins | `mods/sporelins/` | `sporelins` | planned | [mods/sporelins/SPECS.md](../mods/sporelins/SPECS.md) |
 | Living Flowers | `mods/living_flowers/` | `living_flowers` | planned | [mods/living_flowers/SPECS.md](../mods/living_flowers/SPECS.md) |
 | Storm Spirits | `mods/storm_spirits/` | `storm_spirits` | playable | [mods/storm_spirits/SPECS.md](../mods/storm_spirits/SPECS.md) |

@@ -3,7 +3,7 @@
 A series of native Rust mods for **Sunrise** (formerly Horizon, a Rust reimplementation of Minecraft Java 26.3): one mandatory
 library, **Sunrise Creatures** (`common/`, mod id `creature`), and independent creature mods in `mods/<mod>/` that all
 depend on it: `vulture` (tameable, rideable flying vulture), `butterflies` (and moths), `worms`, `fireflies`,
-`cyclops`, `fairies`, `scorpions`, `storm_spirits`, `jellyfish`, `flying_fish`, `seagulls`, `ladybugs`, `phasmids` and `vanilla_bestiary` (Minecraft's creatures in the
+`cyclops`, `fairies`, `scorpions`, `storm_spirits`, `jellyfish`, `flying_fish`, `seagulls`, `ladybugs`, `phasmids`, `dung_beetles` and `vanilla_bestiary` (Minecraft's creatures in the
 guide). The other folders of `mods/` are planned mods (a spec, a model).
 
 - **Players**: `README.md` and each module's `README.md`. **Developers**: `CONTRIBUTING.md`.
@@ -15,7 +15,7 @@ guide). The other folders of `mods/` are planned mods (a spec, a model).
 - **Rule of two**: a system used (or specified) by two or more mods goes in the library; species content stays in mods.
   Never duplicate a system between mods. No mod requires another: optional content between mods goes through
   conditional recipes (`neoforge:conditions`, `mod_loaded`, `not`).
-  Library features tied to some mods (the glass jar: Butterflies, Worms, Fireflies, Fairies, Scorpions, Ladybugs or Phasmids) switch on through registration and
+  Library features tied to some mods (the glass jar: Butterflies, Worms, Fireflies, Fairies, Scorpions, Ladybugs, Phasmids or Dung Beetles) switch on through registration and
   conditional recipes (`neoforge:conditions`, `mod_loaded`).
 - **Creative tab**: only the library has one, generated from each module's `module.toml` (`creative` list) by
   `cargo creature tab`. Mods declare no tab.

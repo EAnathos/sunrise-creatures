@@ -1,6 +1,8 @@
 # Dung Beetles's description for the repository's tools (docs/ARCHITECTURE.md); not shipped in the mod.
 id = "dung_beetles"
 name = "Dung Beetles"
-status = "planned"
-# Its items in the series' creative tab, in order (none until implementation starts).
-creative = []
+status = "playable"
+# Its items in the series' creative tab, in order.
+creative = ["dung_beetles:dung_beetle_spawn_egg", "dung_beetles:dung_ball"]
+# Its Rust is built on Sunrise's mod_api.
+ported = true

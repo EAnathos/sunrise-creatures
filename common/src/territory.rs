@@ -1,6 +1,6 @@
 //! Territories (SPECS §4.2): a creature released from a jar settles in an area it won't leave.
 //!
-//! Four rules (`Rule`). The **garden** (Worms): released on farmland (or a crop on it), the farmland connected to it (4
+//! Five rules (`Rule`). The **garden** (Worms): released on farmland (or a crop on it), the farmland connected to it (4
 //! ways, the same level or one up or down) is its area, which must count at least `GARDEN_MIN` blocks, or it won't
 //! settle; if the garden shrinks below that, it is free again. The **flower patch** (Butterflies, Fireflies): released on
 //! a flower, that flower is its anchor; its area is
@@ -10,7 +10,9 @@
 //! within `SAND_RANGE` blocks are its area, at least `SAND_MIN` of them, or it won't settle; a patch grown too small
 //! frees it. The **tree** (Phasmids): released on leaves or a log, the leaves and logs connected to it within
 //! `TREE_RANGE` blocks are its area, with at least `TREE_LEAVES` leaves, or it won't settle; a tree cut too small frees
-//! it.
+//! it. The **pasture** (Dung Beetles): released with at least `PASTURE_HERD` grazing animals within `PASTURE_RANGE`
+//! blocks, the block it comes out on is its anchor and it keeps within `PASTURE_RANGE` of it; with fewer animals left
+//! around, it is free again.
 //!
 //! The anchor is saved on the entity (`creature:territory`). The mod's goals read it through a static map (`anchor`),
 //! filled by `tick` from the mod's `entity_tick_post` (single player, as the colours), and tell a moved or lost anchor
@@ -47,7 +49,26 @@ pub enum Rule {
     /// The leaves and logs connected to the one it was released on, within `TREE_RANGE`, with at least `TREE_LEAVES`
     /// leaves (the phasmids).
     Tree,
+    /// The ground it was released on, with at least `PASTURE_HERD` grazing animals within `PASTURE_RANGE` (the dung
+    /// beetles).
+    Pasture,
 }
+
+/// A pasture: how many grazing animals make one, within how far of its anchor (blocks, the area the creature keeps to).
+pub const PASTURE_HERD: usize = 3;
+pub const PASTURE_RANGE: i32 = 8;
+/// The grazing animals (a pasture's herd, the dung beetles' herds).
+pub const GRAZERS: &[&str] = &[
+    "minecraft:cow",
+    "minecraft:mooshroom",
+    "minecraft:sheep",
+    "minecraft:horse",
+    "minecraft:donkey",
+    "minecraft:mule",
+    "minecraft:goat",
+    "minecraft:camel",
+    "minecraft:llama",
+];
 pub const AROUND: i32 = 2;
 pub const ABOVE: i32 = 4;
 const FLOWERS: &str = "minecraft:flowers";
@@ -368,6 +389,50 @@ pub fn check_tree(host: &dyn Host, entity: u32) -> Vec<[i32; 3]> {
         k.dirty = true;
     }
     Vec::new()
+}
+
+/// The grazing animals within `range` blocks of `at` (and 4 up or down): their ids and where they are.
+pub fn grazers_near(ground: Ground<'_>, at: [f64; 3], range: f64) -> Vec<(u32, [f64; 3])> {
+    let host = ground.host;
+    let from = [at[0] - range, at[1] - 4.0, at[2] - range];
+    let to = [at[0] + range, at[1] + 4.0, at[2] + range];
+    ground
+        .level
+        .entities_in(host, from, to)
+        .unwrap_or_default()
+        .into_iter()
+        .filter(|e| e.kind(host).is_some_and(|k| GRAZERS.contains(&k.id(host).as_str())))
+        .filter_map(|e| Some((e.id(), e.position(host)?)))
+        .collect()
+}
+
+fn herd_at(ground: Ground<'_>, block: [i32; 3]) -> bool {
+    let at = [
+        f64::from(block[0]) + 0.5,
+        f64::from(block[1]),
+        f64::from(block[2]) + 0.5,
+    ];
+    grazers_near(ground, at, f64::from(PASTURE_RANGE)).len() >= PASTURE_HERD
+}
+
+/// From the jar's release: the block `out` a creature comes out on, if a herd grazes around it.
+pub fn pasture_at(ground: Ground<'_>, out: [i32; 3]) -> Option<[i32; 3]> {
+    herd_at(ground, out).then_some(out)
+}
+
+/// From a behaviour, every few seconds: whether its pasture still holds; with its herd gone, it is free again.
+pub fn check_pasture(host: &dyn Host, entity: u32) -> bool {
+    let (Some(anchor), Some(ground)) = (anchor(entity), Ground::of_entity(host, entity)) else {
+        return false;
+    };
+    if herd_at(ground, anchor) {
+        return true;
+    }
+    if let Some(k) = ANCHORS.lock().unwrap().get_mut(&entity) {
+        k.anchor = None;
+        k.dirty = true;
+    }
+    false
 }
 
 /// From the jar's release: the farmland a creature released on `clicked` (farmland, or a crop on farmland) would

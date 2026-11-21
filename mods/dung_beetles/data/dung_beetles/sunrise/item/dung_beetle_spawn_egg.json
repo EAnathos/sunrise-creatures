@@ -1,0 +1,9 @@
+{
+  "template": "minecraft:wandering_trader_spawn_egg",
+  "components": {
+    "minecraft:item_model": "dung_beetles:dung_beetle_spawn_egg",
+    "minecraft:item_name": {
+      "translate": "item.dung_beetles.dung_beetle_spawn_egg"
+    }
+  }
+}

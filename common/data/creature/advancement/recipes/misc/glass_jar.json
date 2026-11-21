@@ -29,6 +29,10 @@
         },
         {
           "type": "neoforge:mod_loaded",
+          "modid": "dung_beetles"
+        },
+        {
+          "type": "neoforge:mod_loaded",
           "modid": "scorpions"
         }
       ]
