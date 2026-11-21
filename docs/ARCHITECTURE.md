@@ -75,7 +75,7 @@ day a second mod needs it (the move is part of that second mod's work, not a cop
 
 | In the library (`creature`) | In a mod |
 |---|---|
-| Generic systems, configured by data or by Rust parameters: glass jar and territories, the small fliers' flight and spawning, friends, colours and patterns, model drawing, glowing creatures' lights, fighting back, water creatures, touches, hunters, mob sounds, monsters sparing our creatures, the bestiary | The species: entity types, models, textures, sounds, items, recipes, loot, spawns, AI tuning, balance numbers |
+| Generic systems, configured by data or by Rust parameters: glass jar and territories, the small fliers' flight and spawning, the big fliers' flight (soaring, following a friend), friends, food on the ground, colours and patterns, model drawing, glowing creatures' lights, fighting back, water creatures, touches, hunters, the feather recipes, mob sounds, monsters sparing our creatures, the bestiary; small helpers several mods use (an item stack from its id, a puff of particles, a boat test) | The species: entity types, models, textures, sounds, items, recipes, loot, spawns, AI tuning, balance numbers |
 | Shared blocks and items (`creature:glass_jar`, `creature:guide`) | The mod's own blocks and items (`cyclops:club`) |
 | The series' creative tab | The list of its items for that tab (`module.toml`) |
 | Shared translations (`creature` lang files) | Its own translations |

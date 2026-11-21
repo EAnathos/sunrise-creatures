@@ -133,6 +133,17 @@ pub fn tick(host: &mut dyn ServerHost, entity: u32, kind: &str) -> bool {
     false
 }
 
+/// The water over `at` (blocks): the water blocks from `at`'s block up, at most `up`, less how far into its block `at`
+/// is; 0 out of water. How deep a swimmer is (the jellyfish, the flying fish), where a floater's surface is (the
+/// seagull).
+pub fn water_over(cx: &crate::body::World<'_>, at: [f64; 3], up: i32) -> f64 {
+    let (x, y, z) = (at[0].floor() as i32, at[1].floor() as i32, at[2].floor() as i32);
+    let water = (0..up)
+        .take_while(|&d| cx.block([x, y + d, z]) == "minecraft:water")
+        .count();
+    water as f64 - at[1].fract()
+}
+
 /// From the mod, when one is gone.
 pub fn forget(entity: u32) {
     DRY.lock().unwrap().remove(&entity);

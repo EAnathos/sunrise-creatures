@@ -35,8 +35,8 @@ Next: the code, on Sunrise.
   species gives (a colour and pattern, or a kind with its own model; common/SPECS.md §7), which the Sporelins' two caps
   use too.
 - Uses from the library: model drawing and sounds (§3.1, §3.2), hitbox size (§3.4), monsters sparing it (§3.4), the
-  creature guide's pages (§7), **taming and ownership** (§6.2, moved from the vulture with the Sporelins and the
-  Seagulls), and the **display block** of the glass jar (§4.1: a placed block that draws a creature) for the pots ✅.
+  creature guide's pages (§7), **taming and ownership** (§6.2: the library's friends, shared
+  with the Fairies, the Vulture and the Seagulls; defending and healing food come with the Sporelins), and the **display block** of the glass jar (§4.1: a placed block that draws a creature) for the pots ✅.
 - It copies the wandering trader (goals only, its own attack and target goals, as the cyclops), with a box the size of
   its kind's model ✅: about 0.4 × 0.85 blocks for a small flower, 0.6 × 1.5 for a tall one.
 

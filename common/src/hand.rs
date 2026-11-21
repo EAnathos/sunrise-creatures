@@ -33,6 +33,12 @@ pub fn use_one(host: &mut dyn ServerHost, player: PlayerRef, hand: Hand) {
     }
 }
 
+/// A stack of `count` of item `id` (`minecraft:cod`), if the game knows the item (another mod's that isn't installed:
+/// none).
+pub fn stack(host: &dyn Host, id: &str, count: u32) -> Option<ItemStack> {
+    host.item_from_snbt(&format!("{{id:\"{id}\",count:{count}}}"))
+}
+
 /// Gives `stack` to `player`, or drops it at their feet when their inventory is full.
 pub fn give(host: &mut dyn ServerHost, player: PlayerRef, stack: ItemStack) {
     if player.give_stack(host, stack.clone()).is_err() {

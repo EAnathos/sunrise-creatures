@@ -4,16 +4,17 @@
 //!   chicken is tamed 1 time in 4 (hearts; smoke otherwise), by the player it sees (in single player, the one who
 //!   threw it). A tamed one eats only when hurt, and heals.
 //! - `Sit`: it stays put when told to (right-click, `interaction.rs`).
-//! - `FollowOwner`: flies to its owner when more than 10 blocks away and lands near them; teleports past 32 blocks.
+//! - Following its owner: the library's flight (`FOLLOWING`): flies to them when more than 10 blocks away and lands
+//!   near them; teleports past 32 blocks.
 //! - What hurts its owner, and what its owner attacks, becomes its target (as vanilla's wolf: the mod's damage hook,
 //!   `crate::defend`).
 //! - `Mate` (SPECS §8): fed rotten flesh by its owner (`interaction.rs`), a grown vulture is in love for 30 s; it walks to
 //!   another tamed vulture in love and, once close, they have a baby (born tamed, `state::breed`) and wait 5 minutes.
 use creature::body::{Behaviour, Body, World};
 
-use creature::flight::{Controls, Flight};
+use creature::flight::Following;
 
-use crate::{WINGS, ride, sounds, state};
+use crate::{ride, sounds, state};
 
 /// One raw chicken in this many tames it.
 const TAME_CHANCE: i32 = 4;
@@ -116,85 +117,16 @@ impl Behaviour for Sit {
     }
 }
 
-/// Starts following past this distance, lands within `LAND`, teleports past `TELEPORT` (blocks).
-const FOLLOW: f64 = 10.0;
-const LAND: f64 = 5.0;
-const TELEPORT: f64 = 32.0;
-/// How high above its owner it flies when following.
-const ABOVE: f64 = 5.0;
-
-#[derive(Debug, Default)]
-pub struct FollowOwner {
-    flight: Flight,
-    landing: bool,
-    on: bool,
-}
-
-/// Where its owner is, when it is tamed by the nearest player.
-fn owner_at(m: &Body, cx: &World<'_>) -> Option<[f64; 3]> {
-    let p = cx.player.as_ref()?;
-    let owner = state::saved(m.id).owner?;
-    (owner == creature::friend::ints(p.uuid) && p.alive).then_some([p.position.x, p.position.y, p.position.z])
-}
-
-fn distance(m: &Body, at: [f64; 3]) -> f64 {
-    ((m.position.x - at[0]).powi(2) + (m.position.z - at[2]).powi(2)).sqrt()
-}
-
-impl Behaviour for FollowOwner {
-    fn can_use(&mut self, m: &mut Body, cx: &World<'_>) -> bool {
-        let on = if self.on {
-            may_follow(m, cx) && owner_at(m, cx).is_some() && !(self.landing && m.on_ground)
-        } else {
-            may_follow(m, cx) && owner_at(m, cx).is_some_and(|at| distance(m, at) > FOLLOW)
-        };
-        if on && !self.on {
-            self.flight = Flight::default();
-            self.landing = false;
-        }
-        self.on = on;
-        on
-    }
-    fn stop(&mut self, m: &mut Body, _: &World<'_>) {
-        self.on = false;
-        self.flight.land(m);
-    }
-    fn tick(&mut self, m: &mut Body, cx: &World<'_>) {
-        let Some(at) = owner_at(m, cx) else {
-            return;
-        };
-        let d = distance(m, at);
-        if d > TELEPORT {
-            m.position.x = at[0] + 2.0;
-            m.position.y = at[1] + 2.0;
-            m.position.z = at[2] + 2.0;
-            self.flight.speed = 0.0;
-        }
-        self.landing = d < LAND;
-        let yaw = (-(at[0] - m.position.x)).atan2(at[2] - m.position.z).to_degrees() as f32;
-        let below = at[1] + ABOVE - m.position.y;
-        let controls = if self.landing {
-            Controls {
-                yaw,
-                pitch: 15.0,
-                flap: false,
-                brake: true,
-                boost: false,
-                ridden: false,
-            }
-        } else {
-            Controls {
-                yaw,
-                pitch: (-below * 3.0).clamp(-35.0, 35.0) as f32,
-                flap: true,
-                brake: false,
-                boost: m.on_ground,
-                ridden: false,
-            }
-        };
-        self.flight.tick(m, &controls, &WINGS);
-    }
-}
+/// Following its owner (the library's `creature::flight::Follow`): past 10 blocks it flies to them, 5 blocks over
+/// their head, lands within 5, comes to them past 32.
+pub static FOLLOWING: Following = Following {
+    follow: 10.0,
+    land: 5.0,
+    teleport: 32.0,
+    above: 5.0,
+    may: may_follow,
+    lands_on_water: false,
+};
 
 /// How close two vultures in love must come to breed, in blocks.
 const MATE_RANGE: f64 = 2.5;

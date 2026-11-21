@@ -2,9 +2,10 @@
 
 Each version's section is its registry changelog (`cargo creature release`).
 
-## Unreleased
+## 0.1.1
 
 - A seagull (with the Seagulls) frightens a shoal, as a dolphin does.
+- Built on the library's shared helpers (Sunrise Creatures 0.3.2), unchanged.
 
 ## 0.1.0
 

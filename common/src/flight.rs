@@ -6,6 +6,7 @@
 //!   `Controls` (a rider's keys, or the creature's own behaviour); a flier's speeds and sounds are its `Wings`.
 //! - `Soar`: soaring on its own, as `Soaring` says: taking off now and then, climbing, circling, then gliding down onto
 //!   the highest perch near it.
+//! - `Follow`: following its friend (the library's `friend`) in flight, as `Following` says.
 //!
 //! Everything runs from the server tick (the library's `body`), which writes back the velocity, heading and pitch set.
 use std::collections::BTreeMap;
@@ -458,6 +459,116 @@ impl Soar {
                     ridden: false,
                 },
             },
+        };
+        self.flight.tick(m, &controls, self.wings);
+    }
+}
+
+/// How a flier follows its friend (the library's `friend`): from `follow` blocks away it flies to them, `above` blocks
+/// over their head, and lands within `land` (on the ground, or on the water for one that floats); past `teleport` it
+/// comes to them at once; only when it may (`may`: not told to stay, not ridden...).
+pub struct Following {
+    pub follow: f64,
+    pub land: f64,
+    pub teleport: f64,
+    pub above: f64,
+    pub may: fn(&Body, &World<'_>) -> bool,
+    pub lands_on_water: bool,
+}
+
+/// Following its friend in flight, as `Following` says (the vulture's owner, the seagull's friend).
+pub struct Follow {
+    how: &'static Following,
+    wings: &'static Wings,
+    flight: Flight,
+    landing: bool,
+    on: bool,
+}
+
+impl std::fmt::Debug for Follow {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Follow")
+            .field("landing", &self.landing)
+            .field("on", &self.on)
+            .finish()
+    }
+}
+
+impl Follow {
+    pub fn new(how: &'static Following, wings: &'static Wings) -> Self {
+        Self {
+            how,
+            wings,
+            flight: Flight::default(),
+            landing: false,
+            on: false,
+        }
+    }
+}
+
+/// Where creature `m`'s friend is, when they are the nearest player, alive.
+fn friend_at(m: &Body, cx: &World<'_>) -> Option<[f64; 3]> {
+    let friend = crate::friend::of(m.id)?;
+    let p = cx.player.as_ref()?;
+    (friend.is(p.uuid) && p.alive).then_some(p.position.array())
+}
+
+fn across(m: &Body, at: [f64; 3]) -> f64 {
+    (m.position.x - at[0]).hypot(m.position.z - at[2])
+}
+
+impl Behaviour for Follow {
+    fn can_use(&mut self, m: &mut Body, cx: &World<'_>) -> bool {
+        let at = friend_at(m, cx).filter(|_| (self.how.may)(m, cx));
+        let down = m.on_ground || self.how.lands_on_water && m.in_water;
+        let on = match at {
+            Some(_) if self.on => !(self.landing && down),
+            Some(at) => across(m, at) > self.how.follow,
+            None => false,
+        };
+        if on && !self.on {
+            self.flight = Flight::default();
+            self.landing = false;
+        }
+        self.on = on;
+        on
+    }
+    fn stop(&mut self, m: &mut Body, _: &World<'_>) {
+        self.on = false;
+        self.flight.land(m);
+    }
+    fn tick(&mut self, m: &mut Body, cx: &World<'_>) {
+        let Some(at) = friend_at(m, cx) else {
+            return;
+        };
+        let d = across(m, at);
+        if d > self.how.teleport {
+            m.position.x = at[0] + 2.0;
+            m.position.y = at[1] + 2.0;
+            m.position.z = at[2] + 2.0;
+            self.flight.speed = 0.0;
+        }
+        self.landing = d < self.how.land;
+        let yaw = heading_of(at[0] - m.position.x, at[2] - m.position.z);
+        let below = at[1] + self.how.above - m.position.y;
+        let controls = if self.landing {
+            Controls {
+                yaw,
+                pitch: 15.0,
+                flap: false,
+                brake: true,
+                boost: false,
+                ridden: false,
+            }
+        } else {
+            Controls {
+                yaw,
+                pitch: (-below * 3.0).clamp(-35.0, 35.0) as f32,
+                flap: true,
+                brake: false,
+                boost: m.on_ground || m.in_water,
+                ridden: false,
+            }
         };
         self.flight.tick(m, &controls, self.wings);
     }

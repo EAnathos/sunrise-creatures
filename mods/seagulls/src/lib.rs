@@ -17,8 +17,8 @@ use creature::bestiary::{Fact, Species};
 use creature::flight::{Soaring, Wings};
 use mod_api::{
     BlockEntityDrawContext, EntityInteractEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, Hand,
-    Hooks, HostSide, InteractionResult, ItemFishedEvent, LivingDeathEvent, ParticleOptions,
-    RegisterEntityRenderersEvent, Registrar, RegistrationContext, ServerHost, SoundSource,
+    Hooks, HostSide, InteractionResult, ItemFishedEvent, LivingDeathEvent, RegisterEntityRenderersEvent, Registrar,
+    RegistrationContext, ServerHost, SoundSource,
 };
 
 pub const KIND: &str = "seagulls:seagull";
@@ -158,8 +158,6 @@ const FOOD_RANGE: f64 = 10.0;
 const BOAT_RANGE: f64 = 24.0;
 const BOBBER_RANGE: f64 = 24.0;
 const LOOK_EVERY: i32 = 10;
-/// The raw fish that befriend it.
-const BEFRIENDING: &[&str] = &["minecraft:cod", "minecraft:salmon"];
 
 /// The players fishing: where they cast from and along which look, and when (the game's time). Sunrise's fishing
 /// bobber is no entity the mod can find, so its place is guessed from the cast (`bobber`), and it is forgotten at the
@@ -191,10 +189,6 @@ fn bobber(host: &dyn ServerHost, level: mod_api::LevelRef, player: u128, now: i6
 
 /// Whether each seagull is in the air, and in the water, from its server tick, for the drawing (single player).
 static FLYING: Mutex<BTreeMap<u32, (bool, bool)>> = Mutex::new(BTreeMap::new());
-
-fn is_boat(kind: &str) -> bool {
-    kind.ends_with("boat") || kind.ends_with("raft")
-}
 
 /// From `entity_tick_post`, for each seagull: its friend's save, its behaviours, what they queued, what it finds
 /// around it, its sounds, despawning far from players.
@@ -231,27 +225,11 @@ fn look_around(host: &mut dyn ServerHost, id: u32) {
         return;
     };
     let mut around = Around::default();
-    let near = |r: f64| ([at[0] - r, at[1] - r, at[2] - r], [at[0] + r, at[1] + r, at[2] + r]);
-    // Food on the ground, the nearest.
-    let (from, to) = near(FOOD_RANGE);
     let distance = |p: [f64; 3]| creature::body::distance(p, at);
-    around.food = level
-        .entities_in(&*host, from, to)
-        .unwrap_or_default()
-        .into_iter()
-        .filter_map(|e| {
-            let item = host.item_entity(e)?;
-            let stack = item.stack(&*host)?;
-            let kind = creature::hand::id(&*host, &stack);
-            let fish = BEFRIENDING.contains(&kind.as_str());
-            (fish || coast::FOODS.contains(&kind.as_str())).then_some((
-                e.id(),
-                e.position(&*host)?,
-                fish,
-                item.owner(&*host).map(|o| o.id()),
-            ))
-        })
-        .min_by(|a, b| distance(a.1).total_cmp(&distance(b.1)));
+    // Food on the ground, the nearest (the library's `creature::food`).
+    around.food = creature::food::nearest(&*host, level, at, FOOD_RANGE, |item| {
+        coast::BEFRIENDING.contains(&item) || coast::FOODS.contains(&item)
+    });
     let players = host.players().server_players();
     let friend = creature::friend::of(id).map(|f| creature::friend::uuid(f.uuid));
     for p in players {
@@ -262,7 +240,7 @@ fn look_around(host: &mut dyn ServerHost, id: u32) {
         let boating = pe
             .vehicle(&*host)
             .and_then(|v| v.kind(&*host))
-            .is_some_and(|k| is_boat(&k.id(&*host)));
+            .is_some_and(|k| creature::mob::is_boat(&k.id(&*host)));
         if Some(p.uuid()) == friend {
             around.friend_boating = boating;
             // Its friend's bobber in the water, while they hold their rod.
@@ -282,27 +260,11 @@ fn look_around(host: &mut dyn ServerHost, id: u32) {
     coast::set_around(id, around);
 }
 
-/// Particles of `kind` around seagull `id`.
-fn particles(host: &mut dyn ServerHost, id: u32, kind: &str) {
-    let Some(e) = host.entity(id) else {
-        return;
-    };
-    let (Some(at), Some(level)) = (e.position(&*host), e.level(&*host)) else {
-        return;
-    };
-    if let Some(k) = creature::particles::key(kind) {
-        let at = [at[0], at[1] + 0.6, at[2]];
-        level.send_particles(host, &ParticleOptions::simple(k), None, at, [0.3, 0.3, 0.3], 0.02, 6);
-    }
-}
-
-fn sound(host: &mut dyn ServerHost, id: u32, sound: &str) {
-    let Some(e) = host.entity(id) else {
-        return;
-    };
-    if let (Some(at), Some(level)) = (e.position(&*host), e.level(&*host)) {
-        level.play_sound(host, sound, at, SoundSource::Neutral, 1.0, 1.0, None);
-    }
+/// Where seagull `id` is (a little over its feet) and its level, for a sign around it.
+fn place(host: &dyn ServerHost, id: u32) -> Option<(mod_api::LevelRef, [f64; 3])> {
+    let e = host.entity(id)?;
+    let at = e.position(host)?;
+    Some((e.level(host)?, [at[0], at[1] + 0.6, at[2]]))
 }
 
 /// An item `item` dropped at `at` in seagull `id`'s level.
@@ -310,7 +272,7 @@ fn drop_item(host: &mut dyn ServerHost, id: u32, item: &str, at: [f64; 3]) -> bo
     let Some(level) = host.entity(id).and_then(|e| e.level(&*host)) else {
         return false;
     };
-    let Some(stack) = host.item_from_snbt(&format!("{{id:\"{item}\",count:1}}")) else {
+    let Some(stack) = creature::hand::stack(&*host, item, 1) else {
         return false;
     };
     creature::hand::drop_stack(host, level, at, stack);
@@ -345,7 +307,7 @@ fn act(host: &mut dyn ServerHost, dimension: &str, action: Action) {
             }
             creature::hand::use_one(host, p, Hand::Main);
             coast::set_carried(gull, Some(item));
-            sound(host, gull, LAUGH);
+            creature::sounds::queue(gull, LAUGH, 1.0, 1.0);
             creature::bestiary::learn(host, p.uuid(), KIND, THIEF_FACT);
         }
         Action::Swallow { gull } => coast::set_carried(gull, None),
@@ -358,34 +320,20 @@ fn act(host: &mut dyn ServerHost, dimension: &str, action: Action) {
             coast::set_carried(gull, None);
         }
         Action::Eat { gull, item, befriends } => {
-            let Some(e) = host.entity(item) else {
+            if !creature::food::take_one(host, item) {
                 return;
-            };
-            let Some(it) = host.item_entity(e) else {
-                return;
-            };
-            let Some(stack) = it.stack(&*host) else {
-                return;
-            };
-            match stack.shrink(1) {
-                Some(rest) => {
-                    let _ = it.set_stack(host, rest);
-                }
-                None => {
-                    e.discard(host);
-                }
             }
-            sound(host, gull, "minecraft:entity.generic.eat");
+            creature::sounds::queue(gull, "minecraft:entity.generic.eat", 1.0, 1.0);
             if let Some(player) = befriends {
-                if creature::colours::Random::new(gull ^ item)
+                let befriended = creature::colours::Random::new(gull ^ item)
                     .next()
-                    .is_multiple_of(FRIEND_CHANCE)
-                {
+                    .is_multiple_of(FRIEND_CHANCE);
+                if befriended {
                     creature::friend::befriend(host, gull, player);
-                    particles(host, gull, "minecraft:heart");
                     creature::bestiary::learn(host, player, KIND, FISH_FACT);
-                } else {
-                    particles(host, gull, "minecraft:smoke");
+                }
+                if let Some((level, at)) = place(&*host, gull) {
+                    creature::friend::sign(host, level, at, befriended);
                 }
             }
         }
@@ -446,7 +394,7 @@ fn fished(host: &mut dyn ServerHost, event: &mut ItemFishedEvent<'_>) {
         let mut lucky = false;
         for stack in event.drops.iter_mut() {
             if JUNK.contains(&creature::hand::id(&*host, stack).as_str())
-                && let Some(cod) = host.item_from_snbt("{id:\"minecraft:cod\",count:1}")
+                && let Some(cod) = creature::hand::stack(&*host, "minecraft:cod", 1)
             {
                 *stack = cod;
                 lucky = true;
@@ -482,12 +430,12 @@ fn fished(host: &mut dyn ServerHost, event: &mut ItemFishedEvent<'_>) {
     }
     let fish = event.drops.iter().position(|s| {
         let id = creature::hand::id(&*host, s);
-        BEFRIENDING.contains(&id.as_str()) || id == "minecraft:tropical_fish"
+        coast::BEFRIENDING.contains(&id.as_str()) || id == "minecraft:tropical_fish"
     });
     if let Some(i) = fish {
         let stack = event.drops.remove(i);
         coast::set_carried(gull, Some(creature::hand::id(&*host, &stack)));
-        sound(host, gull, LAUGH);
+        creature::sounds::queue(gull, LAUGH, 1.0, 1.0);
         creature::bestiary::learn(host, event.player, KIND, THIEF_FACT);
     }
 }
@@ -650,7 +598,9 @@ impl Hooks for Seagulls {
             && let Some(f) = creature::friend::of(id).filter(|f| f.is(player.uuid()))
         {
             creature::friend::set_staying(id, !f.staying);
-            particles(host, id, "minecraft:happy_villager");
+            if let Some((level, at)) = place(&*host, id) {
+                creature::particles::puff(host, level, "minecraft:happy_villager", at, 0.3, 6);
+            }
         }
         Some(InteractionResult::Consume)
     }
@@ -723,6 +673,6 @@ mod tests {
     fn its_wings_fold_on_the_ground_and_sweep_back_in_a_dive() {
         assert_eq!(pose("wing_left", &frame(false, false)), [95.5, 69.9, -95.8]);
         assert_eq!(pose("wing_left", &frame(true, true))[1], 75.0);
-        assert!(is_boat("minecraft:oak_boat") && is_boat("minecraft:bamboo_raft") && !is_boat("minecraft:pig"));
+        assert!(creature::mob::is_boat("minecraft:oak_boat") && !creature::mob::is_boat("minecraft:pig"));
     }
 }

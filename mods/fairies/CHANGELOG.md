@@ -2,6 +2,11 @@
 
 Each version's section is its registry changelog (`cargo creature release`).
 
+## 0.1.3
+
+- Built on the library's shared helpers (Sunrise Creatures 0.3.2): the hearts or the smoke after a berry are the
+  series' own.
+
 ## 0.1.2
 
 - Built for Sunrise's 2026-11-20 Nightly (9425651) and Sunrise Creatures 0.3; the package lists what it uses of the game's API (`uses.json`).

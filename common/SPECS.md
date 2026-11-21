@@ -29,12 +29,16 @@ Everything below works and was tested in game, single player, unless said otherw
 - **Fighting back** (§3.12, `creature::anger`): the scorpions and the storm spirits.
 - **Water creatures** (§3.10, `creature::aquatic`), **touches** (§3.13, `creature::touch`) and **hunters** (§3.7,
   `creature::prey`, the sea turtles, the dolphins and the seagulls; chickens come with their mods): the jellyfish and
-  the flying fish (and the storm spirits' touch).
+  the flying fish (and the storm spirits' touch). How much water is over a point (`aquatic::water_over`): the
+  jellyfish's and the flying fish's depth, the seagull's surface.
+- **Food on the ground** (§3.15, `creature::food`): the vulture's meat, the seagull's fish and stolen food.
 - **Mob helpers** (`creature::mob`): `ours` (muted, own box, own goals, spared), `resize`, `Muted`, `despawn_far` (small
   wild creatures far from players, as vanilla's ambient mobs), `nearest_player`, `player_of`, `give_effect` (an effect
-  on a mob or a player).
+  on a mob or a player), `is_boat` (a boat or a raft: the jellyfish, the flying fish, the seagull). Particles:
+  `particles::puff` (a puff of particles around a point); friends: `friend::sign` (hearts or smoke after a try to
+  befriend: the fairies, the seagull).
 - **The item in hand** (`creature::hand`): items whose right-click only the server's hooks handle (the jar, the guide,
-  the mods' throwables) skip the off hand's turn, and `use_one` uses one up.
+  the mods' throwables) skip the off hand's turn, `use_one` uses one up, `stack` makes a stack of an item by its id.
 - **Creature guide book and bestiary** (§7).
 
 Limits: single player only (the drawing reads render state from statics, kept on the server's side); the systems of §6
@@ -60,7 +64,7 @@ stay in the vulture until a second mod needs them, except friends (§6.2) and th
   own `register` hook. It publishes functions, types and statics; shared state is behind `Mutex`es.
 - **Its content**: the series' tab, shared blocks and items (`creature:glass_jar`, `creature:guide`, the jar blocks), their recipes
   (conditional when a feature depends on a mod), textures and translations (`en_us`, `fr_fr`).
-- **Pinned** to the series' Sunrise revision (docs/SUNRISE-ISSUES.md). Version `0.3.1`; a breaking API change bumps
+- **Pinned** to the series' Sunrise revision (docs/SUNRISE-ISSUES.md). Version `0.3.2`; a breaking API change bumps
   the minor version while in `0.x`, and the mods' `[dependencies] creature` with it.
 
 ## 3. Systems in place
@@ -207,10 +211,19 @@ The flight of the vulture and the seagull, moved from the vulture with the Seagu
 plane: always along its heading, turning toward the wanted one (banking), nosing up or down toward the wanted pitch,
 trading speed for height like a glider, hovering on beating wings for a strike or a snatch (`hover`); it is steered each
 tick by `Controls` (a rider's keys, or the creature's own behaviour). What differs between fliers is their `Wings`
-(cruising and diving speeds, wing-beat and take-off sounds, their own pace). `Soar` is soaring on its own, as a
+(cruising and diving speeds, wing-beat and take-off sounds, their own pace). `Follow` follows its friend (the
+library's friends, §6.2) as a `Following` says: flying to them past some distance, landing near them (on the water for
+one that floats), coming to them when far, when the mod lets it. `Soar` is soaring on its own, as a
 `Soaring` says: a take-off now and then, a climb (given up after 10 s held down, under leaves say), circling, then a
 glide down onto the highest perch near it (`landing_spot`, its `perch` rule), or onto the water for one that floats.
 Riding stays the vulture's. Users: **Vulture**, **Seagulls**.
+
+### 3.15 Food on the ground (`creature::food`) ✅
+
+A creature's tick looks for the nearest item it wants lying near it (`nearest`: its entity, where it is, its id and
+who threw it, for a thrown food that may befriend), its behaviour goes to it, and its tick eats one of the stack
+(`take_one`). Users: **Vulture** (raw meat, a thrown raw chicken may tame it), **Seagulls** (fish and food, a thrown
+raw fish may befriend it).
 
 ## 4. Glass jar and territories ✅
 
@@ -277,7 +290,7 @@ Each moves here when a second mod needs it. Until then it stays in the vulture.
 | # | System | Today |
 |---|---|---|
 | 6.1 | **Riding and flight**: mount by right-click, **dynamic ridden flight** (steered by the look, banking into arc turns like a plane, vulture/SPECS.md §6.2), dismount, mount hearts (vanilla's on Sunrise; the `mount-hud` injection on Horizon), a saddle | the flight itself (glide, soaring, landing) moved here with the Seagulls ✅ (`creature::flight`, §3.14); riding and the wing poses stay in the mods |
-| 6.2 | **Taming and ownership**: owner on the entity, sit / follow, defend the owner, healing food, only the owner rides | **friends** ✅ in the library (`creature::friend`: the friend's UUID and staying, saved on the creature as `creature:friend`, kept in the glass jar), used by the **Fairies**, the **Seagulls** (befriended with a fish) and the **Vulture** (its owner and sitting; a save from before, which held them in `vulture:state`, is moved over once, tested in game); defending, healing food and riding come with the Sporelins and the Living Flowers (planned) |
+| 6.2 | **Taming and ownership**: owner on the entity, sit / follow, defend the owner, healing food, only the owner rides | following in flight ✅ in the library (`creature::flight::Follow`, §3.14: the vulture and the seagull); **friends** ✅ in the library (`creature::friend`: the friend's UUID and staying, saved on the creature as `creature:friend`, kept in the glass jar), used by the **Fairies**, the **Seagulls** (befriended with a fish) and the **Vulture** (its owner and sitting; a save from before, which held them in `vulture:state`, is moved over once, tested in game); defending, healing food and riding come with the Sporelins and the Living Flowers (planned) |
 | 6.3 | **Babies and growth**: smaller model, growth time, faster when fed | in the vulture |
 | 6.4 | **Ridden special attack**: a key that makes the mount attack (the vulture's talons) | in the vulture |
 

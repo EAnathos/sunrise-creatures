@@ -99,14 +99,14 @@ struct Open {
 fn layout(host: &dyn ServerHost, saved: &state::Saved, contents: &[Option<ItemStack>]) -> (u8, Vec<Option<ItemStack>>) {
     let storage = PER_CHEST * usize::from(saved.chests);
     let rows = 1 + storage.div_ceil(ROW);
-    let pane = stack(host, "minecraft:gray_stained_glass_pane", 1);
+    let pane = creature::hand::stack(host, "minecraft:gray_stained_glass_pane", 1);
     let mut items = vec![pane; rows * ROW];
     items[HARNESS] = if saved.harness {
-        stack(host, crate::interaction::SADDLE, 1)
+        creature::hand::stack(host, crate::interaction::SADDLE, 1)
     } else {
         None
     };
-    items[SIT] = stack(
+    items[SIT] = creature::hand::stack(
         host,
         if saved.sitting {
             "minecraft:lead"
@@ -116,10 +116,10 @@ fn layout(host: &dyn ServerHost, saved: &state::Saved, contents: &[Option<ItemSt
         1,
     );
     if saved.chests >= 1 {
-        items[CHEST_LEFT] = stack(host, "minecraft:chest", 1);
+        items[CHEST_LEFT] = creature::hand::stack(host, "minecraft:chest", 1);
     }
     if saved.chests >= 2 {
-        items[CHEST_RIGHT] = stack(host, "minecraft:chest", 1);
+        items[CHEST_RIGHT] = creature::hand::stack(host, "minecraft:chest", 1);
     }
     for k in 0..storage {
         items[ROW + k] = contents.get(k).cloned().flatten();
@@ -648,13 +648,16 @@ fn button(host: &mut dyn ServerHost, uuid: u128, screen: Open, slot: usize) {
                 .filter_map(Option::take)
                 .collect();
             set_contents(host, id, &items);
-            for s in taken.into_iter().chain(stack(&*host, "minecraft:chest", 1)) {
+            for s in taken
+                .into_iter()
+                .chain(creature::hand::stack(&*host, "minecraft:chest", 1))
+            {
                 creature::hand::give(host, player, s);
             }
             state::request(id, Change::RemoveChest);
         }
         HARNESS if saved.harness && saved.chests == 0 => {
-            if let Some(s) = stack(&*host, crate::interaction::SADDLE, 1) {
+            if let Some(s) = creature::hand::stack(&*host, crate::interaction::SADDLE, 1) {
                 creature::hand::give(host, player, s);
             }
             state::request(id, Change::RemoveHarness);
@@ -662,11 +665,6 @@ fn button(host: &mut dyn ServerHost, uuid: u128, screen: Open, slot: usize) {
         _ => return,
     }
     open_screen(host, uuid, id, MenuReplace::InPlace);
-}
-
-/// The item `id` (`minecraft:saddle`), `count` of it.
-fn stack(host: &dyn ServerHost, id: &str, count: u32) -> Option<ItemStack> {
-    host.item_from_snbt(&format!("{{id:\"{id}\",count:{count}}}"))
 }
 
 /// Its death: its screen closes for whoever has it open, its saddle, chests and their contents fall where it died.
@@ -690,10 +688,14 @@ pub fn died(host: &mut dyn ServerHost, id: u32) {
     let saved = state::saved(id);
     let mut stacks: Vec<ItemStack> = contents(host, id).into_iter().flatten().collect();
     if saved.harness {
-        stacks.extend(stack(&*host, crate::interaction::SADDLE, 1));
+        stacks.extend(creature::hand::stack(&*host, crate::interaction::SADDLE, 1));
     }
     if saved.chests > 0 {
-        stacks.extend(stack(&*host, "minecraft:chest", u32::from(saved.chests)));
+        stacks.extend(creature::hand::stack(
+            &*host,
+            "minecraft:chest",
+            u32::from(saved.chests),
+        ));
     }
     for s in stacks {
         creature::hand::drop_stack(host, level, at, s);

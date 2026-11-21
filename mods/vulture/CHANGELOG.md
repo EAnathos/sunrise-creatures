@@ -2,11 +2,12 @@
 
 Each version's section is its registry changelog (`cargo creature release`).
 
-## Unreleased
+## 0.2.3
 
 - Its flight and soaring are the library's now (shared with the Seagulls), unchanged; a climb held down under leaves
   gives up after 10 s and glides down to a perch instead of hanging there.
 - Its feather's recipes (arrows, the brush, the book and quill) are the library's now. Needs Sunrise Creatures 0.3.2.
+- Following its owner and finding meat on the ground are the library's now, unchanged.
 
 ## 0.2.2
 

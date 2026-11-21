@@ -41,8 +41,8 @@ Built and tested in game (single player).
 - **Mod id**: `fairies` ✅. Entity `fairies:fairy` (one kind, one look), spawn egg
   `fairies:fairy_spawn_egg`, item `fairies:fairy_dust` ✅ (§6).
 - Uses from the library: model drawing and sounds (§3.1, §3.2), hitbox size and monsters sparing it (§3.4), **small
-  fliers** (§3.5: its wild flight, flitting between flowers), the creature guide's pages (§7), **taming and
-  ownership** (§6.2, moving from the vulture with the Sporelins, the Seagulls and the Living Flowers), and the **glass
+  fliers** (§3.5: its wild flight, flitting between flowers), the creature guide's pages (§7), **friends**
+  (§6.2, the library's `creature::friend`, shared with the Vulture and the Seagulls), and the **glass
   jar and territories** (§4, which this mod switches on).
 - It copies the wandering trader (goals only), a box of 0.4 × 0.8 blocks ✅. Drawn full-bright (it glows). Its own
   sounds (a soft chime, a tinkling laugh, wing flutter) from freesound, CC0, cut by `cargo creature sounds`.

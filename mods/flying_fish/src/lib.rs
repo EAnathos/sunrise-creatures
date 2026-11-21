@@ -242,7 +242,7 @@ const FACTS_EVERY: i32 = 20;
 
 /// Whether `kind` frightens a flying fish: a dolphin, a seagull (with the Seagulls) or a boat.
 fn threat(kind: &str) -> bool {
-    matches!(kind, "minecraft:dolphin" | "seagulls:seagull") || kind.ends_with("boat") || kind.ends_with("raft")
+    matches!(kind, "minecraft:dolphin" | "seagulls:seagull") || creature::mob::is_boat(kind)
 }
 
 /// From `entity_tick_post`, for each flying fish: its life in water, its look, its swim and glides, the dolphins and
@@ -331,7 +331,7 @@ fn fished(host: &mut dyn ServerHost, event: &mut mod_api::ItemFishedEvent<'_>) {
     for stack in event.drops.iter_mut() {
         if creature::hand::is(&*host, stack, "minecraft:cod") && roll.next() % 5 < 2 {
             let count = stack.count();
-            if let Some(fish) = host.item_from_snbt(&format!("{{id:\"{RAW}\",count:{count}}}")) {
+            if let Some(fish) = creature::hand::stack(&*host, RAW, count) {
                 *stack = fish;
                 caught = true;
             }
@@ -376,7 +376,7 @@ fn pick_up(host: &mut dyn ServerHost, id: u32) -> bool {
     else {
         return false;
     };
-    let Some(fish) = host.item_from_snbt(&format!("{{id:\"{RAW}\",count:1}}")) else {
+    let Some(fish) = creature::hand::stack(&*host, RAW, 1) else {
         return false;
     };
     if !e.discard(host) {

@@ -260,10 +260,10 @@ fn sting(host: &mut dyn ServerHost, id: u32, target: u32) {
     let Some(t) = host.entity(target) else {
         return;
     };
-    let in_boat = t.vehicle(&*host).and_then(|v| v.kind(&*host)).is_some_and(|k| {
-        let k = k.id(&*host);
-        k.ends_with("boat") || k.ends_with("raft")
-    });
+    let in_boat = t
+        .vehicle(&*host)
+        .and_then(|v| v.kind(&*host))
+        .is_some_and(|k| creature::mob::is_boat(&k.id(&*host)));
     let shelled = host
         .living(t)
         .and_then(|l| l.equipment(&*host, EquipmentSlot::Head))
@@ -370,7 +370,7 @@ fn drops(host: &mut dyn ServerHost, id: u32) {
         return;
     }
     let item = if kind(id) == GLOW { GLOW_JELLY } else { JELLY };
-    if let Some(stack) = host.item_from_snbt(&format!("{{id:\"{item}\",count:{count}}}")) {
+    if let Some(stack) = creature::hand::stack(&*host, item, count as u32) {
         creature::hand::drop_stack(host, level, at, stack);
     }
 }

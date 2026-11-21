@@ -2,7 +2,7 @@
 
 Each version's section is its registry changelog (`cargo creature release`).
 
-## Unreleased
+## 0.3.2
 
 - Big fliers (`creature::flight`): the vulture's flight and soaring, moved from the Vulture for the Seagulls; a climb
   held down (under leaves) gives up after 10 s and glides down to a perch.
@@ -10,6 +10,11 @@ Each version's section is its registry changelog (`cargo creature release`).
   the series' mods goes for its prey itself (`quarry`).
 - The feather recipes (arrows, the brush, the book and quill) with a mod's feather, moved from the Vulture: they take
   the vulture's and the seagull's feathers (`creature:mod_feathers`).
+- Following a friend in flight (`creature::flight::Follow`), from the Vulture, shared with the Seagulls.
+- Food on the ground (`creature::food`): the nearest wanted item near a creature, and one of it eaten (the Vulture's
+  meat, the Seagulls' fish).
+- Small helpers several mods share: `hand::stack`, `particles::puff`, `friend::sign` (hearts or smoke after a try to
+  befriend), `mob::is_boat`, `aquatic::water_over`.
 
 ## 0.3.1
 

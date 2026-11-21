@@ -90,6 +90,12 @@ pub fn client_box_scale(kind: &str) -> f32 {
     CLIENT_SCALE.lock().unwrap().get(kind).copied().unwrap_or(1.0)
 }
 
+/// Whether entity type `kind` is a boat or a raft (vanilla's, or a mod's named so): one sitting in it is out of the
+/// water's reach (the jellyfish's sting), frightens a shoal (the flying fish), is followed (the seagull).
+pub fn is_boat(kind: &str) -> bool {
+    kind.ends_with("boat") || kind.ends_with("raft")
+}
+
 /// Whether `kind` is one of the series' creatures.
 pub fn is_ours(kind: &str) -> bool {
     OURS.lock().unwrap().contains_key(kind)

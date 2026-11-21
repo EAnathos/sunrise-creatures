@@ -28,6 +28,7 @@ pub mod colours;
 pub mod crawl;
 pub mod flight;
 pub mod flutter;
+pub mod food;
 pub mod friend;
 pub mod glow;
 mod guide;

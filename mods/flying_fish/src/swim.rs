@@ -127,12 +127,8 @@ fn water(cx: &World<'_>, p: [i32; 3]) -> bool {
 
 /// The water over it (blocks), up to 8.
 fn depth(m: &Body, cx: &World<'_>) -> f64 {
-    let [x, y, z] = cell(Vec3 {
-        y: m.position.y + 0.2,
-        ..m.position
-    });
-    let water = (0..8).take_while(|&d| water(cx, [x, y + d, z])).count();
-    water as f64 - (m.position.y + 0.2).fract()
+    let middle = [m.position.x, m.position.y + 0.2, m.position.z];
+    creature::aquatic::water_over(cx, middle, 8)
 }
 
 /// The top of the water under `at` (its y), if there is water within a few blocks down before anything else.

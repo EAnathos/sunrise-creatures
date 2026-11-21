@@ -491,7 +491,7 @@ pub fn eaten(id: u32, food: Food) {
 }
 
 /// From `entity_tick_post` (looking every 10 ticks): takes what it ate from the ground, and finds the nearest raw meat
-/// for a hungry vulture.
+/// for a hungry vulture (the library's `creature::food`).
 pub fn look_for_food(host: &mut dyn ServerHost, level: LevelRef, id: u32) {
     let (pos, hungry, ate) = {
         let mut map = SHARED.lock().unwrap();
@@ -504,46 +504,18 @@ pub fn look_for_food(host: &mut dyn ServerHost, level: LevelRef, id: u32) {
         }
         (s.pos, s.hungry, s.ate.take())
     };
-    let r = FOOD_RANGE;
-    let items: Vec<(mod_api::ItemEntityRef, [f64; 3], mod_api::ItemStack)> = level
-        .entities_in(
-            &*host,
-            [pos[0] - r, pos[1] - r, pos[2] - r],
-            [pos[0] + r, pos[1] + r, pos[2] + r],
-        )
-        .unwrap_or_default()
-        .into_iter()
-        .filter_map(|e| {
-            let item = host.item_entity(e)?;
-            Some((item, e.position(&*host)?, item.stack(&*host)?))
-        })
-        .collect();
-    if let Some(eaten) = ate
-        && let Some((item, _, stack)) = items.iter().find(|(i, _, _)| i.entity().id() == eaten)
-    {
-        match stack.clone().shrink(1) {
-            Some(rest) => {
-                let _ = item.set_stack(host, rest);
-            }
-            None => {
-                item.entity().discard(host);
-            }
-        }
+    if let Some(eaten) = ate {
+        creature::food::take_one(host, eaten);
     }
     if !hungry {
         return;
     }
-    let distance = |at: [f64; 3]| (0..3).map(|k| (at[k] - pos[k]).powi(2)).sum::<f64>();
-    let found = items
-        .iter()
-        .filter(|(_, _, stack)| MEATS.contains(&creature::hand::id(&*host, stack).as_str()))
-        .min_by(|a, b| distance(a.1).total_cmp(&distance(b.1)))
-        .map(|(item, at, stack)| Food {
-            item: item.entity().id(),
-            at: *at,
-            taming: creature::hand::is(&*host, stack, TAMING_FOOD),
-            thrower: item.owner(&*host).map(|o| o.id()),
-        });
+    let found = creature::food::nearest(&*host, level, pos, FOOD_RANGE, |item| MEATS.contains(&item)).map(|f| Food {
+        item: f.item,
+        at: f.at,
+        taming: f.id == TAMING_FOOD,
+        thrower: f.thrower,
+    });
     if let Some(s) = SHARED.lock().unwrap().get_mut(&id) {
         s.food = found;
     }

@@ -39,15 +39,8 @@ pub(crate) fn forget(id: u32) {
 
 /// The water over its bell (blocks), up to `LOOK_UP`.
 fn depth(m: &Body, cx: &World<'_>) -> f64 {
-    let (x, y, z) = (
-        m.position.x.floor() as i32,
-        (m.position.y + 0.9).floor() as i32,
-        m.position.z.floor() as i32,
-    );
-    let water = (0..LOOK_UP)
-        .take_while(|&d| cx.block([x, y + d, z]) == "minecraft:water")
-        .count();
-    water as f64 - (m.position.y + 0.9).fract()
+    let bell = [m.position.x, m.position.y + 0.9, m.position.z];
+    creature::aquatic::water_over(cx, bell, LOOK_UP)
 }
 
 #[derive(Debug, Default)]

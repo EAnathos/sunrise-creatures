@@ -234,16 +234,12 @@ fn fed(host: &mut dyn ServerHost, fairy: u32, stack: &ItemStack, player: PlayerR
     );
     let chance = if glow { GLOW_BERRY_CHANCE } else { SWEET_BERRY_CHANCE };
     let eye = [at[0], at[1] + 0.5, at[2]];
-    if !creature::colours::Random::new(fairy).next().is_multiple_of(chance) {
-        if let Some(k) = key("minecraft:smoke") {
-            level.send_particles(host, &ParticleOptions::simple(k), None, eye, [0.2, 0.2, 0.2], 0.01, 5);
-        }
+    let befriended = creature::colours::Random::new(fairy).next().is_multiple_of(chance);
+    creature::friend::sign(host, level, eye, befriended);
+    if !befriended {
         return;
     }
     creature::friend::befriend(host, fairy, player.uuid());
-    if let Some(k) = key("minecraft:heart") {
-        level.send_particles(host, &ParticleOptions::simple(k), None, eye, [0.3, 0.3, 0.3], 0.02, 6);
-    }
     level.play_sound(host, BEFRIEND, at, SoundSource::Neutral, 1.0, 1.0, None);
     let _ = player.action_bar(host, Text::translate("fairies.befriended", vec![]));
     creature::bestiary::learn(host, player.uuid(), FAIRY, FRIEND_FACT);
@@ -284,7 +280,7 @@ fn befriended(host: &mut dyn ServerHost, level: LevelRef, fairy: u32, at: [f64; 
     if last.unwrap_or(-1) >= day || DUST_DAY.set(host, Holder::Entity(fairy), day).is_err() {
         return;
     }
-    if let Some(dust) = host.item_from_snbt(&format!("{{id:\"{DUST}\",count:1}}")) {
+    if let Some(dust) = creature::hand::stack(&*host, DUST, 1) {
         creature::hand::drop_stack(host, level, position, dust);
     }
     sparkles(host, level, position, 8);

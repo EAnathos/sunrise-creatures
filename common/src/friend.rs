@@ -83,6 +83,17 @@ struct Known {
 
 static FRIENDS: Mutex<BTreeMap<u32, Known>> = Mutex::new(BTreeMap::new());
 
+/// What a player sees of their try to befriend a creature at `at`: hearts when it worked, smoke when not (as vanilla's
+/// taming).
+pub fn sign(host: &mut dyn ServerHost, level: mod_api::LevelRef, at: [f64; 3], befriended: bool) {
+    let id = if befriended {
+        "minecraft:heart"
+    } else {
+        "minecraft:smoke"
+    };
+    crate::particles::puff(host, level, id, at, 0.3, 7);
+}
+
 /// `entity` becomes the friend of `player` (following them), saved at once.
 pub fn befriend(host: &mut dyn ServerHost, entity: u32, player: u128) {
     let friend = Some(Friend {

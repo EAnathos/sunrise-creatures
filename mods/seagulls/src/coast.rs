@@ -4,13 +4,13 @@
 //!
 //! In priority order: `Carry` (off with stolen food), `Snatch` (the food thief), `Hunt` (a gliding flying fish),
 //! `Dive` (fishing for its friend), `FollowBoat` (a wild one behind a boat), `LuckySpot` (circling over a lucky spot
-//! for its friend), `FollowFriend`, `Stay`, `Eat` (food on the ground), the library's `Soar`, `Float` (bobbing on the
+//! for its friend), following its friend (the library's `Follow`, as `FOLLOWING` says), `Stay`, `Eat` (food on the ground), the library's `Soar`, `Float` (bobbing on the
 //! water), `Walk`; `Upkeep` watches every tick (no fall damage, its calls).
 use std::collections::BTreeMap;
 use std::sync::Mutex;
 
 use creature::body::{Behaviour, Body, Vec3, World};
-use creature::flight::{Controls, Flight, heading_of};
+use creature::flight::{Controls, Flight, Following, heading_of};
 
 use crate::{CRY, LAUGH, SPLASH, WINGS};
 
@@ -50,8 +50,8 @@ pub(crate) fn actions() -> Vec<Action> {
 /// boat it may follow, its friend's bobber in the water, its friend in a boat.
 #[derive(Clone, Debug, Default)]
 pub(crate) struct Around {
-    /// The item's entity id, where it is, whether it is a raw fish, and who threw it (an entity id).
-    pub food: Option<(u32, [f64; 3], bool, Option<u32>)>,
+    /// The nearest food on the ground (the library's `creature::food`).
+    pub food: Option<creature::food::Found>,
     /// A player (entity id and UUID) in a boat on the water, and where they are.
     pub boater: Option<(u32, u128, [f64; 3])>,
     /// Its friend's bobber in the water.
@@ -121,7 +121,7 @@ pub(crate) fn behaviours() -> Vec<Box<dyn Behaviour>> {
         Box::new(Dive::default()),
         Box::new(FollowBoat::default()),
         Box::new(LuckySpot::default()),
-        Box::new(FollowFriend::default()),
+        Box::new(creature::flight::Follow::new(&FOLLOWING, &WINGS)),
         Box::new(Stay),
         Box::new(Eat::default()),
         Box::new(creature::flight::Soar::new(&crate::SOARING, &WINGS)),
@@ -188,6 +188,9 @@ impl Behaviour for Upkeep {
         }
     }
 }
+
+/// The raw fish that befriend it (SPECS §3).
+pub(crate) const BEFRIENDING: &[&str] = &["minecraft:cod", "minecraft:salmon"];
 
 /// The foods it snatches from a hand (SPECS §2): cooked fish and bread above all, then the rest.
 pub(crate) const FOODS: &[&str] = &[
@@ -658,67 +661,16 @@ impl Behaviour for LuckySpot {
     }
 }
 
-/// Following its friend (SPECS §3): it flies to them past `FOLLOW` blocks, lands within `LAND`, comes to them past
-/// `TELEPORT`.
-const FOLLOW: f64 = 8.0;
-const LAND: f64 = 4.0;
-const TELEPORT: f64 = 32.0;
-
-#[derive(Debug, Default)]
-struct FollowFriend {
-    flight: Flight,
-    landing: bool,
-    on: bool,
-}
-
-impl Behaviour for FollowFriend {
-    fn can_use(&mut self, m: &mut Body, cx: &World<'_>) -> bool {
-        let at = friend(m, cx).filter(|(_, staying, _)| !staying).map(|(_, _, at)| at);
-        let on = match at {
-            Some(_) if self.on => !(self.landing && (m.on_ground || m.in_water)),
-            Some(at) => flat(m.position.array(), at) > FOLLOW,
-            None => false,
-        };
-        if on && !self.on {
-            self.flight = Flight::default();
-            self.landing = false;
-        }
-        self.on = on;
-        on
-    }
-    fn stop(&mut self, m: &mut Body, _: &World<'_>) {
-        self.on = false;
-        self.flight.land(m);
-    }
-    fn tick(&mut self, m: &mut Body, cx: &World<'_>) {
-        let Some((_, _, at)) = friend(m, cx) else {
-            return;
-        };
-        let d = flat(m.position.array(), at);
-        if d > TELEPORT {
-            m.position = Vec3 {
-                x: at[0] + 2.0,
-                y: at[1] + 2.0,
-                z: at[2] + 2.0,
-            };
-            self.flight.speed = 0.0;
-        }
-        self.landing = d < LAND;
-        if self.landing {
-            let controls = Controls {
-                yaw: heading_of(at[0] - m.position.x, at[2] - m.position.z),
-                pitch: 25.0,
-                flap: false,
-                brake: true,
-                boost: false,
-                ridden: false,
-            };
-            self.flight.tick(m, &controls, &WINGS);
-        } else {
-            fly_to(&mut self.flight, m, [at[0], at[1] + 4.0, at[2]]);
-        }
-    }
-}
+/// Following its friend (SPECS §3), the library's `creature::flight::Follow`: past 8 blocks it flies to them, 4 blocks
+/// over their head, lands within 4 (on the shore or the water), comes to them past 32; not when told to stay.
+pub(crate) static FOLLOWING: Following = Following {
+    follow: 8.0,
+    land: 4.0,
+    teleport: 32.0,
+    above: 4.0,
+    may: |m, _| creature::friend::of(m.id).is_some_and(|f| !f.staying),
+    lands_on_water: true,
+};
 
 /// Told to stay: it stays where it is.
 #[derive(Debug)]
@@ -767,9 +719,11 @@ impl Behaviour for Eat {
     }
     fn tick(&mut self, m: &mut Body, cx: &World<'_>) {
         self.ticks += 1;
-        let Some((item, at, fish, thrower)) = around(m.id).food else {
+        let Some(food) = around(m.id).food else {
             return;
         };
+        let (item, at, thrower) = (food.item, food.at, food.thrower);
+        let fish = BEFRIENDING.contains(&food.id.as_str());
         if creature::body::distance(m.position.array(), at) < 1.3 {
             let player = cx.player.as_ref().filter(|p| thrower == Some(p.entity_id));
             let befriends = player.filter(|_| fish && wild(m)).map(|p| p.uuid);
@@ -808,13 +762,8 @@ impl Behaviour for Float {
     }
     fn tick(&mut self, m: &mut Body, cx: &World<'_>) {
         m.no_gravity = true;
-        let (x, z) = (m.position.x.floor() as i32, m.position.z.floor() as i32);
-        let y = m.position.y.floor() as i32;
-        let top = (y..y + 4)
-            .take_while(|&y| cx.block([x, y, z]) == "minecraft:water")
-            .last()
-            .unwrap_or(y);
-        let surface = f64::from(top) + 0.9;
+        // The top of the water, its last tenth left out as vanilla's water is drawn.
+        let surface = m.position.y + creature::aquatic::water_over(cx, m.position.array(), 4) - 0.1;
         let bob = (f64::from(m.age) * 0.1).sin() * 0.03;
         self.wait -= 1;
         if self.wait <= 0 {

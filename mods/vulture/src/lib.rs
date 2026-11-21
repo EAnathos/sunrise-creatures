@@ -3,13 +3,14 @@
 //! - `vulture:vulture` copies the wandering trader: the library takes its goals off; it strolls, looks at players and
 //!   turns on whoever hurts it with vanilla's goals (added when it joins), and everything else it does runs from its
 //!   server tick (the library's `body`): `Sync` (its state, `state.rs`), `Fly` (ridden), `tame::Sit`,
-//!   `wild::DiveAttack`, `tame::Mate`, `tame::Eat`, `tame::FollowOwner`, `wild::Soar`.
+//!   `wild::DiveAttack`, `tame::Mate`, `tame::Eat`, then following its owner and soaring (the library's
+//!   `creature::flight::Follow` and `Soar`, as `tame::FOLLOWING` and `wild::SOARING` say).
 //! - Mounting: a right-click on it by its owner, once it wears a saddle (`interaction.rs`, `EntityRef::start_riding`),
 //!   or `/ride`. Its rider's keys are heard by the server (`ride.rs`, `player_input`); sneaking descends in the air,
 //!   getting off only on the ground. The rider sits on its harness: its seat is declared in its entity type
 //!   (`passenger_attachments`).
-//! - Flight (`flight.rs`): it sets the vulture's speed directly, without gravity, flown like a plane, banking into
-//!   arc turns (SPECS §6.2).
+//! - Flight (the library's `creature::flight`, with its `WINGS`): it sets the vulture's speed directly, without
+//!   gravity, flown like a plane, banking into arc turns (SPECS §6.2).
 //! - Wild (SPECS §4): it soars in circles high up and glides back down (`wild.rs`), walks about, and fights back
 //!   in the air (`wild::DiveAttack`). Tamed, it defends its owner and attacks what they attack (`defend`).
 //! - Sounds: its hurt and death are its entity type's; its call, flaps and meals ours (`sounds.rs`).
@@ -37,8 +38,8 @@ use mod_api::{
     BlockEntityDrawContext, ClientHost, ClientTickPostEvent, EntityInteractEvent, EntityJoinLevelEvent,
     EntityMountEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, GoalSpec, HitHost, Hooks, HostSide,
     InteractionResult, KeyRegistration, LivingDeathEvent, LivingIncomingDamageEvent, LivingRenderState,
-    MenuClickedEvent, MenuClosedEvent, ParticleOptions, PayloadCodec, PayloadId, PlayerInputEvent,
-    RegisterEntityRenderersEvent, Registrar, RegistrationContext, ServerHost, SoundSource, ToServer,
+    MenuClickedEvent, MenuClosedEvent, PayloadCodec, PayloadId, PlayerInputEvent, RegisterEntityRenderersEvent,
+    Registrar, RegistrationContext, ServerHost, SoundSource, ToServer,
 };
 
 pub const KIND: &str = "vulture:vulture";
@@ -347,17 +348,7 @@ fn apply(host: &mut dyn ServerHost, id: u32) {
         mine
     };
     for (_, kind, at, count) in shown {
-        if let Some(k) = creature::particles::key(kind) {
-            level.send_particles(
-                host,
-                &ParticleOptions::simple(k),
-                None,
-                at,
-                [0.4, 0.4, 0.4],
-                0.02,
-                count,
-            );
-        }
+        creature::particles::puff(host, level, kind, at, 0.4, count);
     }
     let let_go = {
         let mut all = LET_GO.lock().unwrap();
@@ -751,7 +742,7 @@ impl Hooks for Vulture {
                     Box::new(wild::DiveAttack::default()),
                     Box::new(tame::Mate::default()),
                     Box::new(tame::Eat::default()),
-                    Box::new(tame::FollowOwner::default()),
+                    Box::new(creature::flight::Follow::new(&tame::FOLLOWING, &WINGS)),
                     Box::new(creature::flight::Soar::new(&wild::SOARING, &WINGS)),
                 ]
             });
