@@ -25,8 +25,9 @@ tree rule are coded (the jar's catch is the library's, unchanged) but a release 
   point, a midrib and veins painted on top, a darker margin), a small head with short antennae, and six legs with leafy
   flaps. Groups as the stick insect's, without the abdomen's tip. A texture per kind (§2): green and dry.
 
-Not yet (❓): its sounds (a rustle, a click as it drops), its jar on display showing it on a twig (it shows as other
-creatures do), climbing the sides of logs and leaves as it crawls (it climbs only to go back up after playing dead).
+Since 0.1.0's first cut: its crawl is the library's creeping (§3.16), which climbs leaf steps and trunks and goes
+through foliage; its jar and its guide page show it on a twig. Not yet (❓): its sounds (a rustle, a click as it
+drops).
 
 ## 1. Technical context
 
@@ -34,10 +35,10 @@ creatures do), climbing the sides of logs and leaves as it crawls (it climbs onl
   common/SPECS.md §7), spawn eggs `phasmids:stick_insect_spawn_egg` and `phasmids:leaf_insect_spawn_egg`. No item of its
   own ✅: a caught one is in the library's `creature:glass_jar` ✅.
 - Uses from the library: model drawing and sounds (§3.1, §3.2), hitbox size (§3.4, tiny), monsters sparing it (§3.4),
-  **small crawlers** (§3.6: its crawl over the canopy), **spawning** (§3.5, on leaves: `flutter::spawns_on_leaves`, new
+  **creeping** (§3.16: its crawl over the canopy and up trunks and leaf steps, new with this mod and the Ladybugs), **spawning** (§3.5, on leaves: `flutter::spawns_on_leaves`, new
   with this mod), the **glass jar and territories** (§4, which this mod switches on; the rule "tree", `Rule::Tree`, new
-  with this mod), the creature guide's pages and morphs (§7). Climbing back up after playing dead is its own: it moves
-  to the library when a second creature climbs (the Ladybugs, mods/ladybugs/SPECS.md §1).
+  with this mod), the creature guide's pages and morphs (§7). Climbing back up after playing dead (to the trunk, up through the
+  leaves) is its own.
 - Spotting is counted on the player (`phasmids:spotted` on their saved data), each phasmid once per player.
 - Both copy the wandering trader (goals only), with a tiny box: 0.6 × 0.2 blocks (stick insect), 0.5 × 0.2 (leaf
   insect) ✅.

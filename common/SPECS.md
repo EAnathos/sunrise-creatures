@@ -17,7 +17,8 @@ Everything below works and was tested in game, single player, unless said otherw
 - **The big fliers' flight** (§3.14, `creature::flight`): the vulture's flight and soaring, moved here with the Seagulls;
   the Vulture runs on it (tested in game: soaring, gliding down, ridden flight), and the seagull.
 - **The small crawlers' crawl** (§3.6, `creature::crawl`): the worm's ground crawl, now a library goal the next ground
-  creatures share; Worms runs on it (tested in game, its behaviour unchanged).
+  creatures share; Worms runs on it (tested in game, its behaviour unchanged). **Creeping** (§3.16, `creature::creep`):
+  a crawl moved by hand that climbs, for the Ladybugs and the Phasmids.
 - **Glass jar and territories** (§4): catching, releasing, settling on a flower patch or in a garden, the jar on
   display (spared by blasts and pistons). The jar's absence from the creative tab and recipe when no jar mod is
   installed, and the catch/release/display/name/TNT/piston behavior, are confirmed. The **sand** rule (§4.2, for
@@ -128,10 +129,8 @@ The slow crawl on the ground of worms, scorpions and the other ground creatures:
 `creature::crawl::Crawl`, driven by a `Cfg` (speed, how long a crawl and a pause last, how far a wild one wanders, how
 its settled area is found, a pause hook for the worm's dig). A wild one crawls around where it first crawled; a settled
 one crawls only over its area (its mod's territory rule). Users: **Worms** (in place), **Dung Beetles**, **Scorpions**
-(mods/scorpions/SPECS.md §3) and **Phasmids** (mods/phasmids/SPECS.md §3); the **Ladybugs** too once a small flier's rest
-lets a crawl move it (mods/ladybugs/SPECS.md §1). Still to add when their mods are built: a beetle's walking toward a
-target (backwards), and **climbing** (up the sides of logs, flowers and leaves and on their top): the Phasmids' climb
-back up after playing dead is theirs until a second creature climbs (the Ladybugs).
+(mods/scorpions/SPECS.md §3); the climbing crawl of the **Phasmids** and the **Ladybugs** is creeping (§3.16). Still to add when their mods are built: a beetle's walking toward a
+target (backwards).
 
 ### 3.7 Hunters eat small creatures (`creature::prey`) ✅
 
@@ -226,6 +225,17 @@ A creature's tick looks for the nearest item it wants lying near it (`nearest`: 
 who threw it, for a thrown food that may befriend), its behaviour goes to it, and its tick eats one of the stack
 (`take_one`). Users: **Vulture** (raw meat, a thrown raw chicken may tame it), **Seagulls** (fish and food, a thrown
 raw fish may befriend it).
+
+### 3.16 Creeping (`creature::creep`) ✅
+
+A small creature crawling by hand over the tops of blocks and up their sides, as a beetle or a stick insect does. Unlike
+the small crawlers' goal (§3.6, walked by the engine's path finding), it moves itself, so it climbs, and it runs among a
+creature's behaviours (a small flier's crawl between its flights). A mod gives a `Creeping` (speeds on a top and up a
+side, crawl and pause lengths, how far around it creeps with no area, its area of block tops, when it may) and adds
+`Creep::new(&HOW)` to its behaviours. A crawl picks a top of its area (or a point around it), creeps straight toward it,
+and climbs while its target is above: up the block in its way, or, under its target, up any side next to it (a trunk),
+through leaves as an insect goes through foliage; a solid ceiling ends the crawl. While it pauses it claims nothing.
+Users: **Ladybugs** (between flowers), **Phasmids** (over the canopy and up the trunks).
 
 ## 4. Glass jar and territories ✅
 

@@ -22,8 +22,8 @@ the glass jar, the guide's page and facts.
   and out by the pose to fly), `wing_left`, `wing_right` (spread from under them); the elytra and wings sit beside the
   body, so the shell is drawn tinted on its own. Its embedded texture is the seven-spot's, for the pictures; the game
   draws `textures/entity/ladybug/base.png` (the shell grey) and each kind's spots (`<kind>.png`, white).
-- Not yet (❓ below): crawling (it rests where it lands), clusters by day in cold biomes, sheltering under leaves in
-  the rain, the "All the spots" fact, flying off when hurt.
+- Since 0.1.0's first cut: its crawl (the library's creeping, up flowers and steps), clusters by day in cold biomes,
+  shelter under leaves in the rain, the "All the spots" fact, flying off a player who gets hurt.
 
 ## 1. Technical context
 
@@ -37,7 +37,8 @@ the glass jar, the guide's page and facts.
 - Drawn as the butterfly ✅: a greyscale shell tinted by its kind's colour, its spots a texture of their own over it
   in theirs, the body and wings as they are (the library's drawing layers). A kind fixes its colours and its spots
   together, so the mod draws it itself rather than through `colours::draw`, which rolls them apart.
-- Crawling ❓: the library's crawl is a goal the small fliers' rest holds still, so v1 flies and rests only.
+- Crawling ✅: the library's creeping (§3.16), moved by hand, so it goes between the small fliers' flights and climbs
+  a flower or a step (the small crawlers' goal couldn't move a resting flier).
 - Its own sounds ✅: almost silent; a soft buzz of wings as it takes off, from freesound, CC0, cut by
   `cargo creature sounds` (`sources/sounds.toml`).
 
@@ -59,11 +60,13 @@ Each one is its kind for good (saved, kept in the glass jar). The guide shows th
 - **Spawning**: on flowers, grass and leaves in its biomes, by day, 1 to 3 together, through the library's spawning of
   small fliers (§3.5): a chance every 10 s for each player, up to 6 within 32 blocks. Wild ones despawn far from
   players.
-- **By day** it rests on a flower or the ground (crawling about ❓, §1), and now and then opens its
+- **By day** it rests on a flower or the ground and crawls a little way about, up flowers and steps (§1), and now and
+  then opens its
   elytra and **flies** a short way to another flower (the library's flight of small fliers): its elytra lift, its hind
-  wings unfold and buzz. It rests in the rain (under leaves if there are any ❓).
-- **At night** ladybugs near each other **gather in a cluster** ✅ (and by day in cold biomes, snowy plains, snowy
-  taigas, groves ❓): they fly to the same
+  wings unfold and buzz. In the rain it flies under the nearest leaves (within 6 blocks, leaves up to 8 over it) and
+  rests there.
+- **At night** ladybugs near each other **gather in a cluster** ✅, and by day too in cold biomes (snowy plains, snowy
+  taigas, groves, snowy slopes, ice spikes, snowy beaches) ✅: they fly to the same
   block and rest packed together (a sight: up to a dozen on one log), until the morning.
 - **Hunted** (the library's prey, §3.7): a chicken within 6 blocks pecks it up. A seagull doesn't (it eats fish).
 - **No drop** ✅.
@@ -76,11 +79,11 @@ Each one is its kind for good (saved, kept in the glass jar). The guide shows th
 - While it rests there, and after it leaves, the player has **Luck** for **as many minutes as it has spots**: 2 for a
   two-spot, 7 for a seven-spot, 16 for an orange, 22 for a twenty-two-spot; the rare harlequin gives **Luck II** for 4.
   Luck makes fishing and loot chests luckier, as vanilla's Luck does (with a seagull's lucky spot, a fishing trip pays).
-- It stays 30 to 90 s, then flies off on its own; sprinting makes it (and getting hurt ❓)
+- It stays 30 to 90 s, then flies off on its own; sprinting or getting hurt makes it
   fly off at once, the luck kept. A ladybug lands on a player at most once a day.
 - A right-click on the ladybug on you lets it go (it flies off), as the rhyme says.
-- A player who got luck from a kind learns the "Luck" fact; one who got it from every kind, the "All the spots" fact ❓
-  (not yet: it needs the kinds each player got luck from, saved).
+- A player who got luck from a kind learns the "Luck" fact; one who got it from every kind, the "All the spots" fact ✅
+  (the kinds each player got luck from are saved on them, `ladybugs:luck`).
 
 ## 5. The glass jar ✅
 
@@ -93,7 +96,7 @@ shows it crawling on the glass. A settled ladybug never despawns, and lands on i
 
 The biomes met in, the kinds met as its morphs, and the facts: "Luck" (one landed on you), "Cluster" (saw a cluster of
 at least five), "Chicken" (saw a chicken peck one up), "Jar" (caught one in a glass jar), "Flower" (let one out on a
-flower, where it settles); "All the spots" (luck from every kind) ❓ (§4). Its rarity: common.
+flower, where it settles), "All the spots" (luck from every kind, §4). Its rarity: common.
 
 ## 7. Items
 
@@ -109,4 +112,4 @@ None of its own ✅: the jar is the library's, the spawn egg the series'.
 - ~~Q2: Landing on the player: how often?~~ One chance in 20 a minute while still, once a day each, so luck stays a
   small surprise (§4).
 - ~~Q3: How it shows on the player?~~ Seated on top of their head (`ride_player`, §4).
-- Q4: Crawling: a library change so the small fliers' rest lets a crawl move them, or a flier that walks (§1)?
+- ~~Q4: Crawling?~~ The library's creeping, moved by hand, which also climbs (§1).

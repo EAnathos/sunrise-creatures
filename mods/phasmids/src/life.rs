@@ -1,4 +1,4 @@
-//! A phasmid's own behaviours (SPECS §3), beside its crawl (the library's small crawlers, a goal): what keeps it still,
+//! A phasmid's own behaviours (SPECS §3), before its crawl (the library's creeping): what keeps it still,
 //! what makes it seen, and its playing dead.
 //!
 //! - `Watch` (every tick, claiming nothing): whether a player is looking at it (spotting it, SPECS §3), and whether it
@@ -33,7 +33,7 @@ static DEAD: Mutex<BTreeSet<u32>> = Mutex::new(BTreeSet::new());
 /// The players who spotted each phasmid (each counts once).
 static SPOTTED: Mutex<BTreeMap<u32, BTreeSet<u128>>> = Mutex::new(BTreeMap::new());
 
-/// For its crawl (`creature::crawl::Cfg::busy`): it keeps still.
+/// For its crawl (`creature::creep::Creeping::may`): it keeps still.
 pub(crate) fn busy(id: u32) -> bool {
     BUSY.lock().unwrap().contains(&id)
 }

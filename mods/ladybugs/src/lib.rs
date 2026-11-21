@@ -213,6 +213,20 @@ static FLIGHT: creature::flutter::Kind = creature::flutter::Kind {
     takeoff: Some("ladybugs:entity.ladybug.takeoff"),
 };
 
+/// Its crawl (the library's creeping, SPECS §3): slow, a little way around where it rests, up a flower or a step; by day
+/// in fair weather, between its flights, not on a player nor gathering.
+static CREEPING: creature::creep::Creeping = creature::creep::Creeping {
+    speed: 0.01,
+    climb: 0.015,
+    crawl: (40, 120),
+    pause: (200, 600),
+    wander: 1.5,
+    area: |_, _| Vec::new(),
+    may: |m, cx| {
+        cx.daylight && !cx.raining && !creature::flutter::flying(m.id) && !luck::perched(m.id) && !luck::gathering(m.id)
+    },
+};
+
 /// They come out near players by day in their biomes (the library's spawning): 1 to 3, up to 6 near a player.
 static SPAWNING: creature::flutter::Spawning = creature::flutter::Spawning {
     kind: KIND,
@@ -234,6 +248,7 @@ static IN_JAR: Catchable = Catchable {
 const LUCK_FACT: &str = "luck";
 const CLUSTER_FACT: &str = "cluster";
 const CHICKEN_FACT: &str = "chicken";
+const ALL_SPOTS_FACT: &str = "all_spots";
 
 /// Chickens peck them up (SPECS §3): one within 6 blocks walks to it.
 static PREY: creature::prey::Prey = creature::prey::Prey {
@@ -256,6 +271,11 @@ static BESTIARY: Species = Species {
             id: LUCK_FACT,
             item: "minecraft:rabbit_foot",
             key: "bestiary.ladybugs.luck",
+        },
+        Fact {
+            id: ALL_SPOTS_FACT,
+            item: "minecraft:golden_carrot",
+            key: "bestiary.ladybugs.all_spots",
         },
         Fact {
             id: CLUSTER_FACT,
@@ -312,6 +332,7 @@ fn tick(host: &mut dyn ServerHost, dimension: &str, id: u32) {
         vec![
             Box::new(luck::Perch::default()),
             Box::new(luck::Cluster),
+            Box::new(creature::creep::Creep::new(&CREEPING)),
             Box::new(creature::flutter::Flutter::new(&FLIGHT)),
         ]
     });
@@ -321,17 +342,42 @@ fn tick(host: &mut dyn ServerHost, dimension: &str, id: u32) {
     let Some(e) = host.entity(id) else {
         return;
     };
-    // Off its player by other means (a save, the player gone): no longer perched.
-    if luck::perched(id) && e.vehicle(&*host).is_none() {
-        luck::set_perched(id, false);
+    // Off its player by other means (a save, the player gone): no longer perched. Its player hurt: it flies off.
+    if luck::perched(id) {
+        match e.vehicle(&*host) {
+            None => luck::set_perched(id, false),
+            Some(v) => {
+                let health = host.living(v).and_then(|l| l.health(&*host));
+                let before = RIDDEN.lock().unwrap().get(&id).copied();
+                if let (Some(h), Some(b)) = (health, before)
+                    && h < b
+                {
+                    act(host, Action::Leave { bug: id });
+                }
+            }
+        }
     }
     if e.tick_count(&*host).unwrap_or(0) % CLUSTER_EVERY == (id % CLUSTER_EVERY as u32) as i32 {
         cluster(host, dimension, id);
     }
 }
 
-/// Where ladybug `id` gathers tonight: by the ladybug with the smallest id near it (a little off it, each its own
-/// place); none by day or for that one. Players near a cluster of `CLUSTER_SEEN` learn the fact.
+/// The cold biomes, where ladybugs gather in clusters by day too (SPECS §3).
+const COLD: &[&str] = &[
+    "minecraft:snowy_plains",
+    "minecraft:snowy_taiga",
+    "minecraft:grove",
+    "minecraft:snowy_slopes",
+    "minecraft:ice_spikes",
+    "minecraft:snowy_beach",
+];
+/// How far it looks for a shelter of leaves from the rain (blocks across), and how high leaves over it shelter it.
+const SHELTER_RANGE: i32 = 6;
+const SHELTER_ABOVE: i32 = 8;
+
+/// Where ladybug `id` gathers now: in the rain, under the nearest leaves; at night or in a cold biome, by the ladybug
+/// with the smallest id near it (a little off it, each its own place); none otherwise, or for that one. Players near a
+/// cluster of `CLUSTER_SEEN` learn the fact.
 fn cluster(host: &mut dyn ServerHost, dimension: &str, id: u32) {
     let Some(e) = host.entity(id) else {
         return;
@@ -339,7 +385,18 @@ fn cluster(host: &mut dyn ServerHost, dimension: &str, id: u32) {
     let (Some(at), Some(level)) = (e.position(&*host), e.level(&*host)) else {
         return;
     };
-    if !night(&*host, level) || luck::perched(id) {
+    if luck::perched(id) {
+        luck::set_cluster(id, None);
+        return;
+    }
+    let cell = [at[0].floor() as i32, at[1].floor() as i32, at[2].floor() as i32];
+    let raining = level.weather(&*host).is_some_and(|(rain, _)| rain > 0.2);
+    if raining && !night(&*host, level) {
+        luck::set_cluster(id, shelter(&*host, level, cell));
+        return;
+    }
+    let cold = level.biome_at(&*host, cell).is_some_and(|b| COLD.contains(&b.as_str()));
+    if !night(&*host, level) && !cold {
         luck::set_cluster(id, None);
         return;
     }
@@ -377,6 +434,59 @@ fn cluster(host: &mut dyn ServerHost, dimension: &str, id: u32) {
     }
 }
 
+/// The nearest open spot on the ground with leaves within `SHELTER_ABOVE` over it, within `SHELTER_RANGE` of `cell`;
+/// none when it is sheltered already or there is no such spot.
+fn shelter(host: &dyn ServerHost, level: mod_api::LevelRef, cell: [i32; 3]) -> Option<[f64; 3]> {
+    let ground = creature::territory::Ground::new(host, level);
+    let covered = |p: [i32; 3]| (1..=SHELTER_ABOVE).any(|d| ground.block([p[0], p[1] + d, p[2]]).ends_with("leaves"));
+    if covered(cell) {
+        return None;
+    }
+    let mut best: Option<(i32, [f64; 3])> = None;
+    for dx in -SHELTER_RANGE..=SHELTER_RANGE {
+        for dz in -SHELTER_RANGE..=SHELTER_RANGE {
+            for dy in -2..=2 {
+                let p = [cell[0] + dx, cell[1] + dy, cell[2] + dz];
+                let open = ground.block(p) == "minecraft:air";
+                let floor = !matches!(
+                    ground.block([p[0], p[1] - 1, p[2]]).as_str(),
+                    "minecraft:air" | "minecraft:water"
+                );
+                let d = dx * dx + dz * dz + dy * dy;
+                if open && floor && covered(p) && best.is_none_or(|b| d < b.0) {
+                    best = Some((d, [f64::from(p[0]) + 0.5, f64::from(p[1]), f64::from(p[2]) + 0.5]));
+                }
+            }
+        }
+    }
+    best.map(|b| b.1)
+}
+
+/// The key, on a player's saved data, of the kinds that gave them luck (a bit each, SPECS §4).
+const LUCK_KEY: &str = "ladybugs:luck";
+
+/// `player` got luck from kind `k`, saved; whether they now had it from every kind.
+fn lucky_from(host: &mut dyn ServerHost, player: u128, k: usize) -> bool {
+    let Some(p) = host.player(player) else {
+        return false;
+    };
+    let Some(mut data) = p.persistent_data(&*host) else {
+        return false;
+    };
+    let had = match data.get(&LUCK_KEY.into()) {
+        Some(mod_api::Tag::Int(n)) => *n,
+        _ => 0,
+    };
+    let now = had | 1 << k;
+    data.insert(LUCK_KEY.into(), mod_api::Tag::Int(now));
+    let _ = p.set_persistent_data(host, data);
+    now == (1 << KINDS.len()) - 1
+}
+
+/// The health of the player each ladybug rides, as it landed: hurt, they make it fly off (SPECS §4).
+static RIDDEN: std::sync::Mutex<std::collections::BTreeMap<u32, f32>> =
+    std::sync::Mutex::new(std::collections::BTreeMap::new());
+
 /// What a behaviour queued (`luck::Action`).
 fn act(host: &mut dyn ServerHost, action: Action) {
     match action {
@@ -396,9 +506,16 @@ fn act(host: &mut dyn ServerHost, action: Action) {
             creature::mob::give_effect_level(host, player, "minecraft:luck", k.spots * 1200, k.level);
             if let Some(uuid) = creature::mob::player_of(&*host, player) {
                 creature::bestiary::learn(host, uuid, KIND, LUCK_FACT);
+                if lucky_from(host, uuid, kind(bug)) {
+                    creature::bestiary::learn(host, uuid, KIND, ALL_SPOTS_FACT);
+                }
+            }
+            if let Some(l) = host.entity(player).and_then(|p| host.living(p)) {
+                RIDDEN.lock().unwrap().insert(bug, l.health(&*host).unwrap_or(0.0));
             }
         }
         Action::Leave { bug } => {
+            RIDDEN.lock().unwrap().remove(&bug);
             if let Some(b) = host.entity(bug) {
                 b.stop_riding(host);
             }
@@ -408,6 +525,7 @@ fn act(host: &mut dyn ServerHost, action: Action) {
 }
 
 fn forget(id: u32) {
+    RIDDEN.lock().unwrap().remove(&id);
     creature::flutter::gone(id);
     luck::forget(id);
 }

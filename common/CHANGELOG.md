@@ -4,6 +4,8 @@ Each version's section is its registry changelog (`cargo creature release`).
 
 ## Unreleased
 
+- Creeping (`creature::creep`): a crawl moved by hand that climbs up the block in its way or a trunk, through leaves
+  (the Ladybugs, the Phasmids).
 - `mob::give_effect_level`: an effect at a level above the first (the ladybugs' Luck II).
 - The glass jar's recipe also comes with the Scorpions (which it catches: a fix), the Ladybugs or the Phasmids
   installed.

@@ -3,7 +3,8 @@
 //! Each is a copy of the wandering trader drawn with its own model (`model_stick_insect.rs`, `model_leaf_insect.rs`,
 //! from `sources/models/`), in its kind's texture: its kinds are its looks (the library's `colours`, rolled by biome),
 //! each matching the trees it lives in. They come out on top of leaves (the library's spawning of small fliers, on
-//! leaves), crawl over the canopy at night (the library's small crawlers), keep still by day or when a player is near,
+//! leaves), crawl over the canopy at night and climb its trunk and steps (the library's creeping), keep still by day or
+//! when a player is near,
 //! and are spotted by a player who looks at them a moment (`life::Watch`, counted on the player). Hit, they drop and
 //! play dead, then climb back up (`life::PlayDead`). Caught in the glass jar, they settle on a tree (the library's tree
 //! rule).
@@ -19,9 +20,9 @@ use creature::jar::Catchable;
 use creature::territory::{self, Ground};
 use life::Action;
 use mod_api::{
-    BlockEntityDrawContext, EntityInteractEvent, EntityPart, EntityRenderState, EntityRenderer, EntityTickPostEvent,
-    Flow, Hooks, Host, HostSide, InteractionResult, LivingDeathEvent, RegisterEntityRenderersEvent, Registrar,
-    RegistrationContext, ServerHost, Tag,
+    BlockEntityDrawContext, EntityInteractEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, Hooks,
+    Host, HostSide, InteractionResult, LivingDeathEvent, RegisterEntityRenderersEvent, Registrar, RegistrationContext,
+    ServerHost, Tag,
 };
 
 pub const STICK: &str = "phasmids:stick_insect";
@@ -293,6 +294,14 @@ const FACTS: &[Fact] = &[
     },
 ];
 
+/// A twig it holds on to in its jar and its guide page (SPECS §5): a bark-brown rod from the oak stick insect's
+/// texture (its thorax's side), under its feet, in texels.
+fn twig(draw: &mut dyn BlockEntityDrawContext) {
+    let bark = mod_api::CubeFace::new(STICK_TEXTURES[0]).with_uv([5.5, 3.0, 8.0, 3.5]);
+    let faces = [Some(bark); 6];
+    draw.cube([-0.6, -0.6, -9.0], [0.6, 0.0, 9.0], faces, creature::model::WHITE);
+}
+
 fn wild(id: u32) -> bool {
     !territory::settled(id)
 }
@@ -308,6 +317,7 @@ static BESTIARY: [Species; 2] = [
         rarity: creature::bestiary::Rarity::Uncommon,
         draw: |draw, look| {
             let t = STICK_TEXTURES[look.map_or(0, |l| l.pattern).min(STICK_TEXTURES.len() - 1)];
+            twig(draw);
             creature::model::draw(draw, &model_stick_insect::STICK_INSECT, t, &|_| [0.0; 3]);
         },
         draw_scale: 1.2,
@@ -323,6 +333,7 @@ static BESTIARY: [Species; 2] = [
         rarity: creature::bestiary::Rarity::Rare,
         draw: |draw, look| {
             let t = LEAF_TEXTURES[look.map_or(0, |l| l.pattern).min(LEAF_TEXTURES.len() - 1)];
+            twig(draw);
             creature::model::draw(draw, &model_leaf_insect::LEAF_INSECT, t, &|_| [0.0; 3]);
         },
         draw_scale: 1.4,
@@ -349,10 +360,11 @@ fn canopy(host: &dyn Host, id: u32) -> Vec<[i32; 3]> {
         return Vec::new();
     };
     let (x, y, z) = (at[0].floor() as i32, at[1].floor() as i32, at[2].floor() as i32);
+    // The leaves near it, up to the canopy over it (it climbs the trunk to reach them).
     let mut near = Vec::new();
     for dx in -3..=3 {
         for dz in -3..=3 {
-            for dy in -2..=1 {
+            for dy in -3..=6 {
                 near.push([x + dx, y + dy, z + dz]);
             }
         }
@@ -360,26 +372,17 @@ fn canopy(host: &dyn Host, id: u32) -> Vec<[i32; 3]> {
     tops(near)
 }
 
-/// Its crawl (the library's small crawlers, SPECS §3): slow, over the canopy, only when it doesn't keep still.
-const CRAWL: creature::crawl::Cfg = creature::crawl::Cfg {
-    speed: 1.0,
-    crawl: (40, 120),
+/// Its crawl (the library's creeping, SPECS §3): slow, over the canopy's leaves, up a trunk or a step of leaves on its
+/// way; only when it doesn't keep still.
+static CREEPING: creature::creep::Creeping = creature::creep::Creeping {
+    speed: 0.012,
+    climb: 0.02,
+    crawl: (60, 160),
     pause: (100, 300),
-    wander: 3.0,
-    check_every: 100,
-    settled_area: canopy,
-    on_pause: None,
-    busy: Some(life::busy),
+    wander: 2.0,
+    area: canopy,
+    may: |m, _| !life::busy(m.id),
 };
-
-struct Goals;
-
-#[mod_api::sunrise_part]
-impl EntityPart for Goals {
-    fn register_goals(&self, goals: &mut mod_api::GoalRegistrar<'_>) {
-        goals.add_goal(3, creature::crawl::Crawl::new(&CRAWL));
-    }
-}
 
 /// How often the night walker fact is looked for (ticks), and from how near (blocks).
 const NIGHT_EVERY: i32 = 40;
@@ -392,7 +395,11 @@ fn tick(host: &mut dyn ServerHost, dimension: &str, kind: &str, id: u32) {
     let species = if kind == STICK { STICK } else { LEAF };
     creature::colours::tick(host, id, scheme);
     creature::flutter::tick_post(host, dimension, kind, id, || {
-        vec![Box::new(life::Watch::default()), Box::new(life::PlayDead::default())]
+        vec![
+            Box::new(life::Watch::default()),
+            Box::new(life::PlayDead::default()),
+            Box::new(creature::creep::Creep::new(&CREEPING)),
+        ]
     });
     for action in life::actions() {
         act(host, dimension, action);
@@ -547,7 +554,7 @@ struct Phasmids;
 
 #[mod_api::sunrise_mod]
 impl Hooks for Phasmids {
-    fn register(&self, r: &mut dyn Registrar, _: &RegistrationContext) {
+    fn register(&self, _: &mut dyn Registrar, _: &RegistrationContext) {
         creature::flutter::register(STICK, STICK_SIZE);
         creature::flutter::register(LEAF, LEAF_SIZE);
         for s in &SPAWNING {
@@ -559,8 +566,6 @@ impl Hooks for Phasmids {
         for species in &BESTIARY {
             creature::bestiary::register(species);
         }
-        r.entity_part(STICK, Goals);
-        r.entity_part(LEAF, Goals);
     }
 
     fn register_entity_renderers(&self, _: &RegistrationContext, event: &mut RegisterEntityRenderersEvent<'_>) {

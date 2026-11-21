@@ -8,7 +8,8 @@ series' library.
 
 ## Finding them
 
-By day they fly short hops between flowers and rest on them; at night those near each other gather in a cluster. Five
+By day they fly short hops between flowers, rest on them and crawl about; in the rain they shelter under leaves; at
+night, and all day in snowy places, those near each other gather in a cluster. Five
 kinds, each in its own places:
 
 - **Seven-spot** (red, seven black spots): meadows, plains, forests, birch forests, swamps.
@@ -23,8 +24,9 @@ In creative: the spawn egg (creative tab "Sunrise Creatures"). Chickens peck the
 
 Stand still near a ladybug and now and then it flies over and lands on your head. You get **Luck** for as many minutes
 as it has spots: 2 for a two-spot, 7 for a seven-spot, up to 22 for a twenty-two-spot; the rare harlequin gives Luck II.
-Luck makes fishing and loot chests luckier. It stays a minute or so, then flies off; sprint and it leaves at once, or
-right-click it to let it go. Each ladybug lands on you once a day at most.
+Luck makes fishing and loot chests luckier. It stays a minute or so, then flies off; sprint or get hurt and it leaves at
+once, or right-click it to let it go. Each ladybug lands on you once a day at most. Get luck from all five kinds for a
+fact in your guide.
 
 ## In a jar
 

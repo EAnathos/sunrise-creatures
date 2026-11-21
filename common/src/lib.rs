@@ -26,6 +26,7 @@ pub mod bestiary;
 pub mod body;
 pub mod colours;
 pub mod crawl;
+pub mod creep;
 pub mod flight;
 pub mod flutter;
 pub mod food;

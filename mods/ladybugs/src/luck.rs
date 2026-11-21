@@ -2,7 +2,8 @@
 //!
 //! - `Perch`, its signature: near a player who stands still, now and then it flies over and lands on them (the mod's
 //!   tick seats it, `EntityRef::ride_player`), stays a while and flies off; the player has its luck (`crate::act`).
-//! - `Cluster`: at night it flies to the cluster of ladybugs near it (the mod's tick finds where), and rests there.
+//! - `Cluster`: at night or in the cold it flies to the cluster of ladybugs near it, and in the rain under leaves (the
+//!   mod's tick finds where), and rests there.
 //!
 //! What a behaviour can't do itself (seat it on a player, let it go, give luck) it queues as an `Action`.
 use std::collections::BTreeMap;
@@ -29,7 +30,7 @@ pub(crate) fn actions() -> Vec<Action> {
 static PERCHED: Mutex<BTreeMap<u32, ()>> = Mutex::new(BTreeMap::new());
 /// The day each ladybug last landed on a player (the game's day count): once a day each.
 static LANDED: Mutex<BTreeMap<u32, i64>> = Mutex::new(BTreeMap::new());
-/// Where each ladybug's cluster gathers tonight, found by the mod's tick.
+/// Where each ladybug gathers (its cluster at night or in the cold, its shelter in the rain), found by the mod's tick.
 static CLUSTER: Mutex<BTreeMap<u32, [f64; 3]>> = Mutex::new(BTreeMap::new());
 
 pub(crate) fn perched(id: u32) -> bool {
@@ -47,6 +48,11 @@ pub(crate) fn set_perched(id: u32, on: bool) {
 
 pub(crate) fn landed(id: u32, day: i64) {
     LANDED.lock().unwrap().insert(id, day);
+}
+
+/// Whether ladybug `id` has somewhere to gather now (its crawl waits).
+pub(crate) fn gathering(id: u32) -> bool {
+    CLUSTER.lock().unwrap().contains_key(&id)
 }
 
 pub(crate) fn set_cluster(id: u32, at: Option<[f64; 3]>) {
@@ -158,14 +164,15 @@ impl Behaviour for Perch {
     }
 }
 
-/// Gathering at night (SPECS §3): it flies to where its cluster gathers, a little off it, and rests there.
+/// Gathering (SPECS §3): at night or in the cold to where its cluster gathers, a little off it; in the rain under the
+/// leaves near it. It flies there and rests.
 #[derive(Debug, Default)]
 pub(crate) struct Cluster;
 
 impl Behaviour for Cluster {
-    fn can_use(&mut self, m: &mut Body, cx: &World<'_>) -> bool {
+    fn can_use(&mut self, m: &mut Body, _: &World<'_>) -> bool {
         let at = CLUSTER.lock().unwrap().get(&m.id).copied();
-        !cx.daylight && at.is_some_and(|at| creature::body::distance(at, m.position.array()) > 0.6)
+        at.is_some_and(|at| creature::body::distance(at, m.position.array()) > 0.3)
     }
     fn tick(&mut self, m: &mut Body, _: &World<'_>) {
         let Some(at) = CLUSTER.lock().unwrap().get(&m.id).copied() else {

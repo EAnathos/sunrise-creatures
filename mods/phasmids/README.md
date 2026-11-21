@@ -12,8 +12,8 @@ They live on top of the leaves of their trees, each looking like its tree:
 - **Stick insects**: oak (forests, plains, meadows), birch (birch forests), spruce (taigas) and jungle (jungles).
 - **Leaf insects**, rarer: green (jungles) and dry (sparse jungles, savannas).
 
-By day they keep still; at dusk and at night they crawl slowly over the canopy, swaying like a twig in the wind. With
-a player near, they freeze.
+By day they keep still; at dusk and at night they crawl slowly over the canopy and up its steps and trunks,
+swaying like a twig in the wind. With a player near, they freeze.
 
 In creative: the spawn eggs (creative tab "Sunrise Creatures").
 
