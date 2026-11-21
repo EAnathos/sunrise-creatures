@@ -70,6 +70,8 @@ the "Sunrise Creatures" creative tab, where all the series' items are.
 - [Living Flowers](mods/living_flowers/README.md): every small and tall vanilla flower come alive, to ambush you or
   guard you.
 - [Phasmids](mods/phasmids/README.md): stick and leaf insects hiding in the trees, a game of spotting them.
+- [Ladybugs](mods/ladybugs/README.md): ladybugs on the flowers, in many colours and spots; one that lands on you
+  brings luck for as many minutes as it has spots.
 - [Magma Golem](mods/magma_golem/README.md): a six-block giant of living magma asleep in the Nether, a mini-boss to
   cool with snow.
 
