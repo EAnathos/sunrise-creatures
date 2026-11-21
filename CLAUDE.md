@@ -15,7 +15,7 @@ guide). The other folders of `mods/` are planned mods (a spec, a model).
 - **Rule of two**: a system used (or specified) by two or more mods goes in the library; species content stays in mods.
   Never duplicate a system between mods. No mod requires another: optional content between mods goes through
   conditional recipes (`neoforge:conditions`, `mod_loaded`, `not`).
-  Library features tied to some mods (the glass jar: Butterflies, Worms, Fireflies, Fairies, Ladybugs or Phasmids) switch on through registration and
+  Library features tied to some mods (the glass jar: Butterflies, Worms, Fireflies, Fairies, Scorpions, Ladybugs or Phasmids) switch on through registration and
   conditional recipes (`neoforge:conditions`, `mod_loaded`).
 - **Creative tab**: only the library has one, generated from each module's `module.toml` (`creative` list) by
   `cargo creature tab`. Mods declare no tab.

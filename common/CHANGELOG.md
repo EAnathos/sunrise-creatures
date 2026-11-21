@@ -5,7 +5,8 @@ Each version's section is its registry changelog (`cargo creature release`).
 ## Unreleased
 
 - `mob::give_effect_level`: an effect at a level above the first (the ladybugs' Luck II).
-- The glass jar's recipe also comes with the Ladybugs or the Phasmids installed.
+- The glass jar's recipe also comes with the Scorpions (which it catches: a fix), the Ladybugs or the Phasmids
+  installed.
 - Small creatures that come out on top of leaves (`flutter::spawns_on_leaves`), and the glass jar's tree rule
   (`territory::Rule::Tree`: a creature released on leaves or a log settles in that tree): the Phasmids.
 

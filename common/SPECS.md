@@ -230,7 +230,7 @@ raw fish may befriend it).
 ## 4. Glass jar and territories ✅
 
 Catching small creatures and settling them in a place they won't leave. Users: **Butterflies**, **Worms**, **Fireflies**
-✅, **Fairies** ✅, **Ladybugs** ✅, **Phasmids** ✅ (the tree rule), and **Dung Beetles** and **Scorpions** once built (they then join the recipe's
+✅, **Fairies** ✅, **Ladybugs** ✅, **Phasmids** ✅ (the tree rule), **Scorpions** ✅ (the sand rule), and **Dung Beetles** once built (they then join the recipe's
 condition and the tab injection). The jar is the library's ✅ and is **active only if one of them is installed** ✅
 (hidden otherwise, §3.3).
 
