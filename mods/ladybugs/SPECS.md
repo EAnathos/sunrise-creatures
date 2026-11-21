@@ -23,7 +23,7 @@ the glass jar, the guide's page and facts.
   body, so the shell is drawn tinted on its own. Its embedded texture is the seven-spot's, for the pictures; the game
   draws `textures/entity/ladybug/base.png` (the shell grey) and each kind's spots (`<kind>.png`, white).
 - Not yet (❓ below): crawling (it rests where it lands), clusters by day in cold biomes, sheltering under leaves in
-  the rain, the "All the spots" fact, flying off when hurt, its own sound.
+  the rain, the "All the spots" fact, flying off when hurt.
 
 ## 1. Technical context
 
@@ -38,8 +38,8 @@ the glass jar, the guide's page and facts.
   in theirs, the body and wings as they are (the library's drawing layers). A kind fixes its colours and its spots
   together, so the mod draws it itself rather than through `colours::draw`, which rolls them apart.
 - Crawling ❓: the library's crawl is a goal the small fliers' rest holds still, so v1 flies and rests only.
-- Its own sounds ❓: almost silent; a soft buzz of wings as it takes off, from freesound, CC0, cut by
-  `cargo creature sounds` (none yet).
+- Its own sounds ✅: almost silent; a soft buzz of wings as it takes off, from freesound, CC0, cut by
+  `cargo creature sounds` (`sources/sounds.toml`).
 
 ## 2. Kinds ✅
 

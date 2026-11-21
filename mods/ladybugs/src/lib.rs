@@ -200,7 +200,7 @@ fn kind(id: u32) -> usize {
 }
 
 /// How it flies (the library's small fliers, SPECS §3): by day, short slow hops close to the ground, long rests on
-/// flowers.
+/// flowers; a short buzz as it takes off (`sources/sounds.toml`, cut from a CC0 freesound recording).
 static FLIGHT: creature::flutter::Kind = creature::flutter::Kind {
     hours: creature::flutter::Hours::Day,
     speed: 0.08,
@@ -210,7 +210,7 @@ static FLIGHT: creature::flutter::Kind = creature::flutter::Kind {
     wander: 5.0,
     drawn_to_light: false,
     lands_on_flowers: true,
-    takeoff: None,
+    takeoff: Some("ladybugs:entity.ladybug.takeoff"),
 };
 
 /// They come out near players by day in their biomes (the library's spawning): 1 to 3, up to 6 near a player.

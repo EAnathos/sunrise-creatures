@@ -11,5 +11,6 @@
   "bestiary.ladybugs.cluster": "Cluster",
   "bestiary.ladybugs.chicken": "Chicken",
   "bestiary.ladybugs.jar": "Jar",
-  "bestiary.ladybugs.flower": "Flower"
+  "bestiary.ladybugs.flower": "Flower",
+  "subtitles.entity.ladybug.takeoff": "Ladybug buzzes"
 }

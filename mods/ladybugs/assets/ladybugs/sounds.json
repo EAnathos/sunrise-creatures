@@ -1,0 +1,9 @@
+{
+  "entity.ladybug.takeoff": {
+    "subtitle": "subtitles.entity.ladybug.takeoff",
+    "sounds": [
+      "ladybugs:ladybug/takeoff1",
+      "ladybugs:ladybug/takeoff2"
+    ]
+  }
+}

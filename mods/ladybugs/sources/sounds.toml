@@ -1,0 +1,26 @@
+# The ladybug's sounds, made by `cargo creature sounds ladybugs` from freesound downloads (all CC0, nothing to credit).
+# A downloaded file keeps the name freesound gives it: it is found by its number. Each clip: a slice of a source
+# (`start` and `length` in seconds of the output), resampled by `pitch`, faded out over `fade` seconds, `gain` in dB.
+out = "sounds/ladybug"
+
+[sources]
+dragonfly = 240549  # jaegrover, Dragonfly caught in net (wing movement), as the flying fish's glide
+
+# Taking off: a short, high buzz of its hind wings.
+[[clip]]
+name = "takeoff1"
+source = "dragonfly"
+start = 0.3
+length = 0.35
+pitch = 1.7
+fade = 0.15
+gain = -10.0
+
+[[clip]]
+name = "takeoff2"
+source = "dragonfly"
+start = 15.35
+length = 0.35
+pitch = 1.8
+fade = 0.15
+gain = -10.0
