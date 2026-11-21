@@ -124,6 +124,31 @@ fn empty(host: &dyn Host) -> Option<ItemStack> {
     host.item_from_snbt(&format!("{{id:{},count:1}}", quoted(ITEM)))
 }
 
+/// The series' creative tab: after the empty jar, a jar holding each creature a mod lets it catch (in its usual look,
+/// by the creature's id), so a player in creative can place them on a shelf or let them out.
+pub(crate) fn fill_tab(host: &dyn Host, edit: mod_api::CreativeTabEdit) {
+    let mut all: Vec<&'static Catchable> = CATCHABLE.lock().unwrap().clone();
+    all.sort_by_key(|c| c.kind);
+    let Some(empty) = host.item_from_snbt(&format!("{{id:{},count:1}}", quoted(ITEM))) else {
+        return;
+    };
+    let mut after = empty;
+    for c in all {
+        let Some(jar) = filled(host, c, None, None, None) else {
+            continue;
+        };
+        let placed = edit.insert(
+            host,
+            mod_api::CreativeTabPlacement::After(after.clone()),
+            jar.clone(),
+            mod_api::CreativeTabVisibility::Both,
+        );
+        if placed.is_ok() {
+            after = jar;
+        }
+    }
+}
+
 /// SNBT for a string.
 pub(crate) fn quoted(s: &str) -> String {
     format!("\"{}\"", s.replace('\\', "\\\\").replace('"', "\\\""))

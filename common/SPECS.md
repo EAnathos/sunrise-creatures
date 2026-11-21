@@ -95,7 +95,8 @@ stay in the vulture until a second mod needs them, except friends (§6.2) and th
 - Icon ✅: the creature guide book (`creature:guide`, §7).
 - The glass jar is **hidden when no mod uses it** ✅ (neither Butterflies, Worms nor Fireflies installed): not in the tab,
   not craftable. A tab file can't be conditional, so the library's native half takes it out of the tab
-  (`common/native/jar_tab.rs`, an injection into `creative_tabs`); built, still to check in game (§0).
+  (`build_creative_mode_tab_contents`). With a jar mod, a **jar holding each creature it catches** ✅ follows the empty
+  jar in the tab (in its usual look), so a creative player can display them or let them out.
 
 ### 3.4 Monsters leave our creatures alone (`creature::mob`) ✅
 
@@ -215,8 +216,10 @@ tick by `Controls` (a rider's keys, or the creature's own behaviour). What diffe
 (cruising and diving speeds, wing-beat and take-off sounds, their own pace). `Follow` follows its friend (the
 library's friends, §6.2) as a `Following` says: flying to them past some distance, landing near them (on the water for
 one that floats), coming to them when far, when the mod lets it. `Soar` is soaring on its own, as a
-`Soaring` says: a take-off now and then, a climb (given up after 10 s held down, under leaves say), circling, then a
-glide down onto the highest perch near it (`landing_spot`, its `perch` rule), or onto the water for one that floats.
+`Soaring` says: a take-off now and then, a climb (given up after 10 s held down, under leaves say), circling (its
+circle drifting along a random way for a roaming flier, the seagull: `wander`), then a glide down onto a high perch
+near it, one of those within a block of the highest at random (`landing_spot`, its `perch` rule; over a flat sea, any
+way), or onto the water for one that floats.
 Riding stays the vulture's. Users: **Vulture**, **Seagulls**.
 
 ### 3.15 Food on the ground (`creature::food`) ✅
@@ -231,7 +234,7 @@ raw fish may befriend it).
 A small creature crawling by hand over the tops of blocks and up their sides, as a beetle or a stick insect does. Unlike
 the small crawlers' goal (§3.6, walked by the engine's path finding), it moves itself, so it climbs, and it runs among a
 creature's behaviours (a small flier's crawl between its flights). A mod gives a `Creeping` (speeds on a top and up a
-side, crawl and pause lengths, how far around it creeps with no area, its area of block tops, when it may) and adds
+side, crawl and pause lengths, how far around it creeps with no area, its area of block tops, when it may, a sound it now and then makes as it moves) and adds
 `Creep::new(&HOW)` to its behaviours. A crawl picks a top of its area (or a point around it), creeps straight toward it,
 and climbs while its target is above: up the block in its way, or, under its target, up any side next to it (a trunk),
 through leaves as an insect goes through foliage; a solid ceiling ends the crawl. While it pauses it claims nothing.
@@ -389,7 +392,7 @@ What each item of the series is for, so a player knows how to make it and what t
 
 Creative, a test world; `cargo creature install` first.
 
-- The creative tab "Sunrise Creatures": every installed mod's items, spawn eggs first; the glass jar only with a jar mod.
+- The creative tab "Sunrise Creatures": every installed mod's items, spawn eggs first; the glass jar only with a jar mod, then a filled jar per catchable creature.
 - `/bestiary unlock all`: every installed species' page, full; then open the Creature Guide (regression for the known
   bug in §7). `/bestiary reset` empties the book and it still opens. The wheel scrolls a long page (a butterfly's) and
   the icons; the Items tab lists every installed mod's items, each with its recipe.

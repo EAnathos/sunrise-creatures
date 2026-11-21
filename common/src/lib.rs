@@ -236,18 +236,23 @@ impl Hooks for Creature {
         }
     }
 
-    /// The series' tab shows the glass jar only when a mod uses it (common/SPECS.md §3.3).
+    /// The series' tab shows the glass jar only when a mod uses it, followed by a jar holding each creature it catches
+    /// (common/SPECS.md §3.3).
     fn build_creative_mode_tab_contents(&self, host: HostSide, event: &mut BuildCreativeModeTabContentsEvent<'_>) {
-        if event.tab != "creature:creature" || jar::used() {
+        if event.tab != "creature:creature" {
             return;
         }
         let host: &dyn Host = match &host {
             HostSide::Server(h) => &**h,
             HostSide::Client(h) => &**h,
         };
-        let _ = event
-            .edit
-            .remove_if(host, CreativeTabVisibility::Both, |s| hand::is(host, s, jar::ITEM));
+        if !jar::used() {
+            let _ = event
+                .edit
+                .remove_if(host, CreativeTabVisibility::Both, |s| hand::is(host, s, jar::ITEM));
+            return;
+        }
+        jar::fill_tab(host, event.edit);
     }
 
     /// Our creatures' own boxes.

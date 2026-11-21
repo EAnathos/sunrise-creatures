@@ -4,6 +4,9 @@ Each version's section is its registry changelog (`cargo creature release`).
 
 ## Unreleased
 
+- A jar holding each creature a mod catches follows the empty glass jar in the creative tab.
+- Soaring (`flight::Soar`): a flier lands on one of the high points near it at random (over a flat sea it always went
+  the same way), and a roaming one's circle drifts along a random way (`Soaring::wander`: the seagull).
 - Creeping (`creature::creep`): a crawl moved by hand that climbs up the block in its way or a trunk, through leaves
   (the Ladybugs, the Phasmids).
 - `mob::give_effect_level`: an effect at a level above the first (the ladybugs' Luck II).
