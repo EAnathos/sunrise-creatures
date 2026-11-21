@@ -39,6 +39,8 @@ pub const FLOWER_FACT: &str = "flower";
 pub const GARDEN_FACT: &str = "garden";
 /// The bestiary fact a release on a sandy patch teaches, when the creature settles there.
 pub const SAND_FACT: &str = "sand";
+/// Released on a tree, where it settles (the phasmids).
+pub const TREE_FACT: &str = "tree";
 /// The key of the jar's data in `minecraft:custom_data`.
 pub(crate) const DATA: &str = "creature";
 
@@ -326,9 +328,12 @@ pub fn release(host: &mut dyn ServerHost, event: &UseOnEvent<'_>) -> bool {
     let settle = match c.settles {
         Some(Rule::Garden) => crate::territory::garden_at(ground, pos).map(|f| (f, GARDEN_FACT)),
         Some(Rule::Sand) => crate::territory::sand_at(ground, pos).map(|f| (f, SAND_FACT)),
+        Some(Rule::Tree) => crate::territory::tree_at(ground, pos).map(|f| (f, TREE_FACT)),
         _ => None,
     };
-    let block = if let Some((f, _)) = settle {
+    let block = if let Some((f, fact)) = settle
+        && fact != TREE_FACT
+    {
         [f[0], f[1] + 1, f[2]]
     } else if on_flower {
         pos

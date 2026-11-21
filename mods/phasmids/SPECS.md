@@ -11,7 +11,10 @@ your own.
 
 ## 0. Status
 
-Planned: the spec and the models, no code yet.
+Playable (0.1.0), played in game: both insects in their kinds, coming out on top of leaves, still by day and with a
+player near, crawling over the canopy at night, spotted by a look (the shimmer, the count saved on the player, the
+facts), dropping through the leaves to play dead when hit and climbing back up their tree. The glass jar's catch and the
+tree rule are coded (the jar's catch is the library's, unchanged) but a release on a tree wasn't exercised in game.
 
 - **The stick insect** (`assets/models/stick_insect.bbmodel`, pictures in docs/models/): a long thin twig of a body
   (head, thorax, abdomen and a forked tip, with darker node bands like a twig's), long antennae, the front legs held
@@ -22,8 +25,8 @@ Planned: the spec and the models, no code yet.
   point, a midrib and veins painted on top, a darker margin), a small head with short antennae, and six legs with leafy
   flaps. Groups as the stick insect's, without the abdomen's tip. A texture per kind (§2): green and dry.
 
-Next: the code. The library's side comes with it: the small crawlers (common/SPECS.md §3.6, climbing added), spawning
-on leaves (§3.5) and the tree rule (§4.2).
+Not yet (❓): its sounds (a rustle, a click as it drops), its jar on display showing it on a twig (it shows as other
+creatures do), climbing the sides of logs and leaves as it crawls (it climbs only to go back up after playing dead).
 
 ## 1. Technical context
 
@@ -31,12 +34,15 @@ on leaves (§3.5) and the tree rule (§4.2).
   common/SPECS.md §7), spawn eggs `phasmids:stick_insect_spawn_egg` and `phasmids:leaf_insect_spawn_egg`. No item of its
   own ✅: a caught one is in the library's `creature:glass_jar` ✅.
 - Uses from the library: model drawing and sounds (§3.1, §3.2), hitbox size (§3.4, tiny), monsters sparing it (§3.4),
-  **small crawlers** (§3.6, which gains climbing with this mod), **spawning** (§3.5, on leaves), the **glass jar and
-  territories** (§4, which this mod switches on; rule "tree"), the creature guide's pages and morphs (§7).
+  **small crawlers** (§3.6: its crawl over the canopy), **spawning** (§3.5, on leaves: `flutter::spawns_on_leaves`, new
+  with this mod), the **glass jar and territories** (§4, which this mod switches on; the rule "tree", `Rule::Tree`, new
+  with this mod), the creature guide's pages and morphs (§7). Climbing back up after playing dead is its own: it moves
+  to the library when a second creature climbs (the Ladybugs, mods/ladybugs/SPECS.md §1).
+- Spotting is counted on the player (`phasmids:spotted` on their saved data), each phasmid once per player.
 - Both copy the wandering trader (goals only), with a tiny box: 0.6 × 0.2 blocks (stick insect), 0.5 × 0.2 (leaf
   insect) ✅.
-- Its own sounds: almost silent, a faint rustle of leaves when it moves, a dry click when it drops to play dead, from
-  freesound, CC0, cut by `cargo creature sounds`.
+- Its own sounds ❓: almost silent, a faint rustle of leaves when it moves, a dry click when it drops to play dead, from
+  freesound, CC0, cut by `cargo creature sounds` (none yet).
 
 ## 2. Kinds ✅
 
@@ -79,7 +85,7 @@ a jar), "Settled" (settled one on a tree).
 - **Caught** in the library's glass jar ✅ (common/SPECS.md §4.1), its kind and name kept. A glass jar on display
   shows it on a twig.
 - **Released on a tree it settles** (the library's rule **tree**, §4.2, new with this mod): released on leaves or a log,
-  its tree is the leaves and logs connected to that block (within 8 blocks of it), plus a block around them; the tree
+  its tree is the leaves and logs connected to that block (within 8 blocks of it); the tree
   must have **at least 10 leaves**, otherwise it won't settle. A settled one stays on its tree and never despawns. Leaves
   cut down below 10, it becomes unsettled (wanders, may despawn).
 - The jar's recipe condition and the tab injection get `phasmids` with this mod (library §3.3, §4.1).

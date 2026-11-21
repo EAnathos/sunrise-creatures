@@ -2,9 +2,32 @@
 
 ![](../../docs/models/phasmids-stick_insect-front.png) ![](../../docs/models/phasmids-leaf_insect-front.png)
 
-A mod of the [Sunrise Creatures](../../README.md) series, **planned**: stick insects and leaf insects hiding in the trees
-as twigs and leaves, still by day and swaying like a twig in the wind at night. Spotting them is the game: look closely
-and they shimmer into view. Disturbed, they drop and play dead. Catch one in a glass jar and it settles on a tree of
-your own. **Requires** [Sunrise Creatures](https://playsunrise.net/mods/creature), the series' library.
+A mod of the [Sunrise Creatures](../../README.md) series: stick insects and leaf insects hiding in the trees as twigs
+and leaves. **Requires** [Sunrise Creatures](https://playsunrise.net/mods/creature), the series' library.
 
-Not playable yet: the design is in [SPECS.md](SPECS.md).
+## Finding them
+
+They live on top of the leaves of their trees, each looking like its tree:
+
+- **Stick insects**: oak (forests, plains, meadows), birch (birch forests), spruce (taigas) and jungle (jungles).
+- **Leaf insects**, rarer: green (jungles) and dry (sparse jungles, savannas).
+
+By day they keep still; at dusk and at night they crawl slowly over the canopy, swaying like a twig in the wind. With
+a player near, they freeze.
+
+In creative: the spawn eggs (creative tab "Sunrise Creatures").
+
+## Spotting them
+
+Spotting them is the game: look at one for a moment from within 6 blocks and a faint shimmer shows it. Your creature
+guide counts them: spot your first, then ten, then fifty. Once you spotted it, it no longer freezes when you are near.
+
+## Playing dead
+
+Hit one, or run right by it, and it drops through the leaves to the ground and lies on its back, still. A little later
+it walks to the trunk and climbs back up to the canopy. A stick insect drops a stick.
+
+## In a jar
+
+Catch one with the series' glass jar and let it out on the leaves or the trunk of a tree of yours (one with at least 10
+leaves): it settles in that tree.

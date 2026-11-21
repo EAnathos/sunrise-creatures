@@ -139,6 +139,20 @@ pub fn spawns(spawning: &'static Spawning) {
     }
 }
 
+/// The kinds that come out only on top of leaves, at the leaves (the phasmids).
+static ON_LEAVES: Mutex<Vec<&'static str>> = Mutex::new(Vec::new());
+
+/// From a mod's `hooks()`: `spawns`, its groups placed on top of leaves instead of over the ground (a try where the top
+/// isn't leaves brings none). Its `flight`'s hours are when it comes out; a kind that doesn't fly (the phasmids) gives
+/// a `Kind` for its hours only.
+pub fn spawns_on_leaves(spawning: &'static Spawning) {
+    spawns(spawning);
+    let mut leaves = ON_LEAVES.lock().unwrap();
+    if !leaves.contains(&spawning.kind) {
+        leaves.push(spawning.kind);
+    }
+}
+
 /// Whether a kind out at `hours` is about now in `level` (from a hook: its day time and rain).
 fn about(host: &dyn Host, level: LevelRef, hours: Hours) -> bool {
     let day = level.day_time(host).unwrap_or(0).rem_euclid(24_000) < 12_500;
@@ -200,6 +214,14 @@ pub fn spawn(host: &mut dyn ServerHost, level: LevelRef) {
             ) else {
                 continue;
             };
+            let on_leaves = ON_LEAVES.lock().unwrap().contains(&s.kind);
+            if on_leaves
+                && !Ground::new(&*host, level)
+                    .block([x.floor() as i32, ground - 1, z.floor() as i32])
+                    .ends_with("leaves")
+            {
+                continue;
+            }
             if !level
                 .biome_at(host, [x.floor() as i32, ground, z.floor() as i32])
                 .is_some_and(|b| s.biomes.contains(&b.as_str()))
@@ -208,11 +230,20 @@ pub fn spawn(host: &mut dyn ServerHost, level: LevelRef) {
             }
             let count = s.group.0 + (float() * f64::from(s.group.1 - s.group.0 + 1)) as u32;
             for _ in 0..count.min(s.group.1) {
-                let at = [
-                    x + (float() * 2.0 - 1.0) * GROUP_SPREAD,
-                    f64::from(ground) + GROUP_HEIGHT.0 + float() * (GROUP_HEIGHT.1 - GROUP_HEIGHT.0),
-                    z + (float() * 2.0 - 1.0) * GROUP_SPREAD,
-                ];
+                // On leaves, all on that block's top; over the ground, spread and a little up.
+                let at = if on_leaves {
+                    [
+                        x.floor() + 0.2 + float() * 0.6,
+                        f64::from(ground),
+                        z.floor() + 0.2 + float() * 0.6,
+                    ]
+                } else {
+                    [
+                        x + (float() * 2.0 - 1.0) * GROUP_SPREAD,
+                        f64::from(ground) + GROUP_HEIGHT.0 + float() * (GROUP_HEIGHT.1 - GROUP_HEIGHT.0),
+                        z + (float() * 2.0 - 1.0) * GROUP_SPREAD,
+                    ]
+                };
                 let dimension = level.dimension().id(host).unwrap_or_default();
                 host.summon(&dimension, s.kind, at, mod_api::Compound::new());
             }

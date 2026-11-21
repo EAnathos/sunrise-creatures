@@ -1,0 +1,20 @@
+{
+  "entity.phasmids.stick_insect": "Stick Insect",
+  "entity.phasmids.leaf_insect": "Leaf Insect",
+  "item.phasmids.stick_insect_spawn_egg": "Stick Insect Spawn Egg",
+  "item.phasmids.leaf_insect_spawn_egg": "Leaf Insect Spawn Egg",
+  "look.phasmids.colour.plain": "Plain",
+  "look.phasmids.pattern.oak": "Oak",
+  "look.phasmids.pattern.birch": "Birch",
+  "look.phasmids.pattern.spruce": "Spruce",
+  "look.phasmids.pattern.jungle": "Jungle",
+  "look.phasmids.pattern.green": "Green",
+  "look.phasmids.pattern.dry": "Dry",
+  "bestiary.phasmids.spotted": "Spotted",
+  "bestiary.phasmids.keen_eye": "Keen eye",
+  "bestiary.phasmids.master": "Master spotter",
+  "bestiary.phasmids.play_dead": "Play dead",
+  "bestiary.phasmids.night_walker": "Night walker",
+  "bestiary.phasmids.jar": "Jar",
+  "bestiary.phasmids.tree": "Settled"
+}

@@ -118,8 +118,8 @@ fill, so small fliers would only appear with new chunks and be gone once their p
 `Spawning` (kind, biomes, group size, cap near a player, chance); every 10 s, for each player, one chance in its
 `chance` while fewer than its `cap` are within 48 blocks, a group comes out 16 to 40 blocks away over the ground, in one
 of its biomes, at its hours. Wild ones far from players despawn, so they come and go as bats do. Users: Butterflies
-(butterflies, moths), Fireflies, Fairies; planned: **Phasmids**, whose groups are placed **on the top of leaves**
-instead of over the ground (mods/phasmids/SPECS.md §3); **Ladybugs** ✅ (their short flights and spawning,
+(butterflies, moths), Fireflies, Fairies, and the **Phasmids** ✅, whose groups are placed **on the top of leaves**
+instead of over the ground (`spawns_on_leaves`, mods/phasmids/SPECS.md §3); **Ladybugs** ✅ (their short flights and spawning,
 mods/ladybugs/SPECS.md §3).
 
 ### 3.6 Small crawlers (`creature::crawl`) ✅
@@ -130,8 +130,8 @@ its settled area is found, a pause hook for the worm's dig). A wild one crawls a
 one crawls only over its area (its mod's territory rule). Users: **Worms** (in place), **Dung Beetles**, **Scorpions**
 (mods/scorpions/SPECS.md §3) and **Phasmids** (mods/phasmids/SPECS.md §3); the **Ladybugs** too once a small flier's rest
 lets a crawl move it (mods/ladybugs/SPECS.md §1). Still to add when their mods are built: a beetle's walking toward a
-target (backwards), and **climbing** for phasmids and ladybugs (up the sides of logs, flowers and leaves and on their
-top).
+target (backwards), and **climbing** (up the sides of logs, flowers and leaves and on their top): the Phasmids' climb
+back up after playing dead is theirs until a second creature climbs (the Ladybugs).
 
 ### 3.7 Hunters eat small creatures (`creature::prey`) ✅
 
@@ -230,7 +230,7 @@ raw fish may befriend it).
 ## 4. Glass jar and territories ✅
 
 Catching small creatures and settling them in a place they won't leave. Users: **Butterflies**, **Worms**, **Fireflies**
-✅, **Fairies** ✅, **Ladybugs** ✅, and **Dung Beetles**, **Phasmids** and **Scorpions** once built (they then join the recipe's
+✅, **Fairies** ✅, **Ladybugs** ✅, **Phasmids** ✅ (the tree rule), and **Dung Beetles** and **Scorpions** once built (they then join the recipe's
 condition and the tab injection). The jar is the library's ✅ and is **active only if one of them is installed** ✅
 (hidden otherwise, §3.3).
 
@@ -268,7 +268,7 @@ the block it was released on, by the mod's rule:
 |---|---|---|
 | **Garden** ✅ | Worms | The farmland connected to the release block (4 directions, same level ±1); **at least 10 blocks** ✅, otherwise the worm won't settle |
 | **Flower patch** ✅ | Butterflies, Fireflies ✅ | Released on a flower (its anchor): the flowers **within 8 blocks** of the anchor, plus 2 blocks around them and 4 blocks up. The 8-block cap keeps it to at most ~20 × 20 blocks, even in a meadow or a flower forest where every flower touches the next; in a sparse garden it is just the flower beds |
-| **Tree** ✅ (planned) | Phasmids | Released on leaves or a log: the leaves and logs connected to it within 8 blocks, plus a block around them; **at least 10 leaves** ✅, otherwise it won't settle (mods/phasmids/SPECS.md §5) |
+| **Tree** ✅ | Phasmids | Released on leaves or a log: the leaves and logs connected to it within 8 blocks (a trunk counts straight up); **at least 10 leaves** ✅, otherwise it won't settle (mods/phasmids/SPECS.md §5) |
 | **Sand** ✅ (rule in place, its mod to come) | Scorpions | Released on sand, red sand, sandstone or terracotta: those blocks connected to it within 8 blocks; **at least 10** ✅, otherwise it won't settle (mods/scorpions/SPECS.md §6) |
 | **Pasture** ✅ (planned) | Dung Beetles | Released with **at least 3 farm animals** (cows, sheep, horses, donkeys, goats, camels, llamas) **within 8 blocks**: 8 blocks around the release block; fewer than 3 animals left around and the creature is unsettled (mods/dung_beetles/SPECS.md §4) |
 

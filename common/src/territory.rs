@@ -1,6 +1,6 @@
 //! Territories (SPECS §4.2): a creature released from a jar settles in an area it won't leave.
 //!
-//! Three rules (`Rule`). The **garden** (Worms): released on farmland (or a crop on it), the farmland connected to it (4
+//! Four rules (`Rule`). The **garden** (Worms): released on farmland (or a crop on it), the farmland connected to it (4
 //! ways, the same level or one up or down) is its area, which must count at least `GARDEN_MIN` blocks, or it won't
 //! settle; if the garden shrinks below that, it is free again. The **flower patch** (Butterflies, Fireflies): released on
 //! a flower, that flower is its anchor; its area is
@@ -8,7 +8,9 @@
 //! flower is broken, the anchor moves to the nearest flower within `PATCH` blocks, or the creature is free again. The
 //! **sand** (Scorpions): released on sand, red sand, sandstone or terracotta, the sand-like blocks connected to it
 //! within `SAND_RANGE` blocks are its area, at least `SAND_MIN` of them, or it won't settle; a patch grown too small
-//! frees it.
+//! frees it. The **tree** (Phasmids): released on leaves or a log, the leaves and logs connected to it within
+//! `TREE_RANGE` blocks are its area, with at least `TREE_LEAVES` leaves, or it won't settle; a tree cut too small frees
+//! it.
 //!
 //! The anchor is saved on the entity (`creature:territory`). The mod's goals read it through a static map (`anchor`),
 //! filled by `tick` from the mod's `entity_tick_post` (single player, as the colours), and tell a moved or lost anchor
@@ -29,6 +31,9 @@ const FARMLAND: &str = "minecraft:farmland";
 /// A sand patch reaches this far from the anchor and counts at least this many blocks.
 pub const SAND_RANGE: i32 = 8;
 pub const SAND_MIN: usize = 10;
+/// A tree reaches this far from the anchor and has at least this many leaves.
+pub const TREE_RANGE: i32 = 8;
+pub const TREE_LEAVES: usize = 10;
 
 /// Where a released creature settles.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -39,6 +44,9 @@ pub enum Rule {
     Garden,
     /// The sand-like blocks connected to the one it was released on, within `SAND_RANGE`, at least `SAND_MIN`.
     Sand,
+    /// The leaves and logs connected to the one it was released on, within `TREE_RANGE`, with at least `TREE_LEAVES`
+    /// leaves (the phasmids).
+    Tree,
 }
 pub const AROUND: i32 = 2;
 pub const ABOVE: i32 = 4;
@@ -287,6 +295,73 @@ pub fn check_sand(host: &dyn Host, entity: u32) -> Vec<[i32; 3]> {
     };
     if patch.len() >= SAND_MIN {
         return patch;
+    }
+    if let Some(k) = ANCHORS.lock().unwrap().get_mut(&entity) {
+        k.anchor = None;
+        k.dirty = true;
+    }
+    Vec::new()
+}
+
+/// Whether the block named `name` is part of a tree (the tree rule): leaves, a log or wood.
+pub fn is_tree(name: &str) -> bool {
+    name.ends_with("leaves") || name.ends_with("_log") || name.ends_with("_wood") || name.ends_with("_stem")
+}
+
+/// The leaves and logs connected to `start` (any of the 6 sides: a trunk goes straight up), within `TREE_RANGE` of it.
+fn tree_from(ground: &Ground<'_>, start: [i32; 3]) -> Vec<[i32; 3]> {
+    let mut seen = std::collections::BTreeSet::from([start]);
+    let mut queue = std::collections::VecDeque::from([start]);
+    let mut found = Vec::new();
+    while let Some(p) = queue.pop_front() {
+        found.push(p);
+        if found.len() >= BLOCKS_MAX {
+            break;
+        }
+        for d in [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]] {
+            let q = [p[0] + d[0], p[1] + d[1], p[2] + d[2]];
+            let near = (0..3).all(|k| (q[k] - start[k]).abs() <= TREE_RANGE);
+            if near && !seen.contains(&q) && is_tree(&ground.block(q)) {
+                seen.insert(q);
+                queue.push_back(q);
+            }
+        }
+    }
+    found
+}
+
+/// Whether `tree` has enough leaves to be one (`TREE_LEAVES`).
+fn leafy(ground: &Ground<'_>, tree: &[[i32; 3]]) -> bool {
+    tree.iter().filter(|p| ground.block(**p).ends_with("leaves")).count() >= TREE_LEAVES
+}
+
+/// From the jar's release: the block of a tree a creature released on `clicked` (leaves or a log, or one just below)
+/// would settle on, if the tree is big enough.
+pub fn tree_at(ground: Ground<'_>, clicked: [i32; 3]) -> Option<[i32; 3]> {
+    let below = [clicked[0], clicked[1] - 1, clicked[2]];
+    let start = if is_tree(&ground.block(clicked)) {
+        clicked
+    } else if is_tree(&ground.block(below)) {
+        below
+    } else {
+        return None;
+    };
+    leafy(&ground, &tree_from(&ground, start)).then_some(start)
+}
+
+/// From a goal, every few seconds: the leaves and logs of its tree; a tree cut below `TREE_LEAVES` leaves (or its
+/// anchor no longer part of it) lets it go free.
+pub fn check_tree(host: &dyn Host, entity: u32) -> Vec<[i32; 3]> {
+    let (Some(anchor), Some(ground)) = (anchor(entity), Ground::of_entity(host, entity)) else {
+        return Vec::new();
+    };
+    let tree = if is_tree(&ground.block(anchor)) {
+        tree_from(&ground, anchor)
+    } else {
+        Vec::new()
+    };
+    if leafy(&ground, &tree) {
+        return tree;
     }
     if let Some(k) = ANCHORS.lock().unwrap().get_mut(&entity) {
         k.anchor = None;

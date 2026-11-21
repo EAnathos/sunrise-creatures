@@ -23,7 +23,7 @@ on it.
 | Fairies | `mods/fairies/` | `fairies` | playable | [mods/fairies/SPECS.md](../mods/fairies/SPECS.md) |
 | Seagulls | `mods/seagulls/` | `seagulls` | playable | [mods/seagulls/SPECS.md](../mods/seagulls/SPECS.md) |
 | Flying Fish | `mods/flying_fish/` | `flying_fish` | playable | [mods/flying_fish/SPECS.md](../mods/flying_fish/SPECS.md) |
-| Phasmids | `mods/phasmids/` | `phasmids` | planned | [mods/phasmids/SPECS.md](../mods/phasmids/SPECS.md) |
+| Phasmids | `mods/phasmids/` | `phasmids` | playable | [mods/phasmids/SPECS.md](../mods/phasmids/SPECS.md) |
 | Ladybugs | `mods/ladybugs/` | `ladybugs` | playable | [mods/ladybugs/SPECS.md](../mods/ladybugs/SPECS.md) |
 | Scorpions | `mods/scorpions/` | `scorpions` | playable | [mods/scorpions/SPECS.md](../mods/scorpions/SPECS.md) |
 | Vanilla Bestiary | `mods/vanilla_bestiary/` | `vanilla_bestiary` | playable | [mods/vanilla_bestiary/SPECS.md](../mods/vanilla_bestiary/SPECS.md) |
