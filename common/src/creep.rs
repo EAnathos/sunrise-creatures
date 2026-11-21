@@ -26,7 +26,12 @@ pub struct Creeping {
     pub area: fn(&dyn Host, u32) -> Vec<[i32; 3]>,
     /// Whether it may creep now (by day, not playing dead...).
     pub may: fn(&Body, &World<'_>) -> bool,
+    /// The sound it now and then makes as it moves (a rustle of leaves), if any: one chance in `RUSTLE_ONE_IN` a tick.
+    pub rustle: Option<&'static str>,
 }
+
+/// How often a creeping creature's sound plays while it moves (one chance in so many ticks).
+const RUSTLE_ONE_IN: i32 = 60;
 
 /// Creeping, as a `Creeping` says.
 pub struct Creep {
@@ -185,6 +190,11 @@ impl Behaviour for Creep {
                 self.ticks = 0;
             }
         }
+        if let Some(sound) = self.how.rustle
+            && m.random.next_int_bound(RUSTLE_ONE_IN) == Some(0)
+        {
+            crate::sounds::queue(m.id, sound, 0.3, 0.9 + m.random.next_float() * 0.3);
+        }
         let yaw = (-dir[0]).atan2(dir[1]).to_degrees() as f32;
         m.yaw = yaw;
         m.body_yaw = yaw;
@@ -204,6 +214,7 @@ mod tests {
             wander: 2.0,
             area: |_, _| Vec::new(),
             may: |_, _| true,
+            rustle: None,
         };
         let c = super::Creep::new(&HOW);
         assert!(c.pausing && c.target.is_none());

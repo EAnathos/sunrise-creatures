@@ -1,0 +1,57 @@
+# The phasmids' sounds, made by `cargo creature sounds phasmids` from freesound downloads (all CC0, nothing to credit).
+# A downloaded file keeps the name freesound gives it: it is found by its number. Each clip: a slice of a source
+# (`start` and `length` in seconds of the output), resampled by `pitch`, faded out over `fade` seconds, `gain` in dB.
+out = "sounds/phasmid"
+
+[sources]
+leaves = 437356  # giddster, Rustling leaves
+bushes = 59315   # vibe_crc, looking_in_bushes
+snap = 114300    # fcsimba, Twig snapping
+twig = 17184     # mrjingles, twig snap
+
+# Crawling: a faint rustle of the leaves it walks on.
+[[clip]]
+name = "rustle1"
+source = "leaves"
+start = 0.2
+length = 0.6
+pitch = 1.2
+fade = 0.3
+gain = -6.0
+
+[[clip]]
+name = "rustle2"
+source = "leaves"
+start = 1.2
+length = 0.5
+pitch = 1.3
+fade = 0.25
+gain = -6.0
+
+[[clip]]
+name = "rustle3"
+source = "bushes"
+start = 1.3
+length = 0.5
+pitch = 1.3
+fade = 0.25
+gain = -8.0
+
+# Dropping to play dead: a dry click, a small twig snapping.
+[[clip]]
+name = "click1"
+source = "snap"
+start = 0.45
+length = 0.2
+pitch = 1.4
+fade = 0.1
+gain = 0.0
+
+[[clip]]
+name = "click2"
+source = "twig"
+start = 2.0
+length = 0.25
+pitch = 1.5
+fade = 0.12
+gain = 0.0

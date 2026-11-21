@@ -26,7 +26,7 @@ tree rule are coded (the jar's catch is the library's, unchanged) but a release 
   flaps. Groups as the stick insect's, without the abdomen's tip. A texture per kind (§2): green and dry.
 
 Since 0.1.0's first cut: its crawl is the library's creeping (§3.16), which climbs leaf steps and trunks and goes
-through foliage; its jar and its guide page show it on a twig. Not yet (❓): its sounds (a rustle, a click as it
+through foliage; its jar and its guide page show it on a twig; its sounds (a rustle as it crawls, a click as it
 drops).
 
 ## 1. Technical context
@@ -42,8 +42,8 @@ drops).
 - Spotting is counted on the player (`phasmids:spotted` on their saved data), each phasmid once per player.
 - Both copy the wandering trader (goals only), with a tiny box: 0.6 × 0.2 blocks (stick insect), 0.5 × 0.2 (leaf
   insect) ✅.
-- Its own sounds ❓: almost silent, a faint rustle of leaves when it moves, a dry click when it drops to play dead, from
-  freesound, CC0, cut by `cargo creature sounds` (none yet).
+- Its own sounds ✅: almost silent, a faint rustle of leaves now and then as it crawls (the library's creeping plays it,
+  §3.16), a dry click when it drops to play dead, from freesound, CC0 (`sources/sounds.toml`).
 
 ## 2. Kinds ✅
 

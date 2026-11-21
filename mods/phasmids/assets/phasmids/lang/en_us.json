@@ -16,5 +16,7 @@
   "bestiary.phasmids.play_dead": "Play dead",
   "bestiary.phasmids.night_walker": "Night walker",
   "bestiary.phasmids.jar": "Jar",
-  "bestiary.phasmids.tree": "Settled"
+  "bestiary.phasmids.tree": "Settled",
+  "subtitles.entity.phasmid.rustle": "Phasmid rustles",
+  "subtitles.entity.phasmid.click": "Phasmid clicks"
 }

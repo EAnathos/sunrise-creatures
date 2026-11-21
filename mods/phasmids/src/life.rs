@@ -220,6 +220,7 @@ impl Behaviour for PlayDead {
             self.phase = Phase::Lying(LIE.0 + m.random.next_int_bound(LIE.1 - LIE.0).unwrap_or(0));
             self.drop = ground_below(m, cx);
             set(&DEAD, m.id, true);
+            creature::sounds::queue(m.id, crate::CLICK, 0.6, 1.0 + m.random.next_float() * 0.3);
             ACTIONS.lock().unwrap().push(Action::Dropped { id: m.id });
         }
         self.phase != Phase::Up

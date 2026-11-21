@@ -382,7 +382,12 @@ static CREEPING: creature::creep::Creeping = creature::creep::Creeping {
     wander: 2.0,
     area: canopy,
     may: |m, _| !life::busy(m.id),
+    rustle: Some(RUSTLE),
 };
+
+/// Its sounds (SPECS §2): a faint rustle of leaves as it crawls, a dry click as it drops to play dead (`life`).
+const RUSTLE: &str = "phasmids:entity.phasmid.rustle";
+pub(crate) const CLICK: &str = "phasmids:entity.phasmid.click";
 
 /// How often the night walker fact is looked for (ticks), and from how near (blocks).
 const NIGHT_EVERY: i32 = 40;

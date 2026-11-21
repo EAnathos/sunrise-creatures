@@ -1,0 +1,17 @@
+{
+  "entity.phasmid.rustle": {
+    "subtitle": "subtitles.entity.phasmid.rustle",
+    "sounds": [
+      "phasmids:phasmid/rustle1",
+      "phasmids:phasmid/rustle2",
+      "phasmids:phasmid/rustle3"
+    ]
+  },
+  "entity.phasmid.click": {
+    "subtitle": "subtitles.entity.phasmid.click",
+    "sounds": [
+      "phasmids:phasmid/click1",
+      "phasmids:phasmid/click2"
+    ]
+  }
+}

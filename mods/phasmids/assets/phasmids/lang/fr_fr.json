@@ -16,5 +16,7 @@
   "bestiary.phasmids.play_dead": "Fait le mort",
   "bestiary.phasmids.night_walker": "Marcheur nocturne",
   "bestiary.phasmids.jar": "Bocal",
-  "bestiary.phasmids.tree": "Installé"
+  "bestiary.phasmids.tree": "Installé",
+  "subtitles.entity.phasmid.rustle": "Un phasme bruisse",
+  "subtitles.entity.phasmid.click": "Un phasme craque"
 }
