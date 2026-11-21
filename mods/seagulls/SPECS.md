@@ -41,7 +41,8 @@ the meat, the guide's page and facts, its own sounds.
 - A herring gull, about two thirds of a block long, wings about 2.5 blocks across. 8 health. Neutral: it never attacks.
 - **Spawning** ✅: beaches, stony shores and snowy beaches, in flocks of 2 to 6. Wild ones despawn far from players.
   The coasts of oceans and rivers' mouths beyond the beaches ❓ (a biome modifier can't tell a coast from open water).
-- **Life on the coast** ✅: it glides along the shore and soars in circles above it (the library's flight), lands on
+- **Life on the coast** ✅: it glides along the shore and soars in circles above it, the circle drifting along a random way
+  each flight (the library's flight), lands on
   the sand, on rocks, posts and roofs, walks about, and **floats on water**, bobbing on the waves. It calls often (a
   cry, a laughing call), louder when it takes off. At night the flock rests on the shore.
 - **A food thief** ✅, its signature: a player holding food in their main hand within 12 blocks of a wild seagull

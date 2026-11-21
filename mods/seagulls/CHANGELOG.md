@@ -2,6 +2,11 @@
 
 Each version's section is its registry changelog (`cargo creature release`).
 
+## Unreleased
+
+- A seagull roams the coast: its circle drifts along a random way and it lands on any side (they all went the same
+  way).
+
 ## 0.1.0
 
 - First release on Sunrise: seagulls on beaches and stony shores that soar along the coast, float on the water, follow

@@ -2,6 +2,12 @@
 
 Each version's section is its registry changelog (`cargo creature release`).
 
+## Unreleased
+
+- A shoal wanders about: each fish's heading veers and turns now and then (they all swam the same way).
+- A frightened fish takes off only along open water, turns along the water as a shore nears and drops back in before
+  land: it no longer glides onto the shore and dies there.
+
 ## 0.1.1
 
 - A seagull (with the Seagulls) frightens a shoal, as a dolphin does.

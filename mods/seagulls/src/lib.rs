@@ -63,6 +63,7 @@ pub(crate) static SOARING: Soaring = Soaring {
     idle: |m, cx| creature::friend::of(m.id).is_none() && (cx.daylight || !(m.on_ground || m.in_water)),
     perch: |name| !name.ends_with("leaves") && name != "minecraft:lava",
     lands_on_water: true,
+    wander: 0.04,
 };
 
 /// Where it lives (SPECS §2).

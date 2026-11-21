@@ -54,13 +54,15 @@ A shoal is of one kind.
 - **Spawning**: in the water of its biomes, near the surface, in **shoals** of 4 to 10, at any hour. Wild ones despawn
   far from players.
 - **Swimming**: it swims as a shoal in the top 3 blocks of the water, its fins folded along its body, turning together
-  with its shoal as vanilla's fish school.
+  with its shoal as vanilla's fish school; each fish's heading veers this way or that and turns now and then, so a
+  shoal wanders about rather than going one way.
 - **Gliding**, its signature: when frightened (a player, a boat, a dolphin or a seagull within 6 blocks, a hit), and now and then
   for no reason, it races to the surface and **bursts out of the water**: it spreads its fins and **glides** a block or
   two above the waves, at about a block a tick, for 10 to 20 blocks, then beats its tail on a
   wave to glide again (up to 2 times, so up to about 50 blocks), and dives back in with a splash. A frightened shoal
-  takes off nearly together, fanning out. Rain or a storm cuts its glides short. It never glides over land on purpose
-  and turns back toward open water.
+  takes off nearly together, fanning out. Rain or a storm cuts its glides short. It takes off only along open water (12 blocks of it,
+  turning up to 90° from its way away to find them; hemmed in by a shore, it swims off instead), turns along the water
+  as a shore nears, and with land right ahead drops back in where it is: it never glides onto land.
 - **Beached** (the library's water creatures, §3.10): out of water it can't swim, it flops toward the water now and
   then and dries out within 30 s, then dies (it drops as usual). A player picks one up with a right-click (raw flying
   fish) or catches it alive in a water bucket.

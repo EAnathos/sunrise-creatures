@@ -217,7 +217,9 @@ enum Phase {
 /// How a flier soars on its own: one take-off in `take_off` ticks on average from the ground, a climb to `height`
 /// blocks (the first, plus up to the second more) above where it left the ground, a circle of `radius` blocks (the
 /// same), circled for `circle_for` ticks (the same); when it may (`idle`), where it lands (`perch`, a block's id:
-/// the vulture's no leaves, water nor lava), and whether reaching water ends its descent (the seagull floats).
+/// the vulture's no leaves, water nor lava), whether reaching water ends its descent (the seagull floats), and how
+/// fast its circle drifts along (blocks a tick, a random way each flight: a seagull roams the coast; 0 circles where it
+/// took off).
 pub struct Soaring {
     pub take_off: i32,
     pub height: (f64, i32),
@@ -226,6 +228,7 @@ pub struct Soaring {
     pub idle: fn(&Body, &World<'_>) -> bool,
     pub perch: fn(&str) -> bool,
     pub lands_on_water: bool,
+    pub wander: f64,
 }
 
 /// Soaring (`Soaring` says how): it takes off now and then, climbs, circles for a while, then picks the highest
@@ -236,8 +239,9 @@ pub struct Soar {
     wings: &'static Wings,
     flight: Flight,
     phase: Phase,
-    /// The circle's centre (x, z), radius and height.
+    /// The circle's centre (x, z), how it drifts each tick, its radius and height.
     center: [f64; 2],
+    drift: [f64; 2],
     radius: f64,
     cruise_y: f64,
     clockwise: bool,
@@ -260,12 +264,13 @@ const GIVE_UP: i32 = 1200;
 const LANDING_SEARCH: i32 = 16;
 const LANDING_STEP: i32 = 2;
 
-/// The highest ground within `LANDING_SEARCH` blocks (the first block from `SCAN_UP` above it down that isn't air),
-/// where it lands; none where nothing is loaded.
-pub fn landing_spot(m: &Body, cx: &World<'_>, perch: fn(&str) -> bool) -> Option<[f64; 3]> {
+/// A high point within `LANDING_SEARCH` blocks (the first block from `SCAN_UP` above it down that isn't air), where it
+/// lands: one of those within a block of the highest, at random (over a flat sea or plain, anywhere around it rather
+/// than always the same corner); none where nothing is loaded.
+pub fn landing_spot(m: &mut Body, cx: &World<'_>, perch: fn(&str) -> bool) -> Option<[f64; 3]> {
     let (cx0, cz0) = (m.position.x.floor() as i32, m.position.z.floor() as i32);
     let top0 = m.position.y.floor() as i32 + SCAN_UP;
-    let mut best: Option<(i32, i32, i32)> = None;
+    let mut spots: Vec<(i32, i32, i32)> = Vec::new();
     for dx in (-LANDING_SEARCH..=LANDING_SEARCH).step_by(LANDING_STEP as usize) {
         for dz in (-LANDING_SEARCH..=LANDING_SEARCH).step_by(LANDING_STEP as usize) {
             let (x, z) = (cx0 + dx, cz0 + dz);
@@ -277,12 +282,15 @@ pub fn landing_spot(m: &Body, cx: &World<'_>, perch: fn(&str) -> bool) -> Option
                 continue;
             };
             let top = y + 1;
-            if perch(&name) && best.is_none_or(|b| top > b.1) {
-                best = Some((x, top, z));
+            if perch(&name) {
+                spots.push((x, top, z));
             }
         }
     }
-    best.map(|(x, y, z)| [f64::from(x) + 0.5, f64::from(y), f64::from(z) + 0.5])
+    let highest = spots.iter().map(|s| s.1).max()?;
+    spots.retain(|s| s.1 >= highest - 1);
+    let (x, y, z) = spots[m.random.next_int_bound(spots.len() as i32).unwrap_or(0) as usize];
+    Some([f64::from(x) + 0.5, f64::from(y), f64::from(z) + 0.5])
 }
 /// How far above and below it the landing spot is looked for (blocks).
 const SCAN_UP: i32 = 8;
@@ -305,6 +313,7 @@ impl Soar {
             flight: Flight::default(),
             phase: Phase::Descend,
             center: [0.0; 2],
+            drift: [0.0; 2],
             radius: 16.0,
             cruise_y: 0.0,
             clockwise: true,
@@ -367,6 +376,8 @@ impl Soar {
         let (radius, more) = self.how.radius;
         self.radius = radius + f64::from(m.random.next_int_bound(more + 1).unwrap_or(more / 2));
         self.clockwise = m.random.next_int_bound(2).unwrap_or(0) == 0;
+        let angle = f64::from(m.random.next_float()) * std::f64::consts::TAU;
+        self.drift = [angle.cos() * self.how.wander, angle.sin() * self.how.wander];
         if m.on_ground || self.how.lands_on_water && m.in_water {
             self.phase = Phase::Climb;
             let (height, more) = self.how.height;
@@ -386,6 +397,9 @@ impl Soar {
         // A spot it can't reach in 20 s (behind a tree, a cliff): it spirals down where it is instead.
         if self.phase == Phase::Descend && self.ticks > ABANDON_SPOT {
             self.landing = None;
+        }
+        if self.phase != Phase::Descend {
+            self.center = [self.center[0] + self.drift[0], self.center[1] + self.drift[1]];
         }
         let yaw = self.circle_yaw(m);
         let below = self.cruise_y - m.position.y;

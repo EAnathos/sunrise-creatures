@@ -28,6 +28,11 @@ const REST: i32 = 100;
 const FRIGHT: f64 = 6.0;
 const SPREAD: f64 = 8.0;
 const FOR_NOTHING: i32 = 3000;
+/// How far ahead it makes sure of open water before it takes off (blocks), and the turns it tries for it (radians).
+const OPEN_WATER: i32 = 12;
+const TRY_TURNS: [f64; 9] = [0.0, 0.4, -0.4, 0.8, -0.8, 1.2, -1.2, 1.6, -1.6];
+/// Its wandering: how much its heading veers each tick at most (radians), changed every so many ticks.
+const VEER: f64 = 0.03;
 /// Its shoal: the neighbours it turns with, the gap it keeps from them (blocks).
 const SHOAL: f64 = 5.0;
 const GAP: f64 = 0.7;
@@ -141,6 +146,21 @@ fn surface_under(cx: &World<'_>, at: Vec3) -> Option<f64> {
     })?
 }
 
+/// The heading nearest `dir` with open water along it for a glide (none near a shore all around).
+fn open_heading(cx: &World<'_>, at: Vec3, dir: [f64; 2]) -> Option<[f64; 2]> {
+    TRY_TURNS.iter().map(|&a| turned(dir, a)).find(|d| {
+        (1..=OPEN_WATER / 2).all(|i| {
+            let step = f64::from(i * 2);
+            let over = Vec3 {
+                x: at.x + d[0] * step,
+                y: at.y + 0.5,
+                z: at.z + d[1] * step,
+            };
+            surface_under(cx, over).is_some()
+        })
+    })
+}
+
 /// Its heading as a yaw (degrees), as the game turns a mob.
 fn yaw(dir: [f64; 2]) -> f32 {
     (-dir[0]).atan2(dir[1]).to_degrees() as f32
@@ -164,6 +184,9 @@ pub(crate) struct Fish {
     /// Ticks to its next wander, and of rest left after a glide.
     wander: i32,
     rest: i32,
+    /// How its heading veers each tick, and whether its heading was picked yet (at random, its first tick).
+    veer: f64,
+    started: bool,
     /// Its health last tick (a hit frightens it), where its glide began, how high it glides, which way it turns at a
     /// shore.
     health: f32,
@@ -181,6 +204,8 @@ impl Default for Fish {
             dir: [0.0, 1.0],
             wander: 0,
             rest: 0,
+            veer: 0.0,
+            started: false,
             health: -1.0,
             start: [0.0; 3],
             diving: false,
@@ -265,19 +290,35 @@ impl Fish {
         if std::mem::take(&mut self.diving) {
             creature::sounds::queue(m.id, SPLASH, 0.5, 1.1 + m.random.next_float() * 0.2);
         }
-        if let Some(away) = self.fright(m, cx) {
-            self.dir = away;
-            self.phase = Phase::Rise(RISE_TICKS);
-            self.rise(m, cx);
-            return;
+        if !std::mem::replace(&mut self.started, true) {
+            let angle = f64::from(m.random.next_float()) * TAU;
+            self.dir = [angle.cos(), angle.sin()];
         }
-        self.dir = self.shoal(m);
+        // Frightened, it takes off along open water only (never toward a shore it would land on); hemmed in, it
+        // swims off.
+        if let Some(away) = self.fright(m, cx) {
+            match open_heading(cx, m.position, away) {
+                Some(dir) => {
+                    self.dir = dir;
+                    self.phase = Phase::Rise(RISE_TICKS);
+                    self.rise(m, cx);
+                    return;
+                }
+                None => self.dir = away,
+            }
+        }
+        // It wanders: its heading veers this way or that, changing now and then, with a sharper turn at times.
         self.wander -= 1;
         if self.wander <= 0 {
-            self.wander = 60 + m.random.next_int_bound(80).unwrap_or(0);
-            let angle = (f64::from(m.random.next_float()) - 0.5) * 1.6;
-            self.dir = turned(self.dir, angle);
+            self.wander = 40 + m.random.next_int_bound(100).unwrap_or(0);
+            self.veer = (f64::from(m.random.next_float()) * 2.0 - 1.0) * VEER;
+            if m.random.next_int_bound(3) == Some(0) {
+                let angle = (f64::from(m.random.next_float()) - 0.5) * 2.4;
+                self.dir = turned(self.dir, angle);
+            }
         }
+        self.dir = turned(self.dir, self.veer);
+        self.dir = self.shoal(m);
         // A wall ahead: it turns away.
         let ahead = Vec3 {
             x: m.position.x + self.dir[0] * 1.2,
@@ -363,22 +404,32 @@ impl Fish {
             return self.land(m, 0.15, 0.1);
         }
         let Some(surface) = surface_under(cx, m.position) else {
-            // Over land or too high: it drops.
-            return self.land(m, 0.3, -0.3);
+            // Over land (bounced off something) or too high: it drops back the way it came, toward the water.
+            self.dir = [-self.dir[0], -self.dir[1]];
+            return self.land(m, 0.2, -0.3);
         };
+        // The shore ahead: it turns along open water, the harder the nearer; land right ahead, it drops in here.
+        let over = |d: f64| {
+            let at = Vec3 {
+                x: m.position.x + self.dir[0] * d,
+                y: m.position.y,
+                z: m.position.z + self.dir[1] * d,
+            };
+            surface_under(cx, at).is_some()
+        };
+        let (near, mid, far) = (over(2.0), over(4.0), over(8.0));
+        if !near {
+            return self.land(m, 0.0, -0.3);
+        }
+        if !mid {
+            self.dir = turned(self.dir, self.turn * 2.0);
+        } else if !far {
+            self.dir = turned(self.dir, self.turn);
+        }
         // Stopped by a block: it drops.
         let moved = m.velocity.x.hypot(m.velocity.z);
         if !dipping && left < GLIDE_TICKS.0 - 1 && moved < GLIDE_SPEED * 0.3 {
             return self.land(m, 0.3, -0.3);
-        }
-        // No water ahead: it turns back toward open water.
-        let ahead = Vec3 {
-            x: m.position.x + self.dir[0] * 4.0,
-            y: m.position.y,
-            z: m.position.z + self.dir[1] * 4.0,
-        };
-        if surface_under(cx, ahead).is_none() {
-            self.dir = turned(self.dir, self.turn);
         }
         let target = surface + if dipping { 0.1 } else { self.height };
         let up = ((target - m.position.y) * 0.3).clamp(-0.25, 0.25);
