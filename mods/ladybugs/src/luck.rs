@@ -103,7 +103,7 @@ impl Behaviour for Perch {
             if !self.ridden {
                 self.ridden = true;
                 self.ticks = 0;
-                self.stay = STAY.0 + m.random.next_int_bound(STAY.1 - STAY.0).unwrap_or(0);
+                self.stay = m.random.between(STAY);
             }
             return true;
         }

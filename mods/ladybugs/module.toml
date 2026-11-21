@@ -6,3 +6,12 @@ status = "playable"
 creative = ["ladybugs:ladybug_spawn_egg"]
 # Its Rust is built on Sunrise's mod_api.
 ported = true
+
+# Its page in Sunrise's registry (`cargo creature release`, docs/PUBLISHING.md): with its manifest's name, authors and
+# licence, and its README as the description.
+[registry]
+summary = "Ladybugs on the flowers in five kinds; one that lands on you brings luck for as many minutes as it has spots."
+categories = ["mobs"]
+tags = ["ladybug", "insect", "luck", "flowers", "glass-jar"]
+icon = "ladybug"
+screenshots = ["docs/models/ladybugs-ladybug-front.png", "docs/models/ladybugs-ladybug-back.png"]

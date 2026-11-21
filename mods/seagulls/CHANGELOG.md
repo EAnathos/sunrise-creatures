@@ -2,10 +2,11 @@
 
 Each version's section is its registry changelog (`cargo creature release`).
 
-## Unreleased
+## 0.1.1
 
 - A seagull roams the coast: its circle drifts along a random way and it lands on any side (they all went the same
   way).
+- Needs Sunrise Creatures 0.3.3.
 
 ## 0.1.0
 

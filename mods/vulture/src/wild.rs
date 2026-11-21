@@ -18,7 +18,6 @@ pub static SOARING: Soaring = Soaring {
     idle,
     perch: |name| !name.ends_with("leaves") && !matches!(name, "minecraft:water" | "minecraft:lava"),
     lands_on_water: false,
-    wander: 0.0,
 };
 
 /// Only a wild vulture soars on its own; a tamed one follows its owner (`tame.rs`).

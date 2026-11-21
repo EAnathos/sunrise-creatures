@@ -217,7 +217,7 @@ impl Behaviour for PlayDead {
             p.sprinting && p.alive && creature::body::distance(p.position.array(), m.position.array()) < STARTLED
         });
         if self.phase == Phase::Up && (hit || startled) {
-            self.phase = Phase::Lying(LIE.0 + m.random.next_int_bound(LIE.1 - LIE.0).unwrap_or(0));
+            self.phase = Phase::Lying(m.random.between(LIE));
             self.drop = ground_below(m, cx);
             set(&DEAD, m.id, true);
             creature::sounds::queue(m.id, crate::CLICK, 0.6, 1.0 + m.random.next_float() * 0.3);

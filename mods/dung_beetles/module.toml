@@ -6,3 +6,12 @@ status = "playable"
 creative = ["dung_beetles:dung_beetle_spawn_egg", "dung_beetles:dung_ball"]
 # Its Rust is built on Sunrise's mod_api.
 ported = true
+
+# Its page in Sunrise's registry (`cargo creature release`, docs/PUBLISHING.md): with its manifest's name, authors and
+# licence, and its README as the description.
+[registry]
+summary = "Dung beetles that follow the herds, roll their balls in straight lines under the stars and bury them, turning worn pastures green again."
+categories = ["mobs"]
+tags = ["dung-beetle", "beetle", "insect", "pasture", "glass-jar"]
+icon = "dung_beetle"
+screenshots = ["docs/models/dung_beetles-dung_beetle-front.png", "docs/models/dung_beetles-dung_beetle-back.png"]

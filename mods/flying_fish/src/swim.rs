@@ -7,7 +7,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::f64::consts::TAU;
 use std::sync::Mutex;
 
-use creature::body::{Behaviour, Body, Vec3, World};
+use creature::body::{Behaviour, Body, Vec3, World, turned, unit};
 
 /// Its speed swimming and gliding (blocks a tick), and how fast it climbs out.
 const SWIM_SPEED: f64 = 0.1;
@@ -59,7 +59,7 @@ static BUMPED: Mutex<BTreeMap<u32, [f64; 2]>> = Mutex::new(BTreeMap::new());
 
 /// Flying fish `id`, gliding, ran into something at `from`: it bounces off and drops (SPECS §3).
 pub(crate) fn bump(id: u32, at: [f64; 3], from: [f64; 3]) {
-    let away = flat([at[0] - from[0], at[2] - from[2]]).unwrap_or([0.0, 1.0]);
+    let away = unit([at[0] - from[0], at[2] - from[2]]).unwrap_or([0.0, 1.0]);
     BUMPED.lock().unwrap().insert(id, away);
 }
 
@@ -98,7 +98,7 @@ pub(crate) fn scare(at: [f64; 3], from: [f64; 3]) {
         if creature::body::distance(*p, at) > SPREAD || panic.contains_key(id) {
             continue;
         }
-        let away = flat([p[0] - from[0], p[2] - from[2]]).unwrap_or([0.0, 1.0]);
+        let away = unit([p[0] - from[0], p[2] - from[2]]).unwrap_or([0.0, 1.0]);
         // Fanning out: the nearest first, each turned a little.
         let delay = (creature::body::distance(*p, at) * 1.2) as i32 + (*id % 4) as i32;
         let turn = (f64::from(*id % 7) - 3.0) * 0.12;
@@ -108,18 +108,6 @@ pub(crate) fn scare(at: [f64; 3], from: [f64; 3]) {
     if count >= SHOAL_TAKEOFF {
         TOOK_OFF.lock().unwrap().push(at);
     }
-}
-
-/// `v` made a unit vector, if it has a length.
-fn flat(v: [f64; 2]) -> Option<[f64; 2]> {
-    let n = v[0].hypot(v[1]);
-    (n > 1e-6).then(|| [v[0] / n, v[1] / n])
-}
-
-/// `v` turned by `angle` radians.
-fn turned(v: [f64; 2], angle: f64) -> [f64; 2] {
-    let (s, c) = angle.sin_cos();
-    [v[0] * c - v[1] * s, v[0] * s + v[1] * c]
 }
 
 fn cell(p: Vec3) -> [i32; 3] {
@@ -238,7 +226,7 @@ impl Fish {
             self.dir[0] + heading[0] / n * 0.08 + toward[0] / n * 0.05,
             self.dir[1] + heading[1] / n * 0.08 + toward[1] / n * 0.05,
         ];
-        flat(blend).unwrap_or(self.dir)
+        unit(blend).unwrap_or(self.dir)
     }
 
     /// What frightens it this tick, as the heading to flee along.
@@ -277,7 +265,7 @@ impl Fish {
         let from = if hit { Some(player.unwrap_or(at)) } else { player };
         if let Some(from) = from {
             scare(at, from);
-            let away = flat([at[0] - from[0], at[2] - from[2]]).unwrap_or(self.dir);
+            let away = unit([at[0] - from[0], at[2] - from[2]]).unwrap_or(self.dir);
             PANIC.lock().unwrap().remove(&m.id);
             return Some(away);
         }
@@ -386,7 +374,7 @@ impl Fish {
 
     /// A stretch of glide (ticks), shorter in the rain.
     fn stretch(&self, m: &mut Body, cx: &World<'_>) -> i32 {
-        let t = GLIDE_TICKS.0 + m.random.next_int_bound(GLIDE_TICKS.1 - GLIDE_TICKS.0).unwrap_or(0);
+        let t = m.random.between(GLIDE_TICKS);
         if cx.raining { t / 2 } else { t }
     }
 
@@ -518,7 +506,7 @@ mod tests {
     fn a_heading_turns_and_keeps_its_length() {
         let t = turned([0.0, 1.0], TAU / 4.0);
         assert!((t[0] + 1.0).abs() < 1e-9 && t[1].abs() < 1e-9);
-        assert!(flat([0.0, 0.0]).is_none());
+        assert!(unit([0.0, 0.0]).is_none());
         assert!((yaw([0.0, 1.0])).abs() < 1e-6);
     }
 

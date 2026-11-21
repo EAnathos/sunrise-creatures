@@ -124,7 +124,7 @@ pub(crate) fn behaviours() -> Vec<Box<dyn Behaviour>> {
         Box::new(creature::flight::Follow::new(&FOLLOWING, &WINGS)),
         Box::new(Stay),
         Box::new(Eat::default()),
-        Box::new(creature::flight::Soar::new(&crate::SOARING, &WINGS)),
+        Box::new(creature::flight::Soar::roaming(&crate::SOARING, &WINGS, crate::ROAMING)),
         Box::new(Float::default()),
         Box::new(Walk::default()),
     ]
@@ -139,10 +139,6 @@ fn friend(m: &Body, cx: &World<'_>) -> Option<(u128, bool, [f64; 3])> {
 
 fn wild(m: &Body) -> bool {
     creature::friend::of(m.id).is_none()
-}
-
-fn flat(a: [f64; 3], b: [f64; 3]) -> f64 {
-    (a[0] - b[0]).hypot(a[2] - b[2])
 }
 
 fn chance(m: &mut Body, one_in: i32) -> bool {
@@ -288,7 +284,7 @@ impl Behaviour for Snatch {
             self.ticks = SNATCH_FOR;
             return;
         }
-        if flat(m.position.array(), at) < 4.0 {
+        if creature::body::flat_distance(m.position.array(), at) < 4.0 {
             let yaw = heading_of(at[0] - m.position.x, at[2] - m.position.z);
             self.flight.hover(m, at, yaw, &WINGS);
         } else {
@@ -450,7 +446,9 @@ impl Behaviour for Dive {
             DivePhase::Out => {
                 let above = [spot[0], spot[1] + DIVE_HEIGHT, spot[2]];
                 fly_to(&mut self.flight, m, above);
-                if flat(m.position.array(), spot) < 2.5 && m.position.y > spot[1] + DIVE_HEIGHT * 0.5 {
+                if creature::body::flat_distance(m.position.array(), spot) < 2.5
+                    && m.position.y > spot[1] + DIVE_HEIGHT * 0.5
+                {
                     self.phase = DivePhase::Plunge;
                     DIVING.lock().unwrap().insert(m.id, ());
                 }
@@ -492,7 +490,7 @@ impl Behaviour for Dive {
                 let Some((_, _, at)) = friend(m, cx) else {
                     return;
                 };
-                if flat(m.position.array(), at) < 2.5 {
+                if creature::body::flat_distance(m.position.array(), at) < 2.5 {
                     queue(Action::GiveFish { gull: m.id, at });
                     self.phase = DivePhase::Out;
                     self.on = false;
@@ -562,7 +560,7 @@ impl Behaviour for FollowBoat {
             .map_or([0.0, 0.0, 1.0], |p| p.look);
         let n = look[0].hypot(look[2]).max(0.01);
         let behind = [at[0] - look[0] / n * BEHIND, at[1] + OVER, at[2] - look[2] / n * BEHIND];
-        if flat(m.position.array(), behind) < 3.0 {
+        if creature::body::flat_distance(m.position.array(), behind) < 3.0 {
             let yaw = heading_of(look[0], look[2]);
             self.flight.hover(m, behind, yaw, &WINGS);
         } else {
@@ -626,7 +624,12 @@ impl Behaviour for LuckySpot {
             return false;
         }
         self.ticks -= 1;
-        if self.spot.is_none() || self.ticks <= 0 || self.spot.is_some_and(|s| flat(s, at) > SPOT_RANGE * 1.5) {
+        if self.spot.is_none()
+            || self.ticks <= 0
+            || self
+                .spot
+                .is_some_and(|s| creature::body::flat_distance(s, at) > SPOT_RANGE * 1.5)
+        {
             self.spot = Self::pick(m, cx, at);
             self.ticks = SPOT_FOR.0 + m.random.next_int_bound(SPOT_FOR.1).unwrap_or(0);
             if self.spot.is_some() {
@@ -736,7 +739,7 @@ impl Behaviour for Eat {
             self.ticks = 0;
             return;
         }
-        if flat(m.position.array(), at) < 4.0 {
+        if creature::body::flat_distance(m.position.array(), at) < 4.0 {
             let yaw = heading_of(at[0] - m.position.x, at[2] - m.position.z);
             self.flight.hover(m, [at[0], at[1] + 0.3, at[2]], yaw, &WINGS);
         } else {

@@ -65,10 +65,6 @@ impl Creep {
         }
     }
 
-    fn between(m: &mut Body, range: (i32, i32)) -> i32 {
-        range.0 + m.random.next_int_bound((range.1 - range.0).max(1)).unwrap_or(0)
-    }
-
     fn pick(&self, m: &mut Body) -> [f64; 3] {
         if !self.area.is_empty() {
             let b = self.area[m.random.next_int_bound(self.area.len() as i32).unwrap_or(0) as usize];
@@ -109,13 +105,13 @@ impl Behaviour for Creep {
                 return false;
             }
             self.pausing = false;
-            self.ticks = Self::between(m, self.how.crawl);
+            self.ticks = m.random.between(self.how.crawl);
             self.area = (self.how.area)(cx.host(), m.id);
             self.target = Some(self.pick(m));
         }
         if self.ticks <= 0 {
             self.pausing = true;
-            self.ticks = Self::between(m, self.how.pause);
+            self.ticks = m.random.between(self.how.pause);
             self.target = None;
             self.climbing = false;
             return false;

@@ -43,6 +43,23 @@ pub fn distance(a: [f64; 3], b: [f64; 3]) -> f64 {
     (0..3).map(|k| (a[k] - b[k]).powi(2)).sum::<f64>().sqrt()
 }
 
+/// The distance between two points across, leaving their heights out, in blocks.
+pub fn flat_distance(a: [f64; 3], b: [f64; 3]) -> f64 {
+    (a[0] - b[0]).hypot(a[2] - b[2])
+}
+
+/// A heading across (x, z) turned by `angle` radians.
+pub fn turned(v: [f64; 2], angle: f64) -> [f64; 2] {
+    let (s, c) = angle.sin_cos();
+    [v[0] * c - v[1] * s, v[0] * s + v[1] * c]
+}
+
+/// `v` made a unit heading, if it has a length.
+pub fn unit(v: [f64; 2]) -> Option<[f64; 2]> {
+    let n = v[0].hypot(v[1]);
+    (n > 1e-6).then(|| [v[0] / n, v[1] / n])
+}
+
 /// A creature's own random numbers, kept from tick to tick.
 #[derive(Clone, Debug)]
 pub struct Rand(Random);
@@ -58,6 +75,10 @@ impl Rand {
     /// 0 to `bound` - 1; `None` for a bound under 1.
     pub fn next_int_bound(&mut self, bound: i32) -> Option<i32> {
         (bound > 0).then(|| (self.0.next() % bound as u64) as i32)
+    }
+    /// From `range.0` to under `range.1` (ticks, say); `range.0` for an empty range.
+    pub fn between(&mut self, range: (i32, i32)) -> i32 {
+        range.0 + self.next_int_bound(range.1 - range.0).unwrap_or(0)
     }
 }
 

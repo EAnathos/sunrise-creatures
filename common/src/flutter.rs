@@ -333,10 +333,6 @@ impl Flutter {
     }
 }
 
-fn between(m: &mut Body, range: (i32, i32)) -> i32 {
-    range.0 + m.random.next_int_bound(range.1 - range.0).unwrap_or(0)
-}
-
 fn block_of(p: [f64; 3]) -> [i32; 3] {
     [p[0].floor() as i32, p[1].floor() as i32, p[2].floor() as i32]
 }
@@ -413,7 +409,7 @@ impl Flutter {
             crate::sounds::queue(m.id, sound, TAKEOFF_VOLUME, 0.9 + m.random.next_float() * 0.2);
         }
         self.mode = Mode::Fly;
-        self.ticks = between(m, self.kind.flight);
+        self.ticks = m.random.between(self.kind.flight);
         self.target = Some(self.wander(m, cx));
         self.perched = false;
     }
@@ -540,7 +536,7 @@ impl Behaviour for Flutter {
                     m.velocity.z = 0.0;
                     self.perched = there && self.perched;
                     self.mode = Mode::Rest;
-                    self.ticks = between(m, self.kind.rest);
+                    self.ticks = m.random.between(self.kind.rest);
                 }
             }
         }

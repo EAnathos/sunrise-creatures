@@ -10,7 +10,7 @@ grass. Simple, like Worms ✅.
 
 ## 0. Status
 
-Playable on Sunrise (0.1.0, unreleased), tested in game: spawning on grassy ground, following a herd, shaping,
+Playable on Sunrise (0.1.0), tested in game: spawning on grassy ground, following a herd, shaping,
 rolling (straight under a clear night sky, wandering otherwise, turning aside at a fence) and burying a ball, the ground
 turned greener (coarse dirt to dirt, dirt to grass, grass to flowers), taking a ball, the dung ball on the ground and
 in a composter, chickens pecking beetles, the glass jar's catch and its release in a pasture.

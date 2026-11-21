@@ -2,10 +2,6 @@
 
 Each version's section is its registry changelog (`cargo creature release`).
 
-## Unreleased
-
-- A wild vulture lands on one of the high points near it at random rather than always the same one.
-
 ## 0.2.3
 
 - Its flight and soaring are the library's now (shared with the Seagulls), unchanged; a climb held down under leaves

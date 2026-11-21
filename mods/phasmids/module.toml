@@ -6,3 +6,12 @@ status = "playable"
 creative = ["phasmids:stick_insect_spawn_egg", "phasmids:leaf_insect_spawn_egg"]
 # Its Rust is built on Sunrise's mod_api.
 ported = true
+
+# Its page in Sunrise's registry (`cargo creature release`, docs/PUBLISHING.md): with its manifest's name, authors and
+# licence, and its README as the description.
+[registry]
+summary = "Stick and leaf insects hiding in the trees as twigs and leaves: spot them, catch them in a jar and settle them on your own tree."
+categories = ["mobs"]
+tags = ["stick-insect", "leaf-insect", "insect", "trees", "glass-jar"]
+icon = "stick_insect"
+screenshots = ["docs/models/phasmids-stick_insect-front.png", "docs/models/phasmids-leaf_insect-front.png", "docs/models/phasmids-stick_insect-back.png", "docs/models/phasmids-leaf_insect-back.png"]

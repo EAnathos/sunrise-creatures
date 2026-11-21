@@ -217,9 +217,7 @@ enum Phase {
 /// How a flier soars on its own: one take-off in `take_off` ticks on average from the ground, a climb to `height`
 /// blocks (the first, plus up to the second more) above where it left the ground, a circle of `radius` blocks (the
 /// same), circled for `circle_for` ticks (the same); when it may (`idle`), where it lands (`perch`, a block's id:
-/// the vulture's no leaves, water nor lava), whether reaching water ends its descent (the seagull floats), and how
-/// fast its circle drifts along (blocks a tick, a random way each flight: a seagull roams the coast; 0 circles where it
-/// took off).
+/// the vulture's no leaves, water nor lava), and whether reaching water ends its descent (the seagull floats).
 pub struct Soaring {
     pub take_off: i32,
     pub height: (f64, i32),
@@ -228,7 +226,6 @@ pub struct Soaring {
     pub idle: fn(&Body, &World<'_>) -> bool,
     pub perch: fn(&str) -> bool,
     pub lands_on_water: bool,
-    pub wander: f64,
 }
 
 /// Soaring (`Soaring` says how): it takes off now and then, climbs, circles for a while, then picks the highest
@@ -239,7 +236,9 @@ pub struct Soar {
     wings: &'static Wings,
     flight: Flight,
     phase: Phase,
-    /// The circle's centre (x, z), how it drifts each tick, its radius and height.
+    /// How fast its circle drifts along (`roaming`), the circle's centre (x, z), how it drifts each tick, its radius
+    /// and height.
+    wander: f64,
     center: [f64; 2],
     drift: [f64; 2],
     radius: f64,
@@ -313,6 +312,7 @@ impl Soar {
             flight: Flight::default(),
             phase: Phase::Descend,
             center: [0.0; 2],
+            wander: 0.0,
             drift: [0.0; 2],
             radius: 16.0,
             cruise_y: 0.0,
@@ -321,6 +321,14 @@ impl Soar {
             circle_for: 0,
             landing: None,
             on: false,
+        }
+    }
+    /// A roaming flier's soaring (the seagull's along the coast): its circle drifts along at `wander` blocks a tick, a
+    /// random way each flight, rather than staying where it took off.
+    pub fn roaming(how: &'static Soaring, wings: &'static Wings, wander: f64) -> Self {
+        Self {
+            wander,
+            ..Self::new(how, wings)
         }
     }
 
@@ -377,7 +385,7 @@ impl Soar {
         self.radius = radius + f64::from(m.random.next_int_bound(more + 1).unwrap_or(more / 2));
         self.clockwise = m.random.next_int_bound(2).unwrap_or(0) == 0;
         let angle = f64::from(m.random.next_float()) * std::f64::consts::TAU;
-        self.drift = [angle.cos() * self.how.wander, angle.sin() * self.how.wander];
+        self.drift = [angle.cos() * self.wander, angle.sin() * self.wander];
         if m.on_ground || self.how.lands_on_water && m.in_water {
             self.phase = Phase::Climb;
             let (height, more) = self.how.height;

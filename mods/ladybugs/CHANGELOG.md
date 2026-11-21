@@ -9,3 +9,4 @@ Each version's section is its registry changelog (`cargo creature release`).
   gathering at night and in the cold, sheltering under leaves in the rain; one that lands on a player standing still
   gives Luck for as many minutes as it has spots; caught in the glass jar, it settles on a flower patch; chickens peck
   them up; the "All the spots" fact.
+- Needs Sunrise Creatures 0.3.3.

@@ -7,7 +7,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Mutex;
 
-use creature::body::{Behaviour, Body, Vec3, World};
+use creature::body::{Behaviour, Body, Vec3, World, flat_distance, turned};
 use creature::territory;
 
 /// What the mod's tick does for it.
@@ -139,19 +139,6 @@ pub(crate) struct Roll {
     last: Option<Vec3>,
 }
 
-fn between(m: &mut Body, range: (i32, i32)) -> i32 {
-    range.0 + m.random.next_int_bound((range.1 - range.0).max(1)).unwrap_or(0)
-}
-
-fn flat(a: [f64; 3], b: [f64; 3]) -> f64 {
-    (a[0] - b[0]).hypot(a[2] - b[2])
-}
-
-fn turned(v: [f64; 2], angle: f64) -> [f64; 2] {
-    let (s, c) = angle.sin_cos();
-    [v[0] * c - v[1] * s, v[0] * s + v[1] * c]
-}
-
 fn cell(p: Vec3) -> [i32; 3] {
     [p.x.floor() as i32, (p.y + 0.05).floor() as i32, p.z.floor() as i32]
 }
@@ -172,10 +159,10 @@ impl Roll {
             .filter(|p| {
                 anchor.is_none_or(|a| {
                     let a = [f64::from(a[0]) + 0.5, f64::from(a[1]), f64::from(a[2]) + 0.5];
-                    flat(*p, a) <= f64::from(territory::PASTURE_RANGE)
+                    flat_distance(*p, a) <= f64::from(territory::PASTURE_RANGE)
                 })
             })
-            .min_by(|a, b| flat(*a, at).total_cmp(&flat(*b, at)))
+            .min_by(|a, b| flat_distance(*a, at).total_cmp(&flat_distance(*b, at)))
     }
 
     /// A heading to roll along: any way, or for a settled one far out in its pasture, back across it.
@@ -212,7 +199,7 @@ impl Roll {
 
     fn idle(&mut self, m: &mut Body) {
         self.phase = Phase::Idle;
-        self.wait = Some(between(m, BALL_EVERY));
+        self.wait = Some(m.random.between(BALL_EVERY));
     }
 
     fn roll(&mut self, m: &mut Body, cx: &World<'_>) {
@@ -277,7 +264,7 @@ impl Roll {
         // A settled one stops at the edge of its pasture.
         let out = territory::anchor(m.id).is_some_and(|a| {
             let a = [f64::from(a[0]) + 0.5, f64::from(a[1]), f64::from(a[2]) + 0.5];
-            flat(m.position.array(), a) > f64::from(territory::PASTURE_RANGE)
+            flat_distance(m.position.array(), a) > f64::from(territory::PASTURE_RANGE)
         });
         if done >= length || out || ticks >= ROLL_MAX {
             let below = [here[0], here[1] - 1, here[2]];
@@ -308,11 +295,11 @@ impl Roll {
 impl Behaviour for Roll {
     fn can_use(&mut self, m: &mut Body, cx: &World<'_>) -> bool {
         if self.wait.is_none() {
-            self.wait = Some(between(m, BALL_EVERY));
+            self.wait = Some(m.random.between(BALL_EVERY));
         }
         if TAKEN.lock().unwrap().remove(&m.id) {
             self.phase = Phase::Startled(LOOK_AROUND);
-            self.wait = Some(between(m, BALL_EVERY));
+            self.wait = Some(m.random.between(BALL_EVERY));
         }
         self.look -= 1;
         if self.look <= 0 {
@@ -323,7 +310,7 @@ impl Behaviour for Roll {
             let wait = self.wait.unwrap_or(0) - 1;
             self.wait = Some(wait);
             if let Some(h) = self.herd {
-                let far = flat(h, m.position.array()) > NEAR_HERD;
+                let far = flat_distance(h, m.position.array()) > NEAR_HERD;
                 if wait <= 0 {
                     // Where the animal stands: there it shapes a ball.
                     self.phase = Phase::To {
@@ -356,7 +343,7 @@ impl Behaviour for Roll {
             Phase::Idle => {}
             Phase::To { at, left, shape } => {
                 // There, or near enough (an animal may stand on the spot still): it shapes its ball where it is.
-                let there = flat(at, m.position.array()) < if shape { 1.5 } else { 0.8 };
+                let there = flat_distance(at, m.position.array()) < if shape { 1.5 } else { 0.8 };
                 if there || shape && left <= 0 {
                     Self::still(m);
                     if shape {

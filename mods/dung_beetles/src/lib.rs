@@ -366,7 +366,12 @@ fn compost(host: &mut dyn ServerHost, level: LevelRef, p: [i32; 3]) -> bool {
         return false;
     }
     let next = if now + 1 >= 7 { 8 } else { now + 1 };
-    if !host.set_block_property(p, "level", &next.to_string()) {
+    // In the clicked block's own level (the host's `set_block_property` doesn't say which).
+    let Some(state) = host.block_state_id(&format!("minecraft:composter[level={next}]")) else {
+        return false;
+    };
+    let flags = mod_api::BlockUpdateFlags::NEIGHBORS | mod_api::BlockUpdateFlags::CLIENTS;
+    if !level.set_block(host, p, state, flags).unwrap_or(false) {
         return false;
     }
     let at = [f64::from(p[0]) + 0.5, f64::from(p[1]) + 0.5, f64::from(p[2]) + 0.5];

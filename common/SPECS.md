@@ -18,9 +18,10 @@ Everything below works and was tested in game, single player, unless said otherw
   the Vulture runs on it (tested in game: soaring, gliding down, ridden flight), and the seagull.
 - **The small crawlers' crawl** (§3.6, `creature::crawl`): the worm's ground crawl, now a library goal the next ground
   creatures share; Worms runs on it (tested in game, its behaviour unchanged). **Creeping** (§3.16, `creature::creep`):
-  a crawl moved by hand that climbs, for the Ladybugs and the Phasmids.
+  a crawl moved by hand that climbs, for the Ladybugs and the Phasmids, and the Dung Beetles' that doesn't.
 - **Glass jar and territories** (§4): catching, releasing, settling on a flower patch or in a garden, the jar on
-  display (spared by blasts and pistons). The jar's absence from the creative tab and recipe when no jar mod is
+  display (spared by blasts and pistons), and the tree (the Phasmids) and pasture (the Dung Beetles) rules; a jar
+  holding each catchable creature in the creative tab. The jar's absence from the creative tab and recipe when no jar mod is
   installed, and the catch/release/display/name/TNT/piston behavior, are confirmed. The **sand** rule (§4.2, for
   Scorpions) is coded but not yet exercised in game.
 - **Colours and patterns** (§5), used by the butterflies.
@@ -29,7 +30,7 @@ Everything below works and was tested in game, single player, unless said otherw
   sharing the game's 8.
 - **Fighting back** (§3.12, `creature::anger`): the scorpions and the storm spirits.
 - **Water creatures** (§3.10, `creature::aquatic`), **touches** (§3.13, `creature::touch`) and **hunters** (§3.7,
-  `creature::prey`, the sea turtles, the dolphins and the seagulls; chickens come with their mods): the jellyfish and
+  `creature::prey`, the sea turtles, the dolphins and the seagulls; chickens: the ladybugs and the dung beetles): the jellyfish and
   the flying fish (and the storm spirits' touch). How much water is over a point (`aquatic::water_over`): the
   jellyfish's and the flying fish's depth, the seagull's surface.
 - **Food on the ground** (§3.15, `creature::food`): the vulture's meat, the seagull's fish and stolen food.
@@ -38,6 +39,9 @@ Everything below works and was tested in game, single player, unless said otherw
   on a mob or a player; `give_effect_level` at a level above the first: the ladybugs' Luck II), `is_boat` (a boat or a raft: the jellyfish, the flying fish, the seagull). Particles:
   `particles::puff` (a puff of particles around a point); friends: `friend::sign` (hearts or smoke after a try to
   befriend: the fairies, the seagull).
+- **Body helpers** (`creature::body`): `distance`, `flat_distance` (across, heights left out: the seagull, the dung
+  beetle), `turned` and `unit` (a heading turned, made a unit: the flying fish, the dung beetle), `Rand::between` (a
+  number of ticks in a range).
 - **The item in hand** (`creature::hand`): items whose right-click only the server's hooks handle (the jar, the guide,
   the mods' throwables) skip the off hand's turn, `use_one` uses one up, `stack` makes a stack of an item by its id.
 - **Creature guide book and bestiary** (§7).
@@ -65,7 +69,7 @@ stay in the vulture until a second mod needs them, except friends (§6.2) and th
   own `register` hook. It publishes functions, types and statics; shared state is behind `Mutex`es.
 - **Its content**: the series' tab, shared blocks and items (`creature:glass_jar`, `creature:guide`, the jar blocks), their recipes
   (conditional when a feature depends on a mod), textures and translations (`en_us`, `fr_fr`).
-- **Pinned** to the series' Sunrise revision (docs/SUNRISE-ISSUES.md). Version `0.3.2`; a breaking API change bumps
+- **Pinned** to the series' Sunrise revision (docs/SUNRISE-ISSUES.md). Version `0.3.3`; a breaking API change bumps
   the minor version while in `0.x`, and the mods' `[dependencies] creature` with it.
 
 ## 3. Systems in place
@@ -219,7 +223,7 @@ tick by `Controls` (a rider's keys, or the creature's own behaviour). What diffe
 library's friends, §6.2) as a `Following` says: flying to them past some distance, landing near them (on the water for
 one that floats), coming to them when far, when the mod lets it. `Soar` is soaring on its own, as a
 `Soaring` says: a take-off now and then, a climb (given up after 10 s held down, under leaves say), circling (its
-circle drifting along a random way for a roaming flier, the seagull: `wander`), then a glide down onto a high perch
+circle drifting along a random way for a roaming flier, the seagull: `Soar::roaming`), then a glide down onto a high perch
 near it, one of those within a block of the highest at random (`landing_spot`, its `perch` rule; over a flat sea, any
 way), or onto the water for one that floats.
 Riding stays the vulture's. Users: **Vulture**, **Seagulls**.

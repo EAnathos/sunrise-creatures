@@ -9,3 +9,4 @@ Each version's section is its registry changelog (`cargo creature release`).
   clear night sky) and bury them, turning coarse dirt into dirt, dirt into grass and grass into flowers; take a
   rolling beetle's dung ball to do it by hand or fill a composter; chickens peck them up; caught in the glass jar, they
   settle in a pasture.
+- Needs Sunrise Creatures 0.3.3.
