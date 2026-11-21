@@ -41,8 +41,6 @@ shepherd, shy fairies, scorpions, spirits of living lightning, jellyfish, flying
   </tr>
 </table>
 
-<sub>In game on Sunrise, HUD hidden.</sub>
-
 ## The mods
 
 | | Mod | What it adds |
@@ -92,15 +90,20 @@ Each version is also a [release of this repository](https://github.com/EAnathos/
 
 ## In the game
 
-- **The creature guide**: every player gets one the first time they join a world. Right-click it to open the
-  **bestiary**: each creature you come across gets a page, turning in 3D, with the biomes you met it in, how rare it
-  is and what you found out about it (what it eats, what catches it...).
-- **The glass jar** (3 glass in a U and an oak slab, makes 2; only with Butterflies, Fireflies, Worms or Fairies
-  installed): right-click a butterfly, a moth, a firefly, a worm or a fairy to catch it, right-click a block with the
-  filled jar to release it. Released on a flower (or, for a worm, in a garden), it stays there. Sneak + right-click
-  places the filled jar as a small glass jar holding the creature; fireflies and fairies make it glow.
-- Monsters leave the series' creatures alone.
-- Each mod's page tells you how to find and use its creatures.
+The idea is to bring Minecraft's world to life: creatures that belong where you meet them, some common, some rare,
+each with its own way of living, its own interactions with you and with the world, and something it is good for. A
+vulture to tame and fly, worms that help a garden grow, fairies that light your way, seagulls that steal your bread or
+fish for you, a cyclops guarding its flock at a cave mouth.
+
+**The creature guide** ties them together. Every player gets one the first time they join a world. Its **bestiary**
+gives each creature you come across a page, its model turning in 3D, with the biomes you met it in and how rare it is
+(common, uncommon, rare or very rare). The page fills in as you play: the kinds and colours you have seen, and the
+facts you find out by watching it live (what it eats, what hunts it, how to befriend it, what it does when you come
+too close). Its **Items** tab shows what each creature drops and what it is for. With the
+[Vanilla Bestiary](mods/vanilla_bestiary/README.md), Minecraft's own creatures get their pages too, found out the same
+way.
+
+Each mod's page tells you how to find its creatures and what to do with them.
 
 Single player only for now; multiplayer comes later for the whole series.
 
