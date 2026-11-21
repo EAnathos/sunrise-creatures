@@ -222,7 +222,7 @@ fn filled(host: &dyn Host, aquatic: &Aquatic, look: Option<&Compound>, name: Opt
         item = jar::quoted(aquatic.bucket),
         data = jar::DATA,
         kind = jar::quoted(aquatic.kind),
-        lore = jar::lore(aquatic.kind, look_fields, false, name),
+        lore = jar::lore(aquatic.kind, look_fields, false, name, true),
     );
     host.item_from_snbt(&snbt)
 }

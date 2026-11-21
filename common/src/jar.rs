@@ -136,7 +136,7 @@ pub(crate) fn fill_tab(host: &dyn Host, edit: mod_api::CreativeTabEdit) {
     };
     let mut after = empty;
     for c in all {
-        let Some(jar) = filled(host, c, None, None, None) else {
+        let Some(jar) = filled(host, c, None, None, None, false) else {
             continue;
         };
         let placed = edit.insert(
@@ -156,13 +156,15 @@ pub(crate) fn quoted(s: &str) -> String {
     format!("\"{}\"", s.replace('\\', "\\\\").replace('"', "\\\""))
 }
 
-/// A filled jar holding `kind` with `look`, the friend of `friend`, named `name`.
+/// A filled jar holding `kind` with `look`, the friend of `friend`, named `name`; with the series' line under it
+/// (`series`), except for the creative tab's jars, which the game names itself.
 fn filled(
     host: &dyn Host,
     c: &Catchable,
     look: Option<&Compound>,
     friend: Option<[i32; 4]>,
     name: Option<&str>,
+    series: bool,
 ) -> Option<ItemStack> {
     let look_fields = look.map(|l| {
         let text = |key: &str| match l.get(&key.into()) {
@@ -198,16 +200,23 @@ fn filled(
         look_data = look,
         model = quoted(c.model),
         name = quoted(&entity_key),
-        lore = lore(c.kind, look_fields, friend.is_some(), name),
+        lore = lore(c.kind, look_fields, friend.is_some(), name, series),
     );
     host.item_from_snbt(&snbt)
 }
 
 /// The filled jar's lines under its name: what it holds (its colour, its pattern and the pattern's colour, in the
-/// mod's words: `look.<mod>.colour.<id>`, `look.<mod>.pattern.<id>`), then the series' name in blue, as the creative
-/// tab names an item it lists (a filled jar is in no tab, so the game shows no tab line for it). A named creature's jar
-/// says its name first, a befriended creature's jar says so.
-pub(crate) fn lore(kind: &str, look: Option<[String; 3]>, befriended: bool, name: Option<&str>) -> String {
+/// mod's words: `look.<mod>.colour.<id>`, `look.<mod>.pattern.<id>`), then the series' name in blue (`series`), as the
+/// creative tab names an item it lists. A caught creature's jar is in no tab (its data differs from the tab's jars, which
+/// have no such line), so the game shows no tab line for it; the tab's own jars get the game's line instead. A named
+/// creature's jar says its name first, a befriended creature's jar says so.
+pub(crate) fn lore(
+    kind: &str,
+    look: Option<[String; 3]>,
+    befriended: bool,
+    name: Option<&str>,
+    series: bool,
+) -> String {
     let namespace = kind.split(':').next().unwrap_or(kind);
     let colour = |id: &str| format!("{{translate:{}}}", quoted(&format!("look.{namespace}.colour.{id}")));
     let pattern = |id: &str| format!("{{translate:{}}}", quoted(&format!("look.{namespace}.pattern.{id}")));
@@ -237,7 +246,9 @@ pub(crate) fn lore(kind: &str, look: Option<[String; 3]>, befriended: bool, name
     if befriended {
         lines.push("{translate:\"item.creature.glass_jar.friend\",color:\"light_purple\",italic:false}".into());
     }
-    lines.push("{translate:\"itemGroup.creature\",color:\"blue\",italic:false}".into());
+    if series {
+        lines.push("{translate:\"itemGroup.creature\",color:\"blue\",italic:false}".into());
+    }
     lines.join(",")
 }
 
@@ -277,7 +288,7 @@ pub fn catch(host: &mut dyn ServerHost, event: &EntityInteractEvent<'_>) -> bool
     }
     let look = colours::saved(host, id);
     let name = custom_name(host, id);
-    let Some(jar) = filled(&*host, c, look.as_ref(), friend.map(|f| f.uuid), name.as_deref()) else {
+    let Some(jar) = filled(&*host, c, look.as_ref(), friend.map(|f| f.uuid), name.as_deref(), true) else {
         return false;
     };
     if !host.entity(id).is_some_and(|e| e.discard(host)) {
@@ -495,7 +506,7 @@ pub fn broken(host: &mut dyn ServerHost, pos: [i32; 3]) {
         return;
     };
     let item = match catchable(&kind) {
-        Some(c) => filled(&*host, c, look.as_ref(), friend, name.as_deref()),
+        Some(c) => filled(&*host, c, look.as_ref(), friend, name.as_deref(), true),
         None => empty(&*host),
     };
     if let Some(item) = item {
@@ -586,12 +597,16 @@ mod tests {
 
     #[test]
     fn a_named_befriended_jar_says_both_then_the_series() {
-        let lines = lore("fairies:fairy", None, true, Some("Lili"));
+        let lines = lore("fairies:fairy", None, true, Some("Lili"), true);
         let name = lines.find("glass_jar.name").unwrap();
         let friend = lines.find("glass_jar.friend").unwrap();
         let series = lines.find("itemGroup.creature").unwrap();
         assert!(name < friend && friend < series);
         assert!(lines.contains("{text:\"Lili\"}"));
-        assert_eq!(lore("worms:worm", None, false, None).matches("translate").count(), 1);
+        assert_eq!(
+            lore("worms:worm", None, false, None, true).matches("translate").count(),
+            1
+        );
+        assert_eq!(lore("worms:worm", None, false, None, false), "");
     }
 }
