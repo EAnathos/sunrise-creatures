@@ -1,0 +1,15 @@
+{
+  "entity.ladybugs.ladybug": "Ladybug",
+  "item.ladybugs.ladybug_spawn_egg": "Ladybug Spawn Egg",
+  "look.ladybugs.colour.plain": "Plain",
+  "look.ladybugs.pattern.seven_spot": "Seven-spot",
+  "look.ladybugs.pattern.two_spot": "Two-spot",
+  "look.ladybugs.pattern.twenty_two_spot": "Twenty-two-spot",
+  "look.ladybugs.pattern.orange": "Orange",
+  "look.ladybugs.pattern.harlequin": "Harlequin",
+  "bestiary.ladybugs.luck": "Luck",
+  "bestiary.ladybugs.cluster": "Cluster",
+  "bestiary.ladybugs.chicken": "Chicken",
+  "bestiary.ladybugs.jar": "Jar",
+  "bestiary.ladybugs.flower": "Flower"
+}

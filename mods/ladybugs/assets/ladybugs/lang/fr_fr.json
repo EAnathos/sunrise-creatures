@@ -1,0 +1,15 @@
+{
+  "entity.ladybugs.ladybug": "Coccinelle",
+  "item.ladybugs.ladybug_spawn_egg": "Œuf d'apparition de coccinelle",
+  "look.ladybugs.colour.plain": "Uni",
+  "look.ladybugs.pattern.seven_spot": "À sept points",
+  "look.ladybugs.pattern.two_spot": "À deux points",
+  "look.ladybugs.pattern.twenty_two_spot": "À vingt-deux points",
+  "look.ladybugs.pattern.orange": "Orange",
+  "look.ladybugs.pattern.harlequin": "Arlequin",
+  "bestiary.ladybugs.luck": "Chance",
+  "bestiary.ladybugs.cluster": "Rassemblement",
+  "bestiary.ladybugs.chicken": "Poule",
+  "bestiary.ladybugs.jar": "Bocal",
+  "bestiary.ladybugs.flower": "Fleur"
+}

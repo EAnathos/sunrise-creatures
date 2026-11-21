@@ -18,6 +18,10 @@
         {
           "type": "neoforge:mod_loaded",
           "modid": "fairies"
+        },
+        {
+          "type": "neoforge:mod_loaded",
+          "modid": "ladybugs"
         }
       ]
     }

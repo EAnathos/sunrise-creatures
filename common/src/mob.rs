@@ -135,10 +135,15 @@ pub fn spared(entity: &str, target: &str) -> bool {
 
 /// Gives `target` (a mob or a player) effect `id` (`minecraft:poison`) for `ticks`.
 pub fn give_effect(host: &mut dyn ServerHost, target: u32, id: &str, ticks: i32) {
+    give_effect_level(host, target, id, ticks, 0);
+}
+
+/// `give_effect` at a level above the first (`amplifier` 1 for Luck II: the ladybugs).
+pub fn give_effect_level(host: &mut dyn ServerHost, target: u32, id: &str, ticks: i32, amplifier: i32) {
     let (Some(effect), Some(living)) = (host.effect_key(id), host.entity(target).and_then(|e| host.living(e))) else {
         return;
     };
-    living.add_effect(host, &ActiveEffect::new(effect, ticks, 0, false, true, true));
+    living.add_effect(host, &ActiveEffect::new(effect, ticks, amplifier, false, true, true));
 }
 
 /// The UUID of the player whose entity is `entity`, if it is a player.

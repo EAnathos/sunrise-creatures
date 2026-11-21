@@ -34,7 +34,7 @@ Everything below works and was tested in game, single player, unless said otherw
 - **Food on the ground** (§3.15, `creature::food`): the vulture's meat, the seagull's fish and stolen food.
 - **Mob helpers** (`creature::mob`): `ours` (muted, own box, own goals, spared), `resize`, `Muted`, `despawn_far` (small
   wild creatures far from players, as vanilla's ambient mobs), `nearest_player`, `player_of`, `give_effect` (an effect
-  on a mob or a player), `is_boat` (a boat or a raft: the jellyfish, the flying fish, the seagull). Particles:
+  on a mob or a player; `give_effect_level` at a level above the first: the ladybugs' Luck II), `is_boat` (a boat or a raft: the jellyfish, the flying fish, the seagull). Particles:
   `particles::puff` (a puff of particles around a point); friends: `friend::sign` (hearts or smoke after a try to
   befriend: the fairies, the seagull).
 - **The item in hand** (`creature::hand`): items whose right-click only the server's hooks handle (the jar, the guide,
@@ -119,7 +119,7 @@ fill, so small fliers would only appear with new chunks and be gone once their p
 `chance` while fewer than its `cap` are within 48 blocks, a group comes out 16 to 40 blocks away over the ground, in one
 of its biomes, at its hours. Wild ones far from players despawn, so they come and go as bats do. Users: Butterflies
 (butterflies, moths), Fireflies, Fairies; planned: **Phasmids**, whose groups are placed **on the top of leaves**
-instead of over the ground (mods/phasmids/SPECS.md §3), and **Ladybugs** (their short flights and spawning,
+instead of over the ground (mods/phasmids/SPECS.md §3); **Ladybugs** ✅ (their short flights and spawning,
 mods/ladybugs/SPECS.md §3).
 
 ### 3.6 Small crawlers (`creature::crawl`) ✅
@@ -128,9 +128,10 @@ The slow crawl on the ground of worms, scorpions and the other ground creatures:
 `creature::crawl::Crawl`, driven by a `Cfg` (speed, how long a crawl and a pause last, how far a wild one wanders, how
 its settled area is found, a pause hook for the worm's dig). A wild one crawls around where it first crawled; a settled
 one crawls only over its area (its mod's territory rule). Users: **Worms** (in place), **Dung Beetles**, **Scorpions**
-(mods/scorpions/SPECS.md §3), **Phasmids** (mods/phasmids/SPECS.md §3) and **Ladybugs** (mods/ladybugs/SPECS.md §3).
-Still to add when their mods are built: a beetle's walking toward a target (backwards), and **climbing** for phasmids
-and ladybugs (up the sides of logs, flowers and leaves and on their top).
+(mods/scorpions/SPECS.md §3) and **Phasmids** (mods/phasmids/SPECS.md §3); the **Ladybugs** too once a small flier's rest
+lets a crawl move it (mods/ladybugs/SPECS.md §1). Still to add when their mods are built: a beetle's walking toward a
+target (backwards), and **climbing** for phasmids and ladybugs (up the sides of logs, flowers and leaves and on their
+top).
 
 ### 3.7 Hunters eat small creatures (`creature::prey`) ✅
 
@@ -142,7 +143,7 @@ fish) ✅; the prey's fact and its mod's `when_caught` stay for its own hunters.
 walked to its prey: it goes for it itself (its flight), asking which one is its own (`quarry`) ✅.
 
 - **Chickens** peck small creatures within 6 blocks, so a player keeps chickens out of a garden or a pasture. Users:
-  **Worms**, **Dung Beetles** (mods/dung_beetles/SPECS.md §2), **Ladybugs** (mods/ladybugs/SPECS.md §3).
+  **Worms**, **Dung Beetles** (mods/dung_beetles/SPECS.md §2), **Ladybugs** ✅ (mods/ladybugs/SPECS.md §3).
 - **Sea turtles** swim to jellyfish within 8 blocks and eat them ✅ (the hunter sent with `MobRef::move_to`). User:
   **Jellyfish** (mods/jellyfish/SPECS.md §3).
 - **Dolphins** chase flying fish within 12 blocks and eat them ✅; the fish flee by gliding. User: **Flying Fish**
@@ -229,7 +230,7 @@ raw fish may befriend it).
 ## 4. Glass jar and territories ✅
 
 Catching small creatures and settling them in a place they won't leave. Users: **Butterflies**, **Worms**, **Fireflies**
-✅, **Fairies** ✅, and **Dung Beetles**, **Phasmids**, **Scorpions** and **Ladybugs** once built (they then join the recipe's
+✅, **Fairies** ✅, **Ladybugs** ✅, and **Dung Beetles**, **Phasmids** and **Scorpions** once built (they then join the recipe's
 condition and the tab injection). The jar is the library's ✅ and is **active only if one of them is installed** ✅
 (hidden otherwise, §3.3).
 
@@ -277,8 +278,8 @@ the block it was released on, by the mod's rule:
 ## 5. Colours and patterns ✅
 
 One species with **several colours and patterns** ✅. Users: **Butterflies**, the **Flying Fish** and the **Jellyfish**
-(their kinds as patterns with textures of their own); planned: **Ladybugs** (a tinted shell and its spots,
-mods/ladybugs/SPECS.md §1).
+(their kinds as patterns with textures of their own), the **Ladybugs** (their kinds as patterns, drawn by the mod: a
+tinted shell and its spots, mods/ladybugs/SPECS.md §1).
 
 - A creature rolls a **base colour**, a **pattern** and a **pattern colour** at spawn (from lists the mod gives, each
   weighted, per biome ✅). Saved on the entity, kept in jars.

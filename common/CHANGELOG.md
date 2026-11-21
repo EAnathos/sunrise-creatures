@@ -2,6 +2,11 @@
 
 Each version's section is its registry changelog (`cargo creature release`).
 
+## Unreleased
+
+- `mob::give_effect_level`: an effect at a level above the first (the ladybugs' Luck II).
+- The glass jar's recipe also comes with the Ladybugs installed.
+
 ## 0.3.2
 
 - Big fliers (`creature::flight`): the vulture's flight and soaring, moved from the Vulture for the Seagulls; a climb
