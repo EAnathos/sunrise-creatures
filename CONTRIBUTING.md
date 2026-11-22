@@ -126,7 +126,8 @@ CC0 recordings. A contribution has to fit that, so before you open a pull reques
 
 - **You have the right to submit it.** Everything in it is your own work, or third-party material you may share
   (below). Sign off each commit (`git commit -s`): it certifies the
-  [Developer Certificate of Origin](https://developercertificate.org).
+  [Developer Certificate of Origin](https://developercertificate.org); a check on every pull request
+  (`.github/workflows/sign-off.yml`) refuses a commit without it.
 - **Your code, data and text** are licensed under the project's code licence, and you allow the author (EAnathos) to
   license them under other terms too, so the series' licence can change without asking every contributor again.
 - **Third-party material is named.** Say in the pull request where each piece comes from and under which licence. Code:
