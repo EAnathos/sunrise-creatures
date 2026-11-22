@@ -14,4 +14,4 @@ summary = "Stick and leaf insects hiding in the trees as twigs and leaves: spot 
 categories = ["mobs"]
 tags = ["stick-insect", "leaf-insect", "insect", "trees", "glass-jar"]
 icon = "stick_insect"
-screenshots = ["docs/models/phasmids-stick_insect-front.png", "docs/models/phasmids-leaf_insect-front.png", "docs/models/phasmids-stick_insect-back.png", "docs/models/phasmids-leaf_insect-back.png"]
+screenshots = ["docs/media/readme/phasmids.webp", "docs/models/phasmids-stick_insect-front.png", "docs/models/phasmids-leaf_insect-front.png", "docs/models/phasmids-stick_insect-back.png", "docs/models/phasmids-leaf_insect-back.png"]

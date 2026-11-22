@@ -69,7 +69,7 @@ stay in the vulture until a second mod needs them, except friends (§6.2) and th
   own `register` hook. It publishes functions, types and statics; shared state is behind `Mutex`es.
 - **Its content**: the series' tab, shared blocks and items (`creature:glass_jar`, `creature:guide`, the jar blocks), their recipes
   (conditional when a feature depends on a mod), textures and translations (`en_us`, `fr_fr`).
-- **Pinned** to the series' Sunrise revision (docs/SUNRISE-ISSUES.md). Version `0.3.3`; a breaking API change bumps
+- **Pinned** to the series' Sunrise revision (docs/SUNRISE-ISSUES.md). Version `0.3.4`; a breaking API change bumps
   the minor version while in `0.x`, and the mods' `[dependencies] creature` with it.
 
 ## 3. Systems in place
@@ -223,9 +223,10 @@ tick by `Controls` (a rider's keys, or the creature's own behaviour). What diffe
 library's friends, §6.2) as a `Following` says: flying to them past some distance, landing near them (on the water for
 one that floats), coming to them when far, when the mod lets it. `Soar` is soaring on its own, as a
 `Soaring` says: a take-off now and then, a climb (given up after 10 s held down, under leaves say), circling (its
-circle drifting along a random way for a roaming flier, the seagull: `Soar::roaming`), then a glide down onto a high perch
-near it, one of those within a block of the highest at random (`landing_spot`, its `perch` rule; over a flat sea, any
-way), or onto the water for one that floats.
+circle drifting along a random way for a roaming flier, the seagull: `Soar::roaming`; toward water for one that
+floats), then a glide down onto a high perch near it, one of those within a block of the highest at random
+(`landing_spot`, its `perch` rule; over a flat sea, any way); one that floats lands only on the water or within 4
+blocks of it when there is water around, so a seagull keeps to the coast.
 Riding stays the vulture's. Users: **Vulture**, **Seagulls**.
 
 ### 3.15 Food on the ground (`creature::food`) ✅

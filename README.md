@@ -39,6 +39,18 @@ shepherd, shy fairies, scorpions, spirits of living lightning, jellyfish, flying
     <td width="50%"><img src="docs/media/readme/scorpions.webp" alt="A desert, a badlands and a cave scorpion on sand"><br><sub>Scorpions of the desert, the badlands and the caves</sub></td>
     <td width="50%"><img src="docs/media/readme/bestiary.webp" alt="The creature guide open on the butterfly's page, its morphs below and the species met on the right"><br><sub>The creature guide's bestiary</sub></td>
   </tr>
+  <tr>
+    <td width="50%"><img src="docs/media/readme/seagulls.webp" alt="Three seagulls on a sandy beach, the sea behind them"><br><sub>Seagulls on the shore</sub></td>
+    <td width="50%"><img src="docs/media/readme/flying_fish.webp" alt="A shoal of flying fish gliding over the waves, a dolphin leaping after them"><br><sub>Flying fish gliding away from a dolphin</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/media/readme/ladybugs.webp" alt="Ladybugs on the flowers of a meadow"><br><sub>Ladybugs on the flowers</sub></td>
+    <td width="50%"><img src="docs/media/readme/phasmids.webp" alt="Two stick insects and a leaf insect on top of an oak's leaves"><br><sub>Stick insects and a leaf insect, hard to spot on their tree</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/media/readme/dung_beetles.webp" alt="A dung beetle rolling its ball by a cow in a pasture"><br><sub>A dung beetle rolling its ball by the herd</sub></td>
+    <td width="50%"><img src="docs/media/readme/sporelins.webp" alt="A red and two brown sporelins among mushrooms on podzol"><br><sub>Sporelins among the mushrooms</sub></td>
+  </tr>
 </table>
 
 ## The mods

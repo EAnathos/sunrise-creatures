@@ -2,9 +2,10 @@
 
 Each version's section is its registry changelog (`cargo creature release`).
 
-## Unreleased
+## 0.1.1
 
 - Built on the library's `creep::too_tall`, unchanged.
+- Needs Sunrise Creatures 0.3.4.
 
 ## 0.1.0
 

@@ -8,3 +8,4 @@ Each version's section is its registry changelog (`cargo creature release`).
   swamps, in the dark; they hide as mushrooms from a player who comes near, puff spores when startled and plant
   mushrooms; befriended with a mushroom of their colour, one follows you or stays and tends a mushroom patch, fills an
   empty bowl with stew once a day and glows softly at night; killed, a mushroom of its colour.
+- Needs Sunrise Creatures 0.3.4.

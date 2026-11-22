@@ -2,8 +2,10 @@
 
 Each version's section is its registry changelog (`cargo creature release`).
 
-## Unreleased
+## 0.3.4
 
+- Soaring (`flight::Soar`), for a flier that floats (the seagull): its circle drifts toward water and it lands on the
+  water or its shore, so it keeps to the coast rather than wandering inland.
 - `creep::too_tall`: a fence, a wall or a gate, taller than a step (the Dung Beetles, the Sporelins); the spore
   particle for the Sporelins.
 

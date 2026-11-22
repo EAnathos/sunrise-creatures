@@ -10,7 +10,7 @@ mushrooms where they walk; befriended, one follows you home and tends a mushroom
 
 ## 0. Status
 
-Playable on Sunrise (0.1.0, unreleased), tested in game: its two looks, hiding from a player and coming out again,
+Playable on Sunrise (0.1.0), tested in game: its two looks, hiding from a player and coming out again,
 the spore puff and running off when hit (along a fence too), befriending with a mushroom of its colour (one chance in
 3), following its friend and coming to them when far (onto the ground by them, never in the air), staying and tending a
 patch (mushrooms of its colour planted around it), the stew once a day (a second bowl the same day refused), the glow

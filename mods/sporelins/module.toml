@@ -6,3 +6,12 @@ status = "playable"
 creative = ["sporelins:sporelin_spawn_egg"]
 # Its Rust is built on Sunrise's mod_api.
 ported = true
+
+# Its page in Sunrise's registry (`cargo creature release`, docs/PUBLISHING.md): with its manifest's name, authors and
+# licence, and its README as the description.
+[registry]
+summary = "Shy mushroom sprites that hide as mushrooms and plant them; befriend one with a mushroom and it tends a patch, makes you stew and glows at night."
+categories = ["mobs"]
+tags = ["sporelin", "mushroom", "companion", "dark-forest", "befriend"]
+icon = "sporelin"
+screenshots = ["docs/media/readme/sporelins.webp", "docs/models/sporelins-sporelin-front.png", "docs/models/sporelins-sporelin_brown-front.png"]

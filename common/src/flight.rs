@@ -267,9 +267,19 @@ const LANDING_STEP: i32 = 2;
 /// lands: one of those within a block of the highest, at random (over a flat sea or plain, anywhere around it rather
 /// than always the same corner); none where nothing is loaded.
 pub fn landing_spot(m: &mut Body, cx: &World<'_>, perch: fn(&str) -> bool) -> Option<[f64; 3]> {
+    landing(m, cx, perch, false)
+}
+
+/// How near water a spot of a flier that floats is (blocks): the water itself or its shore.
+const SHORE: i32 = 4;
+
+/// `landing_spot`; for a flier that floats (`by_water`), among the water and its shore when there is water around
+/// (a seagull keeps to the coast rather than the hills behind it).
+fn landing(m: &mut Body, cx: &World<'_>, perch: fn(&str) -> bool, by_water: bool) -> Option<[f64; 3]> {
     let (cx0, cz0) = (m.position.x.floor() as i32, m.position.z.floor() as i32);
     let top0 = m.position.y.floor() as i32 + SCAN_UP;
     let mut spots: Vec<(i32, i32, i32)> = Vec::new();
+    let mut water: Vec<(i32, i32)> = Vec::new();
     for dx in (-LANDING_SEARCH..=LANDING_SEARCH).step_by(LANDING_STEP as usize) {
         for dz in (-LANDING_SEARCH..=LANDING_SEARCH).step_by(LANDING_STEP as usize) {
             let (x, z) = (cx0 + dx, cz0 + dz);
@@ -283,8 +293,18 @@ pub fn landing_spot(m: &mut Body, cx: &World<'_>, perch: fn(&str) -> bool) -> Op
             let top = y + 1;
             if perch(&name) {
                 spots.push((x, top, z));
+                if name == "minecraft:water" {
+                    water.push((x, z));
+                }
             }
         }
+    }
+    if by_water && !water.is_empty() {
+        spots.retain(|s| {
+            water
+                .iter()
+                .any(|w| (w.0 - s.0).abs() <= SHORE && (w.1 - s.2).abs() <= SHORE)
+        });
     }
     let highest = spots.iter().map(|s| s.1).max()?;
     spots.retain(|s| s.1 >= highest - 1);
@@ -344,6 +364,27 @@ impl Soar {
     }
 }
 
+/// How far ahead a roaming flier that floats looks for water (blocks), and how far down from its height.
+const SEAWARD: f64 = 24.0;
+const SEAWARD_DEPTH: i32 = 48;
+
+/// A way (an angle, radians) with water `SEAWARD` blocks ahead, trying eight ways from `start`: the first open water
+/// below them (the first block down that isn't air).
+fn seaward(m: &Body, cx: &World<'_>, start: f64) -> Option<f64> {
+    (0..8)
+        .map(|k| start + f64::from(k) * std::f64::consts::FRAC_PI_4)
+        .find(|a| {
+            let x = (m.position.x + a.cos() * SEAWARD).floor() as i32;
+            let z = (m.position.z + a.sin() * SEAWARD).floor() as i32;
+            let top = m.position.y.floor() as i32;
+            (top - SEAWARD_DEPTH..=top)
+                .rev()
+                .map(|y| cx.block([x, y, z]))
+                .find(|b| !matches!(b.as_str(), "minecraft:air" | "minecraft:cave_air"))
+                .is_some_and(|b| b == "minecraft:water")
+        })
+}
+
 /// The yaw of a horizontal direction (`velocity.x = -sin(yaw)`, `velocity.z = cos(yaw)`).
 pub fn heading_of(x: f64, z: f64) -> f32 {
     (-x).atan2(z).to_degrees() as f32
@@ -385,7 +426,14 @@ impl Soar {
         self.radius = radius + f64::from(m.random.next_int_bound(more + 1).unwrap_or(more / 2));
         self.clockwise = m.random.next_int_bound(2).unwrap_or(0) == 0;
         let angle = f64::from(m.random.next_float()) * std::f64::consts::TAU;
-        self.drift = [angle.cos() * self.wander, angle.sin() * self.wander];
+        // One that floats roams along the water (the seagull along the coast): a way with water ahead; with none, it
+        // circles where it is.
+        let way = if self.how.lands_on_water {
+            seaward(m, cx, angle)
+        } else {
+            Some(angle)
+        };
+        self.drift = way.map_or([0.0; 2], |a| [a.cos() * self.wander, a.sin() * self.wander]);
         if m.on_ground || self.how.lands_on_water && m.in_water {
             self.phase = Phase::Climb;
             let (height, more) = self.how.height;
@@ -397,7 +445,7 @@ impl Soar {
             self.phase = Phase::Descend;
             self.cruise_y = m.position.y;
             self.flight.speed = self.wings.cruise * 0.6;
-            self.landing = landing_spot(m, cx, self.how.perch);
+            self.landing = landing(m, cx, self.how.perch, self.how.lands_on_water);
         }
     }
     fn soar(&mut self, m: &mut Body, cx: &World<'_>) {
@@ -420,7 +468,7 @@ impl Soar {
                     // Held down (under the leaves of a tree, say): it gives up and glides down to a perch.
                     self.phase = Phase::Descend;
                     self.ticks = 0;
-                    self.landing = landing_spot(m, cx, self.how.perch);
+                    self.landing = landing(m, cx, self.how.perch, self.how.lands_on_water);
                 }
                 Controls {
                     yaw,
@@ -435,7 +483,7 @@ impl Soar {
                 if self.ticks > self.circle_for {
                     self.phase = Phase::Descend;
                     self.ticks = 0;
-                    self.landing = landing_spot(m, cx, self.how.perch);
+                    self.landing = landing(m, cx, self.how.perch, self.how.lands_on_water);
                 }
                 // Holds its height: noses up below it, down above it; flaps only to keep its speed or climb.
                 let pitch = (-below * 3.0).clamp(-20.0, 20.0) as f32;
