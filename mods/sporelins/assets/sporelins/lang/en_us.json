@@ -1,0 +1,14 @@
+{
+  "entity.sporelins.sporelin": "Sporelin",
+  "item.sporelins.sporelin_spawn_egg": "Sporelin Spawn Egg",
+  "look.sporelins.colour.plain": "Plain",
+  "look.sporelins.pattern.red": "Red cap",
+  "look.sporelins.pattern.brown": "Brown cap",
+  "bestiary.sporelins.hides": "Hides",
+  "bestiary.sporelins.mushroom": "Mushroom",
+  "bestiary.sporelins.patch": "Patch",
+  "bestiary.sporelins.stew": "Stew",
+  "sporelins.befriended": "The sporelin is now your friend",
+  "sporelins.stays": "Your sporelin stays here",
+  "sporelins.follows": "Your sporelin follows you"
+}

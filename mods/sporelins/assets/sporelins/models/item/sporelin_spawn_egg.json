@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "sporelins:item/sporelin_spawn_egg"
+  }
+}

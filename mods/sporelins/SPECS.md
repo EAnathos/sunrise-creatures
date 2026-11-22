@@ -10,29 +10,34 @@ mushrooms where they walk; befriended, one follows you home and tends a mushroom
 
 ## 0. Status
 
-Planned: the spec and the model, no code yet.
+Playable on Sunrise (0.1.0, unreleased), tested in game: its two looks, hiding from a player and coming out again,
+the spore puff and running off when hit (along a fence too), befriending with a mushroom of its colour (one chance in
+3), following its friend and coming to them when far (onto the ground by them, never in the air), staying and tending a
+patch (mushrooms of its colour planted around it), the stew once a day (a second bowl the same day refused), the glow
+of a friend's cap at night, the mushroom it drops.
 
-- **Two models**, one per look (pictures in docs/models/), with the same groups so the same code poses both:
-  - the red cap (`assets/models/sporelin.bbmodel`): about two thirds of a block tall, a rounded red cap with white
-    spots over beige gills (`head`), a pale stem for a body with two dark eyes and pink cheeks (`body`), two stubby
-    arms and two short legs;
+- **Two models**, one per look (`sources/models/`, pictures in docs/models/), with the same groups so the same code
+  poses both:
+  - the red cap (`sporelin.bbmodel`): about two thirds of a block tall, a rounded red cap with white spots over beige
+    gills (`head`), a pale stem for a body with two dark eyes and pink cheeks (`body`), two stubby arms and two short
+    legs;
   - the brown cap (`sporelin_brown.bbmodel`): a wide, flat tan cap (9 texels across, as the brown mushroom's) on a
     thicker, taller stem, the same face.
 
-  Hiding, it pulls its cap down over its stem (a pose of `head`).
+  Hiding, it sits down: drawn lower by its legs' height, its arms and legs tucked under its cap.
+- **The code**: `src/lib.rs` (spawning, looks, right-clicks, planting, the glow, the drawing), `src/life.rs` (its
+  behaviours). From the library: friends (§6.2), colours, the spawning of small creatures on given blocks, glow,
+  `creep::too_tall` (common/SPECS.md).
 
-Next: the code, on Sunrise. The library's side comes with it: taming and ownership move from the vulture to the
-library (common/SPECS.md §6.2).
+Not yet: the day of its last stew is kept only while the game runs (a reload lets it fill a bowl again that day).
 
 ## 1. Technical context
 
 - **Mod id**: `sporelins` ✅. Entity `sporelins:sporelin`, spawn egg `sporelins:sporelin_spawn_egg`. No item of its own
   ✅ (§4).
 - Uses from the library: model drawing and sounds (§3.1, §3.2), hitbox size (§3.4), monsters sparing it (§3.4), the
-  creature guide's pages (§7), and **taming and ownership** (§6.2), which this mod brings into the library (rule of two:
-  the vulture and the sporelin).
-- It copies the wandering trader (goals only), with a box the size of its look's model ✅: 0.45 × 0.65 blocks for a
-  red cap, 0.55 × 0.65 for a brown cap (set at spawn, the library's `resize`).
+  creature guide's pages (§7), and **friends** (§6.2, already the library's: the fairies, the seagulls, the vulture).
+- It copies the wandering trader (goals only), with one box for both looks ✅: 0.5 × 0.65 blocks.
 - **Two looks** ✅: a red cap or a brown cap, like the two mushrooms, rolled at spawn and saved on the entity. A model
   and a texture each (`entity/sporelin/red`, `entity/sporelin/brown`), the brown one wider and flatter (§0).
 
@@ -54,8 +59,8 @@ library (common/SPECS.md §6.2).
 
 ## 3. Befriending ✅
 
-- **With a mushroom of its colour** ✅: a hiding or calm sporelin takes a red (or brown) mushroom from a sneaking
-  player's hand (right-click); one chance in 3 it befriends that player (hearts), otherwise it eats it (a puff).
+- **With a mushroom of its colour** ✅: a sporelin takes a red (or brown) mushroom from a player's hand (right-click;
+  a hiding one lets a sneaking player come close); one chance in 3 it befriends that player (hearts), otherwise it eats it (a puff).
 - **Befriended** (the library's taming and ownership, §6.2): it follows its friend, waddling, and teleports to them
   when far, like a tamed wolf; right-click makes it stay or follow. Named with a name tag. It no longer hides from its
   friend and never despawns.

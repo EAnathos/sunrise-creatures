@@ -2,6 +2,11 @@
 
 Each version's section is its registry changelog (`cargo creature release`).
 
+## Unreleased
+
+- `creep::too_tall`: a fence, a wall or a gate, taller than a step (the Dung Beetles, the Sporelins); the spore
+  particle for the Sporelins.
+
 ## 0.3.3
 
 - Body helpers shared by the mods: `body::flat_distance`, `body::turned`, `body::unit`, `Rand::between`.

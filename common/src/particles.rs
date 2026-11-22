@@ -23,6 +23,7 @@ const USED: &[&str] = &[
     "minecraft:effect",
     "minecraft:entity_effect",
     "minecraft:item",
+    "minecraft:spore_blossom_air",
 ];
 
 static KEYS: Mutex<BTreeMap<&'static str, ParticleKey>> = Mutex::new(BTreeMap::new());

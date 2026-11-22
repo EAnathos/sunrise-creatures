@@ -236,9 +236,10 @@ impl Roll {
             let step = [ahead[0], ahead[1] + 1, ahead[2]];
             let head = [here[0], here[1] + 1, here[2]];
             // A fence, a wall or a gate is taller than a step: it turns aside.
-            let name = cx.block(ahead);
-            let tall = name.ends_with("fence") || name.ends_with("wall") || name.ends_with("fence_gate");
-            if !tall && creature::creep::passable(cx, step) && creature::creep::passable(cx, head) {
+            if !creature::creep::too_tall(&cx.block(ahead))
+                && creature::creep::passable(cx, step)
+                && creature::creep::passable(cx, head)
+            {
                 m.position = Vec3 {
                     x: m.position.x + dir[0] * 0.3,
                     y: f64::from(here[1]) + 1.0,

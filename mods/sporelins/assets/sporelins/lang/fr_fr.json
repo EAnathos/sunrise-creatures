@@ -1,0 +1,14 @@
+{
+  "entity.sporelins.sporelin": "Sporelin",
+  "item.sporelins.sporelin_spawn_egg": "Œuf d'apparition de sporelin",
+  "look.sporelins.colour.plain": "Uni",
+  "look.sporelins.pattern.red": "Chapeau rouge",
+  "look.sporelins.pattern.brown": "Chapeau brun",
+  "bestiary.sporelins.hides": "Cachette",
+  "bestiary.sporelins.mushroom": "Champignon",
+  "bestiary.sporelins.patch": "Coin de champignons",
+  "bestiary.sporelins.stew": "Ragoût",
+  "sporelins.befriended": "Le sporelin est maintenant votre ami",
+  "sporelins.stays": "Votre sporelin reste ici",
+  "sporelins.follows": "Votre sporelin vous suit"
+}

@@ -1,6 +1,8 @@
 # Sporelins's description for the repository's tools (docs/ARCHITECTURE.md); not shipped in the mod.
 id = "sporelins"
 name = "Sporelins"
-status = "planned"
-# Its items in the series' creative tab, in order (none until implementation starts).
-creative = []
+status = "playable"
+# Its items in the series' creative tab, in order.
+creative = ["sporelins:sporelin_spawn_egg"]
+# Its Rust is built on Sunrise's mod_api.
+ported = true

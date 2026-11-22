@@ -244,7 +244,8 @@ side, crawl and pause lengths, how far around it creeps with no area, its area o
 `Creep::new(&HOW)` to its behaviours. A crawl picks a top of its area (or a point around it), creeps straight toward it,
 and climbs while its target is above: up the block in its way, or, under its target, up any side next to it (a trunk),
 through leaves as an insect goes through foliage; a solid ceiling ends the crawl. While it pauses it claims nothing.
-A creature that doesn't climb (a `climb` of 0) gives up at a wall. Users: **Ladybugs** (between flowers), **Phasmids**
+A creature that doesn't climb (a `climb` of 0) gives up at a wall. `too_tall` says a block is taller than a step (a
+fence, a wall, a gate): the dung beetle's roll and the sporelin's run turn aside at it. Users: **Ladybugs** (between flowers), **Phasmids**
 (over the canopy and up the trunks), **Dung Beetles** (about their pasture, no climbing).
 
 ## 4. Glass jar and territories ✅
@@ -313,7 +314,8 @@ Each moves here when a second mod needs it. Until then it stays in the vulture.
 | # | System | Today |
 |---|---|---|
 | 6.1 | **Riding and flight**: mount by right-click, **dynamic ridden flight** (steered by the look, banking into arc turns like a plane, vulture/SPECS.md §6.2), dismount, mount hearts (vanilla's on Sunrise; the `mount-hud` injection on Horizon), a saddle | the flight itself (glide, soaring, landing) moved here with the Seagulls ✅ (`creature::flight`, §3.14); riding and the wing poses stay in the mods |
-| 6.2 | **Taming and ownership**: owner on the entity, sit / follow, defend the owner, healing food, only the owner rides | following in flight ✅ in the library (`creature::flight::Follow`, §3.14: the vulture and the seagull); **friends** ✅ in the library (`creature::friend`: the friend's UUID and staying, saved on the creature as `creature:friend`, kept in the glass jar), used by the **Fairies**, the **Seagulls** (befriended with a fish) and the **Vulture** (its owner and sitting; a save from before, which held them in `vulture:state`, is moved over once, tested in game); defending, healing food and riding come with the Sporelins and the Living Flowers (planned) |
+| 6.2 | **Taming and ownership**: owner on the entity, sit / follow, defend the owner, healing food, only the owner rides | following in flight ✅ in the library (`creature::flight::Follow`, §3.14: the vulture and the seagull); **friends** ✅ in the library (`creature::friend`: the friend's UUID and staying, saved on the creature as `creature:friend`, kept in the glass jar), used by the **Fairies**, the **Seagulls** (befriended with a fish), the **Sporelins** (with a mushroom; following on
+foot, which stays theirs while no other walker follows) and the **Vulture** (its owner and sitting; a save from before, which held them in `vulture:state`, is moved over once, tested in game); defending and riding come with the Living Flowers (planned) |
 | 6.3 | **Babies and growth**: smaller model, growth time, faster when fed | in the vulture |
 | 6.4 | **Ridden special attack**: a key that makes the mount attack (the vulture's talons) | in the vulture |
 

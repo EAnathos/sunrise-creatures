@@ -93,6 +93,12 @@ pub fn passable(cx: &World<'_>, p: [i32; 3]) -> bool {
     ) || cx.ground.flower_at(p)
 }
 
+/// Whether block `name` is taller than a step a walker climbs (a fence, a wall, a fence gate): a creature that steps
+/// up a block turns aside at it.
+pub fn too_tall(name: &str) -> bool {
+    name.ends_with("fence") || name.ends_with("wall") || name.ends_with("fence_gate")
+}
+
 impl Behaviour for Creep {
     fn can_use(&mut self, m: &mut Body, cx: &World<'_>) -> bool {
         if !(self.how.may)(m, cx) {

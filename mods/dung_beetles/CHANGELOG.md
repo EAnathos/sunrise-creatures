@@ -2,6 +2,10 @@
 
 Each version's section is its registry changelog (`cargo creature release`).
 
+## Unreleased
+
+- Built on the library's `creep::too_tall`, unchanged.
+
 ## 0.1.0
 
 - First release on Sunrise: dung beetles in savannas, plains, meadows and at the edges of deserts that follow the
