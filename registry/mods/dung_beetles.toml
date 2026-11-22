@@ -5,7 +5,7 @@ summary = "Dung beetles that follow the herds, roll their balls in straight line
 description = """
 > **Beta.** Played and tested in single player; multiplayer and balance come later. Reports are welcome on the [issues](https://github.com/EAnathos/sunrise-creatures/issues).
 
-A mod of the [Sunrise Creatures](https://github.com/EAnathos/sunrise-creatures/blob/dung_beetles-0.1.0/README.md) series: small beetles that follow the grazing herds, roll balls of
+A mod of the [Sunrise Creatures](https://github.com/EAnathos/sunrise-creatures/blob/dung_beetles-0.1.1/README.md) series: small beetles that follow the grazing herds, roll balls of
 dung in straight lines under the stars and bury them, turning worn ground back into grass. **Requires**
 [Sunrise Creatures](https://playsunrise.net/mods/creature), the series' library.
 
@@ -46,8 +46,25 @@ source = "https://github.com/EAnathos/sunrise-creatures"
 icon = "icons/dung_beetles.png"
 categories = ["mobs"]
 tags = ["dung-beetle", "beetle", "insect", "pasture", "glass-jar"]
-screenshots = ["screenshots/dung_beetles/1-dung_beetles-dung_beetle-front.png", "screenshots/dung_beetles/2-dung_beetles-dung_beetle-back.png"]
+screenshots = ["screenshots/dung_beetles/1-dung_beetles.jpg", "screenshots/dung_beetles/2-dung_beetles-dung_beetle-front.png", "screenshots/dung_beetles/3-dung_beetles-dung_beetle-back.png"]
 key = "RWR7Wf0HwHmw6+OGAJGXZcp5ccpovW1ONwQb7knb3YqMpWGTi+gpP0Jn"
+
+[[versions]]
+version = "0.1.1"
+published = "2026-11-22"
+game = "26.3"
+file = "dung_beetles-0.1.1.smod"
+sha256 = "d02d0377e68cdc62b357043476618cf3b5d3df0130aa0000b35e37e2abb9422f"
+signature = """
+untrusted comment: signature from minisign secret key
+RUR7Wf0HwHmw6wf2wFGv59x5viRaWgqtlc2JqqKOHq7dSHAERLygwYEr4k7sfPIMc1Ord5TiPQbeOOcbvgsBMsFd0bysqKqenwk=
+trusted comment: timestamp:1795307963	file:dung_beetles-0.1.1.smod	hashed
+NSzMSlaViuKzfNpQzvsWXtqrVgmtmFthHHqc/AzsaT44d+2BFhY7rJLHl1rRcXLia+JE7ZEa1mnopkVoLmtnCw==
+"""
+changelog = """
+- Built on the library's `creep::too_tall`, unchanged.
+- Needs Sunrise Creatures 0.3.4.
+"""
 
 [[versions]]
 version = "0.1.0"

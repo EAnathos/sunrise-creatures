@@ -42,7 +42,7 @@ source = "https://github.com/EAnathos/sunrise-creatures"
 icon = "icons/phasmids.png"
 categories = ["mobs"]
 tags = ["stick-insect", "leaf-insect", "insect", "trees", "glass-jar"]
-screenshots = ["screenshots/phasmids/1-phasmids-stick_insect-front.png", "screenshots/phasmids/2-phasmids-leaf_insect-front.png", "screenshots/phasmids/3-phasmids-stick_insect-back.png", "screenshots/phasmids/4-phasmids-leaf_insect-back.png"]
+screenshots = ["screenshots/phasmids/1-phasmids.jpg", "screenshots/phasmids/2-phasmids-stick_insect-front.png", "screenshots/phasmids/3-phasmids-leaf_insect-front.png", "screenshots/phasmids/4-phasmids-stick_insect-back.png", "screenshots/phasmids/5-phasmids-leaf_insect-back.png"]
 key = "RWR7Wf0HwHmw6+OGAJGXZcp5ccpovW1ONwQb7knb3YqMpWGTi+gpP0Jn"
 
 [[versions]]

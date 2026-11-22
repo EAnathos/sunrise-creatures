@@ -42,7 +42,7 @@ source = "https://github.com/EAnathos/sunrise-creatures"
 icon = "icons/ladybugs.png"
 categories = ["mobs"]
 tags = ["ladybug", "insect", "luck", "flowers", "glass-jar"]
-screenshots = ["screenshots/ladybugs/1-ladybugs-ladybug-front.png", "screenshots/ladybugs/2-ladybugs-ladybug-back.png"]
+screenshots = ["screenshots/ladybugs/1-ladybugs.jpg", "screenshots/ladybugs/2-ladybugs-ladybug-front.png", "screenshots/ladybugs/3-ladybugs-ladybug-back.png"]
 key = "RWR7Wf0HwHmw6+OGAJGXZcp5ccpovW1ONwQb7knb3YqMpWGTi+gpP0Jn"
 
 [[versions]]

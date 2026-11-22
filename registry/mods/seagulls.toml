@@ -44,7 +44,7 @@ source = "https://github.com/EAnathos/sunrise-creatures"
 icon = "icons/seagulls.png"
 categories = ["mobs"]
 tags = ["seagull", "bird", "coast", "ocean", "fishing"]
-screenshots = ["screenshots/seagulls/1-seagulls-seagull-front.png", "screenshots/seagulls/2-seagulls-seagull-back.png"]
+screenshots = ["screenshots/seagulls/1-seagulls.jpg", "screenshots/seagulls/2-seagulls-seagull-front.png", "screenshots/seagulls/3-seagulls-seagull-back.png"]
 key = "RWR7Wf0HwHmw6+OGAJGXZcp5ccpovW1ONwQb7knb3YqMpWGTi+gpP0Jn"
 
 [[versions]]

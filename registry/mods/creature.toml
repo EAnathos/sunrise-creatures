@@ -5,7 +5,7 @@ summary = "The library of the Sunrise Creatures mods: the creature guide and its
 description = """
 > **Beta.** Played and tested in single player; multiplayer and balance come later. Reports are welcome on the [issues](https://github.com/EAnathos/sunrise-creatures/issues).
 
-The library every mod of the [Sunrise Creatures](https://github.com/EAnathos/sunrise-creatures/blob/creature-0.3.3/README.md) series needs. It adds no creature of its own, but what
+The library every mod of the [Sunrise Creatures](https://github.com/EAnathos/sunrise-creatures/blob/creature-0.3.4/README.md) series needs. It adds no creature of its own, but what
 the creatures share:
 
 - **The creature guide**, given to every player the first time they join a world. Right-click it to open the
@@ -21,7 +21,7 @@ the creatures share:
   as a feather does.
 - Monsters leave the series' creatures alone.
 
-For developers: [SPECS.md](https://github.com/EAnathos/sunrise-creatures/blob/creature-0.3.3/common/SPECS.md) and [CONTRIBUTING.md](https://github.com/EAnathos/sunrise-creatures/blob/creature-0.3.3/CONTRIBUTING.md).
+For developers: [SPECS.md](https://github.com/EAnathos/sunrise-creatures/blob/creature-0.3.4/common/SPECS.md) and [CONTRIBUTING.md](https://github.com/EAnathos/sunrise-creatures/blob/creature-0.3.4/CONTRIBUTING.md).
 """
 authors = ["EAnathos"]
 owners = ["EAnathos"]
@@ -32,6 +32,25 @@ categories = ["library"]
 tags = ["creatures", "bestiary", "glass-jar", "guide"]
 screenshots = ["screenshots/creature/1-bestiary.jpg"]
 key = "RWR7Wf0HwHmw6+OGAJGXZcp5ccpovW1ONwQb7knb3YqMpWGTi+gpP0Jn"
+
+[[versions]]
+version = "0.3.4"
+published = "2026-11-22"
+game = "26.3"
+file = "creature-0.3.4.smod"
+sha256 = "dfc632dafb6fb31e3c7c358e75240a2816bd7491ed13a8f01a80f2337b0d0982"
+signature = """
+untrusted comment: signature from minisign secret key
+RUR7Wf0HwHmw6yvquPnqyTgL46LmkwaRnXF+Z3DSVtiKPvXfc2kNP2o3h1zTWYOY6JC3ZeM3HuQkr5gxQ3DOU6SJIf6r7NRcpw0=
+trusted comment: timestamp:1795307963	file:creature-0.3.4.smod	hashed
+ry8sCwU0TWgIyI7RAl7s3HBUfBS3rLjDeXADATMhMVI/uL9yIma+NX+tQpgFpSJ5tZk9YAeMel6ohd9Xh8C2DA==
+"""
+changelog = """
+- Soaring (`flight::Soar`), for a flier that floats (the seagull): its circle drifts toward water and it lands on the
+  water or its shore, so it keeps to the coast rather than wandering inland.
+- `creep::too_tall`: a fence, a wall or a gate, taller than a step (the Dung Beetles, the Sporelins); the spore
+  particle for the Sporelins.
+"""
 
 [[versions]]
 version = "0.3.3"
