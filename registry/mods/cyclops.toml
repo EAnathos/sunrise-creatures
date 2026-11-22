@@ -29,7 +29,7 @@ or a trident in it hurts twice as much and leaves him dazed for a moment.
 """
 authors = ["EAnathos"]
 owners = ["EAnathos"]
-license = "MIT"
+license = "PolyForm-Noncommercial-1.0.0 AND LicenseRef-SunriseCreatures-Art"
 source = "https://github.com/EAnathos/sunrise-creatures"
 icon = "icons/cyclops.png"
 categories = ["mobs", "adventure"]

@@ -36,7 +36,7 @@ lukewarm and warm oceans brings some up too, and cats and ocelots take them as t
 """
 authors = ["EAnathos"]
 owners = ["EAnathos"]
-license = "MIT"
+license = "PolyForm-Noncommercial-1.0.0 AND LicenseRef-SunriseCreatures-Art"
 source = "https://github.com/EAnathos/sunrise-creatures"
 icon = "icons/flying_fish.png"
 categories = ["mobs", "food"]

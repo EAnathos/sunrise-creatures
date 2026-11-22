@@ -30,7 +30,7 @@ next.
 """
 authors = ["EAnathos"]
 owners = ["EAnathos"]
-license = "MIT"
+license = "PolyForm-Noncommercial-1.0.0 AND LicenseRef-SunriseCreatures-Art"
 source = "https://github.com/EAnathos/sunrise-creatures"
 icon = "icons/storm_spirits.png"
 categories = ["mobs", "magic"]

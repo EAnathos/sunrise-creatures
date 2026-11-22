@@ -28,7 +28,7 @@ the ones you met.
 """
 authors = ["EAnathos"]
 owners = ["EAnathos"]
-license = "MIT"
+license = "PolyForm-Noncommercial-1.0.0 AND LicenseRef-SunriseCreatures-Art"
 source = "https://github.com/EAnathos/sunrise-creatures"
 icon = "icons/butterflies.png"
 categories = ["mobs", "decoration"]

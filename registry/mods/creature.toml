@@ -25,7 +25,7 @@ For developers: [SPECS.md](https://github.com/EAnathos/sunrise-creatures/blob/cr
 """
 authors = ["EAnathos"]
 owners = ["EAnathos"]
-license = "MIT"
+license = "PolyForm-Noncommercial-1.0.0 AND LicenseRef-SunriseCreatures-Art"
 source = "https://github.com/EAnathos/sunrise-creatures"
 icon = "icons/creature.png"
 categories = ["library"]

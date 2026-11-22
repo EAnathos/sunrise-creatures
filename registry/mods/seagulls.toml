@@ -39,7 +39,7 @@ which cooks in a furnace, a smoker or on a campfire.
 """
 authors = ["EAnathos"]
 owners = ["EAnathos"]
-license = "MIT"
+license = "PolyForm-Noncommercial-1.0.0 AND LicenseRef-SunriseCreatures-Art"
 source = "https://github.com/EAnathos/sunrise-creatures"
 icon = "icons/seagulls.png"
 categories = ["mobs"]

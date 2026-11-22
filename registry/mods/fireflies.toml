@@ -21,7 +21,7 @@ night; or place the filled jar (sneak + right-click) as a small glowing lantern.
 """
 authors = ["EAnathos"]
 owners = ["EAnathos"]
-license = "MIT"
+license = "PolyForm-Noncommercial-1.0.0 AND LicenseRef-SunriseCreatures-Art"
 source = "https://github.com/EAnathos/sunrise-creatures"
 icon = "icons/fireflies.png"
 categories = ["mobs", "decoration"]
