@@ -21,8 +21,8 @@ Planned: the spec and the model, no code yet.
   animations (§2.1): `body` (at the hips), `head` (the neck), `jaw`, `arm_*` (the shoulders), `forearm_*` (the
   elbows), `fist_*` (the wrists), `leg_*` (the hips), `shin_*` (the knees).
 
-Next: the code, on Sunrise, and the
-library's lobbed projectiles (common/SPECS.md §3.9) moved from the Cyclops with it.
+Next: the code, on Sunrise, and the Cyclops's throw (aim, wind-up) moved to the library with it, beside the library's
+projectiles (common/SPECS.md §3.9).
 
 ## 1. Technical context
 

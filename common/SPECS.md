@@ -167,13 +167,14 @@ recipes for arrows, the brush and the book and quill with a mod's feather are th
 with the Seagulls): they take the tag `creature:mod_feathers` (the vulture's and the seagull's feathers, not vanilla's,
 whose recipes are vanilla's), with conditions on either mod being installed. Users: **Vulture**, **Seagulls**.
 
-### 3.9 Lobbed projectiles (`creature::lob`), planned ✅
+### 3.9 Thrown things (`creature::projectile`) ✅
 
-A big mob lifts something over its head and hurls it on an arc at a target: the throw goal (range, wind-up, aim on
-an arc) and the projectile (damage, a push, what happens where it lands: blocks torn up in a radius, sparing liquids,
-containers, placed jars and unbreakable blocks, or none, or a burst of fire). A mod gives its projectile entity and
-these values. Users: **Cyclops** (its boulder, `cyclops:boulder`, whose goal and projectile move here) and **Magma
-Golem** (planned, its magma glob, mods/magma_golem/SPECS.md §2).
+A projectile is a mob of its mod (a copy of the wandering trader that can't be hurt, its own box and drawing),
+launched with a velocity and flown with its own gravity until it reaches its target, lands, hits a wall or flies too
+long; the mod reads how it ended and does what its projectile does there. One with no target finds what its box meets
+on its own (`hits`). Users: **Cyclops** (its boulder, `cyclops:boulder`, hurled at a target on an arc, which tears up
+the blocks where it lands) and **Scorpions** (the thrown scorpion dagger, mods/scorpions/SPECS.md §5); the **Magma
+Golem** (planned) for its magma glob (mods/magma_golem/SPECS.md §2).
 
 ### 3.10 Water creatures (`creature::aquatic`) ✅
 

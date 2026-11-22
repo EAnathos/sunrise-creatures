@@ -22,7 +22,8 @@ Done and tested in game (single player): the model, its textures and sounds, the
   real scorpions glow under ultraviolet light).
 - **The code**: one entity, the kinds as morphs (the library's colours, `SCHEME`), crawling on the ground (the
   library's small crawlers), the defensive posture (`posture.rs`, backing away and the step-on sting), fighting back
-  (`fight.rs`, the vanilla "hurt by" target goal and a poisoned sting), the jar and the sand rule, the bestiary page,
+  (`fight.rs`, the vanilla "hurt by" target goal and a poisoned sting), the dagger (`dagger.rs`: poisonous, thrown),
+  the jar and the sand rule, the bestiary page,
   and the content (entity, spawn egg, the venom sac, stinger and scorpion dagger with their recipes and the venom-sac
   brewing, the loot table, the biome spawns, en/fr).
 
@@ -88,10 +89,14 @@ scorpion glow), "Jar" (caught one in a jar), "Settled" (settled one in a sandy p
   of Poison, as a spider eye does (`data/scorpions/recipe/brewing/`); 8 arrows
   around a venom sac craft 8 arrows of Poison (vanilla's tipped arrows).
 - **Stinger** (`scorpions:stinger`) ✅: the hooked stinger. Use ✅: with a stick, crafts a **scorpion dagger**
-  (`scorpions:scorpion_dagger`): a quick, light blade (3 damage, faster than a sword), 64 uses. It carries the
-  **Poisonous** enchantment ✅ (`scorpions:poisonous`, a mod enchantment with a `minecraft:post_attack` →
-  `apply_mob_effect` effect): it shows on the dagger and a hit **poisons the target for 3 s** (works on mobs and
-  players, engine-side). **Still TODO**: making it **throwable** (a thrown-dagger entity, not implemented).
+  (`scorpions:scorpion_dagger`): a quick, light blade (3 damage, faster than a sword), 64 uses. It is **Poisonous**
+  ✅: a hit **poisons the target for 3 s**, a mob or a player (`dagger.rs`, `poison`); the dagger says so under its
+  name, as an enchantment would, and shimmers (its item's `enchantment_glint_override`).
+  **Thrown** ✅ (right-click): it leaves the hand and flies on an arc where the player looks, point first, turning over
+  as a thrown knife (`scorpions:thrown_dagger`, a projectile of the library's, §3.9, drawn as the dagger). The first
+  mob or player it meets takes 4 damage and is poisoned, and the dagger bounces off and falls beside it. Landed in the
+  ground or a wall, it stays stuck there, point in, until a player walks onto it and takes it back, as a trident. Each
+  throw wears it by one use; in creative it stays in hand.
 
 ## 6. Glass jar and territory ✅
 
