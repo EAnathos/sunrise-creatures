@@ -99,6 +99,12 @@ Dependabot (`.github/dependabot.yml`) opens weekly pull requests for the CI's ac
 dependencies (minor and patch updates in one, each major one apart); CI checks them like any other. The native crates
 are left out: Sunrise, their only dependency, is pinned for the whole series and moved by hand.
 
+The tools' dependencies are audited by [cargo-deny](https://github.com/EmbarkStudios/cargo-deny)
+(`.github/workflows/dependencies.yml`, configured by `tools/deny.toml`) on every push and pull request, and each
+Monday: known vulnerabilities and unmaintained crates (the RustSec advisories, as `cargo audit` reads them), the
+licences we accept, and the crates' sources. Locally: `cargo deny --manifest-path tools/Cargo.toml check`
+(`cargo install --locked cargo-deny`).
+
 ## Rules of the series
 
 - **The rule of two**: a system used by two or more mods goes in the library; species content stays in its mod. Never
@@ -111,3 +117,27 @@ are left out: Sunrise, their only dependency, is pinned for the whole series and
   issue, listed in `docs/SUNRISE-ISSUES.md`.
 
 Adding a mod: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), "Adding a mod".
+
+## Your rights and the project's
+
+The code, data and text are under the [PolyForm Noncommercial License 1.0.0](LICENSE); the artwork (models,
+textures, icons, pictures) is the author's, all rights reserved ([LICENSE-ART.md](LICENSE-ART.md)); the sounds are
+CC0 recordings. A contribution has to fit that, so before you open a pull request:
+
+- **You have the right to submit it.** Everything in it is your own work, or third-party material you may share
+  (below). Sign off each commit (`git commit -s`): it certifies the
+  [Developer Certificate of Origin](https://developercertificate.org).
+- **Your code, data and text** are licensed under the project's code licence, and you allow the author (EAnathos) to
+  license them under other terms too, so the series' licence can change without asking every contributor again.
+- **Third-party material is named.** Say in the pull request where each piece comes from and under which licence. Code:
+  only under a licence that allows it here (MIT, Apache-2.0, BSD, Zlib, CC0 and the like), its notice kept. Sounds:
+  CC0 only, listed in the module's `sources/sounds.toml` (docs/CONVENTIONS.md). Models, textures and other artwork:
+  none; the project's artwork is only its own.
+- **Artwork you submit** (a model, a texture, an icon, a picture) must be your own original work, not traced or adapted
+  from someone else's (another mod, a resource pack, Minecraft's own textures). By submitting it you transfer its
+  copyright to the author, EAnathos, or, where the law doesn't allow a transfer, grant them an exclusive, perpetual,
+  irrevocable, worldwide and free licence to it, with the right to license it to others and to change its terms; it
+  then falls under [LICENSE-ART.md](LICENSE-ART.md) like the rest. You are credited for it (the module's README and
+  changelog), and you may still show it in your own portfolio.
+
+A pull request whose rights are unclear is not merged until they are.

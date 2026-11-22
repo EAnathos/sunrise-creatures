@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/licence-MIT-E2AC52" alt="Licence: MIT"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licence-PolyForm%20Noncommercial-E2AC52" alt="Licence: PolyForm Noncommercial"></a>
   <a href="https://playsunrise.net"><img src="https://img.shields.io/badge/runs%20on-Sunrise%20(Minecraft%2026.3)-F0795A" alt="Runs on Sunrise, Minecraft 26.3"></a>
   <img src="https://img.shields.io/badge/status-beta-7A6FD0" alt="Status: beta">
   <img src="https://img.shields.io/badge/language-English%20%C2%B7%20Fran%C3%A7ais-5A9E6F" alt="English and French">
@@ -127,5 +127,12 @@ The mods build with the repository's own tools (`cargo creature`, Rust) and Sunr
 
 ## Licence
 
-[MIT](LICENSE). The sounds come from [freesound.org](https://freesound.org), under
-[CC0](https://creativecommons.org/publicdomain/zero/1.0/).
+- **The code** (and the data and text): [PolyForm Noncommercial 1.0.0](LICENSE). You may use, change, fork and share
+  it for any noncommercial purpose, keeping the licence and the author's notice with it.
+- **The artwork** (models, textures, icons, pictures): the author's, all rights reserved
+  ([LICENSE-ART.md](LICENSE-ART.md)). Play the mods and show them freely; noncommercial fan sites, such as a fan wiki,
+  may show the creatures with credit; a fork or another mod may not use them.
+- **The sounds** come from [freesound.org](https://freesound.org), under
+  [CC0](https://creativecommons.org/publicdomain/zero/1.0/).
+
+Versions released before 2026-11-22 under the MIT licence keep it.

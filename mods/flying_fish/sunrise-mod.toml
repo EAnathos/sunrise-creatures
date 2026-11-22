@@ -6,7 +6,7 @@ authors = ["EAnathos"]
 api = "0.2"
 side = "both"
 capabilities = ["registries"]
-license = "MIT"
+license = "PolyForm-Noncommercial-1.0.0 AND LicenseRef-SunriseCreatures-Art"
 homepage = "https://github.com/EAnathos/sunrise-creatures/blob/main/mods/flying_fish/README.md"
 issues = "https://github.com/EAnathos/sunrise-creatures/issues"
 

@@ -1,0 +1,29 @@
+# cargo-deny for the tools' dependencies (CI's "Dependencies" job, CONTRIBUTING.md): known vulnerabilities and
+# unmaintained crates (the RustSec advisory database, as `cargo audit` reads it), the licences we accept, the crates'
+# sources. The modules' crates depend on Sunrise alone, pinned and moved by hand: they are left out.
+
+[graph]
+all-features = false
+
+[advisories]
+# Every RustSec advisory fails the check (vulnerabilities, unmaintained or unsound crates, yanked versions).
+yanked = "deny"
+ignore = []
+
+[licenses]
+# Permissive licences only; an OR expression passes when one side is allowed.
+allow = ["MIT", "Apache-2.0", "BSD-3-Clause", "Zlib", "Unicode-3.0", "ISC"]
+confidence-threshold = 0.9
+
+[licenses.private]
+# The tools themselves are not published.
+ignore = true
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

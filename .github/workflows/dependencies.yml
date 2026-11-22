@@ -1,0 +1,26 @@
+# The tools' dependencies (tools/deny.toml): known vulnerabilities and unmaintained crates (RustSec, as
+# `cargo audit` reads it), licences and sources, checked by cargo-deny. Weekly too, as advisories come out without a
+# change of ours; Dependabot (.github/dependabot.yml) then proposes the updates.
+#
+# The modules' crates depend on Sunrise alone, pinned for the whole series and moved by hand: they are left out.
+name: Dependencies
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  deny:
+    name: cargo-deny (advisories, licences, sources)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          manifest-path: tools/Cargo.toml
+          command: check
+          arguments: --locked

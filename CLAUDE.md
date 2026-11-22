@@ -19,6 +19,9 @@ guide). The other folders of `mods/` are planned mods (a spec, a model).
   conditional recipes (`neoforge:conditions`, `mod_loaded`).
 - **Creative tab**: only the library has one, generated from each module's `module.toml` (`creative` list) by
   `cargo creature tab`. Mods declare no tab.
+- **Licence**: the code, data and text under PolyForm Noncommercial 1.0.0 (`LICENSE`); the artwork (models, textures,
+  icons, pictures, the generated model code) the author's, all rights reserved (`LICENSE-ART.md`); the sounds CC0.
+  Contributions follow `CONTRIBUTING.md`, "Your rights and the project's": no third-party artwork, ever.
 - **Language**: everything in the repository is in English (code, comments, docs, commit messages). The game text is
   translated: keep each module's `assets/<id>/lang/en_us.json` and `fr_fr.json` in step. Conversations with the user are
   in English.

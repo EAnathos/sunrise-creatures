@@ -6,8 +6,11 @@ guide says ([Publishing a mod](https://playsunrise.net/docs/publish-a-mod)): eac
 (`mods/<id>.toml`, `icons/<id>.png`) and whose files are pinned there by their SHA-256. Every change to an entry is a
 pull request a person reviews. What a listed project promises is that registry's
 [MOD-POLICY.md](https://github.com/sunrise-org/sunrise-mods/blob/main/MOD-POLICY.md): the right to publish everything
-in it under its licence (ours: MIT, the sounds CC0), no Minecraft game files (our packages hold only our own
-namespaces), nothing hidden.
+in it under its licence, no Minecraft game files (our packages hold only our own namespaces), nothing hidden. Ours:
+the code under PolyForm Noncommercial 1.0.0, the artwork the author's under its own terms, the sounds CC0 (the
+registry accepts noncommercial licences); the manifests' `license` is
+`PolyForm-Noncommercial-1.0.0 AND LicenseRef-SunriseCreatures-Art`, and each package carries `LICENSE` and
+`LICENSE-ART.md`.
 
 ## What a published module has
 
