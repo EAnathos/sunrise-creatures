@@ -42,6 +42,19 @@ static IN_JAR: Catchable = Catchable {
     glows: false,
 };
 
+const CHICKEN_FACT: &str = "chicken";
+
+/// Chickens peck worms up (SPECS §2): one within 6 blocks walks to it, wild or settled.
+static PREY: creature::prey::Prey = creature::prey::Prey {
+    kind: WORM,
+    hunters: &[creature::prey::Hunter {
+        kind: "minecraft:chicken",
+        range: 6.0,
+        speed: 1.0,
+    }],
+    fact: Some(CHICKEN_FACT),
+};
+
 static BESTIARY: Species = Species {
     id: WORM,
     biomes: BIOMES,
@@ -56,6 +69,11 @@ static BESTIARY: Species = Species {
             id: creature::jar::GARDEN_FACT,
             item: "minecraft:wooden_hoe",
             key: "bestiary.worms.garden",
+        },
+        Fact {
+            id: CHICKEN_FACT,
+            item: "minecraft:chicken_spawn_egg",
+            key: "bestiary.worms.chicken",
         },
     ],
     icon: "worms:worm_spawn_egg",
@@ -338,6 +356,7 @@ impl Hooks for Worms {
         creature::mob::ours(WORM, SIZE);
         creature::jar::register(&IN_JAR);
         creature::bestiary::register(&BESTIARY);
+        creature::prey::register(&PREY);
         r.entity_part(WORM, Goals);
         let _ = SPARKLE.set(r.particle_key("minecraft:happy_villager"));
     }
@@ -364,6 +383,11 @@ impl Hooks for Worms {
                 return;
             }
             creature::sounds::play_queued(host, event.entity, SoundSource::Neutral);
+            // A chicken near goes for it, and eats it once there.
+            if creature::prey::tick(host, event.dimension, event.entity, WORM) {
+                forget(event.entity);
+                return;
+            }
             territory::tick(host, event.entity);
             tend(host, event.entity);
             if let Some(at) = host.entity(event.entity).and_then(|e| e.position(host)) {
