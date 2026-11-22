@@ -5,7 +5,7 @@ summary = "Shy mushroom sprites that hide as mushrooms and plant them; befriend 
 description = """
 > **Beta.** Played and tested in single player; multiplayer and balance come later. Reports are welcome on the [issues](https://github.com/EAnathos/sunrise-creatures/issues).
 
-A mod of the [Sunrise Creatures](https://github.com/EAnathos/sunrise-creatures/blob/sporelins-0.1.0/README.md) series: small, shy mushroom sprites of dark forests and mushroom
+A mod of the [Sunrise Creatures](https://github.com/EAnathos/sunrise-creatures/blob/sporelins-0.1.1/README.md) series: small, shy mushroom sprites of dark forests and mushroom
 fields. **Requires** [Sunrise Creatures](https://playsunrise.net/mods/creature), the series' library.
 
 ## Finding them
@@ -40,6 +40,24 @@ categories = ["mobs"]
 tags = ["sporelin", "mushroom", "companion", "dark-forest", "befriend"]
 screenshots = ["screenshots/sporelins/1-sporelins.jpg", "screenshots/sporelins/2-sporelins-sporelin-front.png", "screenshots/sporelins/3-sporelins-sporelin_brown-front.png"]
 key = "RWR7Wf0HwHmw6+OGAJGXZcp5ccpovW1ONwQb7knb3YqMpWGTi+gpP0Jn"
+
+[[versions]]
+version = "0.1.1"
+published = "2026-11-22"
+game = "26.3"
+file = "sporelins-0.1.1.smod"
+sha256 = "042738a9bb8c2489670f49c016ff355bf43af7110ac350cf4ab33d95660efa29"
+signature = """
+untrusted comment: signature from minisign secret key
+RUR7Wf0HwHmw64zWpiI2E79BiEqlCGKo0lcG36vKN0vkGfNS+3PNDpIkShgR3iv2gpVlpRoKxfIzy03sg0M6pl6xrk23ecHaMgo=
+trusted comment: timestamp:1795344379	file:sporelins-0.1.1.smod	hashed
+cvtm+1C5HQ/qSxTstNbwvWg3s+fs4Dr14VCrjy0nnfi7n6lnjpTQSJ5/lA/gT6e7hsbTWuufjb4osaBew712Bw==
+"""
+changelog = """
+- A sporelin remembers the day it last filled a bowl across a reload (it was forgotten, so a reload gave a second
+  stew that day).
+- The code is under PolyForm Noncommercial 1.0.0, the artwork the author's (`LICENSE`, `LICENSE-ART.md`).
+"""
 
 [[versions]]
 version = "0.1.0"
