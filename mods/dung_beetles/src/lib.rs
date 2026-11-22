@@ -285,22 +285,16 @@ fn forget(id: u32) {
     roll::forget(id);
 }
 
-/// Taking its ball (SPECS §2.1): a right-click with an empty hand on a beetle with a ball gives the nearest player a
-/// dung ball.
+/// Taking its ball (SPECS §2.1): a right-click with an empty hand on a beetle with a ball gives the player who clicked
+/// a dung ball.
 fn take_ball(host: &mut dyn ServerHost, id: u32) {
+    let Some(player) = host.players().acting_player() else {
+        return;
+    };
     if !roll::take(id) {
         return;
     }
-    let Some(at) = host.entity(id).and_then(|e| e.position(&*host)) else {
-        return;
-    };
-    let nearest = host
-        .players()
-        .server_players()
-        .into_iter()
-        .filter_map(|p| Some((p, p.entity().position(&*host)?)))
-        .min_by(|a, b| creature::body::distance(a.1, at).total_cmp(&creature::body::distance(b.1, at)));
-    if let (Some((player, _)), Some(ball)) = (nearest, creature::hand::stack(&*host, DUNG_BALL, 1)) {
+    if let Some(ball) = creature::hand::stack(&*host, DUNG_BALL, 1) {
         creature::hand::give(host, player, ball);
     }
 }

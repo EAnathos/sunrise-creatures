@@ -1,6 +1,6 @@
 id = "sporelins"
 name = "Sporelins"
-version = "0.1.0"
+version = "0.1.1"
 description = "Small, shy mushroom sprites that hide as mushrooms and plant them; befriended with a mushroom, one follows you, tends a patch and fills your bowl with stew. Needs Sunrise Creatures."
 authors = ["EAnathos"]
 api = "0.2"

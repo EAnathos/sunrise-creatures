@@ -19,9 +19,10 @@ use creature::colours::{Colour, Pattern, Scheme, Variety};
 use creature::territory::Ground;
 use life::Action;
 use mod_api::{
-    BlockEntityDrawContext, ClientHost, EmissiveEvent, EntityInteractEvent, EntityRenderState, EntityRenderer,
-    EntityTickPostEvent, Flow, Hooks, HostSide, InteractionResult, LevelRef, LightLayer, LivingDeathEvent, PlayerRef,
-    RegisterEntityRenderersEvent, Registrar, RegistrationContext, ServerHost, SoundSource, Text,
+    AttachmentCodec, AttachmentType, BlockEntityDrawContext, ClientHost, Compound, EmissiveEvent, EntityInteractEvent,
+    EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, Holder, Hooks, HostSide, InteractionResult, LevelRef,
+    LightLayer, LivingDeathEvent, PlayerRef, RegisterEntityRenderersEvent, Registrar, RegistrationContext, ServerHost,
+    SoundSource, Tag, Text,
 };
 
 pub const KIND: &str = "sporelins:sporelin";
@@ -410,8 +411,30 @@ fn plant(
 const BEFRIEND_ONE_IN: u64 = 3;
 const HEAL: f32 = 2.0;
 
-/// The day each sporelin last filled a bowl (the game's day count): once a day each.
-static STEW_DAY: Mutex<BTreeMap<u32, i64>> = Mutex::new(BTreeMap::new());
+/// The day a sporelin last filled a bowl (the game's day count), saved on it (`sporelins:stew`): once a day each, a
+/// reload included.
+static STEW: AttachmentType<Option<i64>> = AttachmentType {
+    namespace: "sporelins",
+    name: "stew",
+    default: || None,
+    codec: Some(AttachmentCodec {
+        encode: |day| {
+            let mut c = Compound::new();
+            if let Some(d) = day {
+                c.insert("Day".into(), Tag::Long(*d));
+            }
+            Ok(c)
+        },
+        decode: |c| {
+            Ok(match c.get(&"Day".into()) {
+                Some(Tag::Long(d)) => Some(*d),
+                _ => None,
+            })
+        },
+    }),
+    copy_on_death: false,
+    sync: false,
+};
 
 /// Its right-click (SPECS §3), on the server: a mushroom of its colour to befriend it (or heal a friend), a bowl for a
 /// stew, an empty hand to tell it to stay or follow.
@@ -458,12 +481,12 @@ fn interact(host: &mut dyn ServerHost, id: u32, player: PlayerRef, hand: mod_api
         }
         Some("minecraft:bowl") if mine => {
             let day = level.day_time(&*host).unwrap_or(0).div_euclid(24_000);
-            let today = STEW_DAY.lock().unwrap().get(&id) == Some(&day);
-            if today {
+            let last = STEW.get_existing(host, Holder::Entity(id)).ok().flatten().flatten();
+            if last == Some(day) {
                 life::shake(id);
                 return;
             }
-            STEW_DAY.lock().unwrap().insert(id, day);
+            let _ = STEW.set(host, Holder::Entity(id), Some(day));
             let Some(stew) = creature::hand::stack(&*host, "minecraft:mushroom_stew", 1) else {
                 return;
             };
@@ -492,7 +515,6 @@ fn forget(id: u32) {
     creature::glow::dim(id);
     life::forget(id);
     GLOWING.lock().unwrap().remove(&id);
-    STEW_DAY.lock().unwrap().remove(&id);
 }
 
 /// How it holds itself this frame: walking, it waddles (its body rocks, its legs step, its arms swing); hiding, it
@@ -545,7 +567,8 @@ struct Sporelins;
 
 #[mod_api::sunrise_mod]
 impl Hooks for Sporelins {
-    fn register(&self, _: &mut dyn Registrar, _: &RegistrationContext) {
+    fn register(&self, r: &mut dyn Registrar, _: &RegistrationContext) {
+        let _ = r.register_attachment_type("sporelins:stew", false);
         creature::flutter::register(KIND, SIZE);
         creature::flutter::spawns_on(&SPAWNING, spawns_on);
         creature::bestiary::register(&BESTIARY);

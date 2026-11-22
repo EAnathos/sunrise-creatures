@@ -1,0 +1,32 @@
+# Every commit of a pull request is signed off (`git commit -s`): its author certifies the Developer Certificate of
+# Origin (CONTRIBUTING.md, "Your rights and the project's"). The bots' commits (Dependabot's updates, ImgBot's
+# compression) are left out.
+name: Sign-off
+
+on:
+  pull_request:
+
+jobs:
+  dco:
+    name: Commits signed off
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Check each commit
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          missing=0
+          for sha in $(git rev-list --no-merges "$BASE..$HEAD"); do
+            author=$(git log -1 --format='%an' "$sha")
+            case "$author" in *"[bot]"|ImgBotApp) continue ;; esac
+            email=$(git log -1 --format='%ae' "$sha")
+            if ! git log -1 --format='%B' "$sha" | grep -qiF "Signed-off-by: $author <$email>"; then
+              echo "::error::$sha by $author <$email> is not signed off (git commit -s)"
+              missing=1
+            fi
+          done
+          exit $missing

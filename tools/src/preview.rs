@@ -419,7 +419,16 @@ fn decode(bytes: &[u8]) -> Result<Texture, String> {
     Ok(Texture { width, height, rgba })
 }
 
+/// Writes a picture, unless the one there already has these pixels: its bytes then stay (an optimiser's, ImgBot's,
+/// smaller encoding), so the pictures and the registry's copies of them change only when the model does.
 fn write_png(path: &Path, rgba: &[u8]) -> crate::Result {
+    let same = std::fs::read(path)
+        .ok()
+        .and_then(|bytes| decode(&bytes).ok())
+        .is_some_and(|old| (old.width, old.height) == SIZE && old.rgba == rgba);
+    if same {
+        return Ok(());
+    }
     let file = std::fs::File::create(path).map_err(|e| format!("{}: {e}", path.display()))?;
     let mut encoder = png::Encoder::new(std::io::BufWriter::new(file), SIZE.0 as u32, SIZE.1 as u32);
     encoder.set_color(png::ColorType::Rgba);

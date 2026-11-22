@@ -2,6 +2,11 @@
 
 Each version's section is its registry changelog (`cargo creature release`).
 
+## 0.1.2
+
+- A beetle's ball goes to the player who took it (it went to the nearest one).
+- The code is under PolyForm Noncommercial 1.0.0, the artwork the author's (`LICENSE`, `LICENSE-ART.md`).
+
 ## 0.1.1
 
 - Built on the library's `creep::too_tall`, unchanged.

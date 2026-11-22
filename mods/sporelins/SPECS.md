@@ -10,11 +10,11 @@ mushrooms where they walk; befriended, one follows you home and tends a mushroom
 
 ## 0. Status
 
-Playable on Sunrise (0.1.0), tested in game: its two looks, hiding from a player and coming out again,
-the spore puff and running off when hit (along a fence too), befriending with a mushroom of its colour (one chance in
-3), following its friend and coming to them when far (onto the ground by them, never in the air), staying and tending a
-patch (mushrooms of its colour planted around it), the stew once a day (a second bowl the same day refused), the glow
-of a friend's cap at night, the mushroom it drops.
+Playable on Sunrise (0.1.1), tested in game: its two looks, hiding from a player and coming out again, the spore puff
+and running off when hit (along a fence too), befriending with a mushroom of its colour (one chance in 3), following its
+friend and coming to them when far (onto the ground by them, never in the air), staying and tending a patch (mushrooms
+of its colour planted around it), the stew once a day (a second bowl the same day refused, a reload included: the day is
+saved on it), the glow of a friend's cap at night, the mushroom it drops.
 
 - **Two models**, one per look (`sources/models/`, pictures in docs/models/), with the same groups so the same code
   poses both:
@@ -28,8 +28,6 @@ of a friend's cap at night, the mushroom it drops.
 - **The code**: `src/lib.rs` (spawning, looks, right-clicks, planting, the glow, the drawing), `src/life.rs` (its
   behaviours). From the library: friends (§6.2), colours, the spawning of small creatures on given blocks, glow,
   `creep::too_tall` (common/SPECS.md).
-
-Not yet: the day of its last stew is kept only while the game runs (a reload lets it fill a bowl again that day).
 
 ## 1. Technical context
 

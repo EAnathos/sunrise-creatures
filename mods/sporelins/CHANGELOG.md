@@ -2,6 +2,12 @@
 
 Each version's section is its registry changelog (`cargo creature release`).
 
+## 0.1.1
+
+- A sporelin remembers the day it last filled a bowl across a reload (it was forgotten, so a reload gave a second
+  stew that day).
+- The code is under PolyForm Noncommercial 1.0.0, the artwork the author's (`LICENSE`, `LICENSE-ART.md`).
+
 ## 0.1.0
 
 - First release on Sunrise: sporelins, red and brown caps, in dark forests, mushroom fields, old growth taigas and
