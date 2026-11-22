@@ -43,7 +43,6 @@ only). How the port went is in the history (`git show 2c09384:docs/SUNRISE-PORT.
 - A module's root is its package: `sunrise-mod.toml` (id, version, `[native]` pins, `[dependencies] creature`),
   `Cargo.toml` (`sunrise-mod-api` by path from `.sunrise/sdk/`), `src/`, `assets/<id>/`, `data/<id>/sunrise/`; beside it
   the repository's own `module.toml`, `SPECS.md`, `sources/` (Blockbench models, `sounds.toml`).
-- Never modify Horizon's files in `~/.local/share/horizon-launcher` either.
 
 ## Building and testing
 
