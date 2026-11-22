@@ -79,6 +79,25 @@ registry commit); owning both, the review marks it routine. The
 collection's own page (name, summary, description, icon, defaults, member order) changes by a pull request a reviewer
 reads.
 
+## Built from source (Nightly)
+
+Since launcher 1.1.4, the registry also lists native mods by their source (`sources/<id>.toml` in sunrise-mods,
+published as the Nightly list `sources.json`), and a player on Nightly can build a mod straight from it on their
+computer, after a warning that the code isn't reviewed. Every module of the series has such a listing (added by the
+registry's maintainers): `repo = "EAnathos/sunrise-creatures"`, its manifest's path, its icon, and
+`track = { branch = "main" }`. So:
+
+- **`main` is what Nightly players build.** Push to it only code that builds and works: a module half done, or a mod
+  whose code changed without its version raised, reaches them as it is. Raise a module's version when its code
+  changes (the launcher offers an update by version), even before its registry release.
+- **The pin follows the Nightly.** A source build compiles against the player's own game build, and the launcher shows
+  whether a mod is made for it from the manifest's `[native]` pins: when Sunrise publishes a new Nightly, move the
+  series' pin to it promptly (docs/SUNRISE-ISSUES.md, "Moving the pin"), or source builds fall out of step.
+- **A new module** gets its listing with a pull request adding `sources/<id>.toml` (the format is in sunrise-mods'
+  README, "Source mods"), beside its `mods/<id>.toml`; a collection appears in the Nightly list only when every member
+  has a listing.
+- The reviewed files of `mods/` stay what Stable players install, and what the launcher also offers on Nightly.
+
 ## Published
 
 | Version | What | Registry |
@@ -88,7 +107,7 @@ reads.
 | library 0.3.0, Jellyfish 0.1.0 (new), Storm Spirits 0.2.0, Vulture 0.2.1, the other mods 0.1.2 (2026-11-21) | Sunrise's 2026-11-20 Nightly, water creatures, the Jellyfish, packages with `uses.json` | [sunrise-org/sunrise-mods#34](https://github.com/sunrise-org/sunrise-mods/pull/34), merged; the Jellyfish into the collection: [#35](https://github.com/sunrise-org/sunrise-mods/pull/35) |
 | library 0.3.1, Flying Fish 0.1.0 (new), Vulture 0.2.2 (2026-11-21) | `prey::when_caught`, the Flying Fish, the Vulture's fixes from #34's review | [sunrise-org/sunrise-mods#36](https://github.com/sunrise-org/sunrise-mods/pull/36), merged 2026-11-20; the Flying Fish into the collection: [#37](https://github.com/sunrise-org/sunrise-mods/pull/37) |
 | library 0.3.2, Seagulls 0.1.0 (new), Vulture 0.2.3, Flying Fish 0.1.1, Jellyfish 0.1.1, Fairies 0.1.3 (2026-11-22) | The Seagulls; what two mods shared moved to the library (flight, food on the ground, feather recipes, helpers) | [sunrise-org/sunrise-mods#50](https://github.com/sunrise-org/sunrise-mods/pull/50), merged 2026-11-21; the Seagulls into the collection: [#51](https://github.com/sunrise-org/sunrise-mods/pull/51) |
-| library 0.3.3 and 0.3.4, Ladybugs 0.1.0, Phasmids 0.1.0, Dung Beetles 0.1.0 and 0.1.1, Sporelins 0.1.0 (new), Flying Fish 0.1.2, Seagulls 0.1.1 (2026-11-22) | Four new mods; creeping, the tree and pasture rules, filled jars in the creative tab; the fish and the seagulls wander, the seagulls along the coast; in-game pictures on every creature mod's page (the review asked) | [sunrise-org/sunrise-mods#55](https://github.com/sunrise-org/sunrise-mods/pull/55), in review; the four new mods into the collection once listed |
+| library 0.3.3 and 0.3.4, Ladybugs 0.1.0, Phasmids 0.1.0, Dung Beetles 0.1.0 and 0.1.1, Sporelins 0.1.0 (new), Flying Fish 0.1.2, Seagulls 0.1.1 (2026-11-22) | Four new mods; creeping, the tree and pasture rules, filled jars in the creative tab; the fish and the seagulls wander, the seagulls along the coast; in-game pictures on every creature mod's page (the review asked) | [sunrise-org/sunrise-mods#55](https://github.com/sunrise-org/sunrise-mods/pull/55), merged 2026-11-22; the four new mods added to the collection by the registry's maintainers |
 
 ## Signing (recommended)
 

@@ -128,7 +128,7 @@ mods/<mod>/             one folder per mod, all alike:
   module.toml           (`requires` lists the other mods of the series it needs, if any)
   SPECS.md, README.md
   sunrise-mod.toml ...  the package, as the library's ([dependencies] creature); absent while the mod is only specified
-  sources/              not shipped: Blockbench models (`models/<model>.bbmodel`), `sounds.toml`, Horizon's old manifests
+  sources/              not shipped: Blockbench models (`models/<model>.bbmodel`), `sounds.toml`
 tools/                  the Rust build tools (`cargo creature ...`), shared by every module
 ```
 

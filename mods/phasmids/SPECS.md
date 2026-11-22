@@ -89,7 +89,7 @@ a jar), "Settled" (settled one on a tree).
   its tree is the leaves and logs connected to that block (within 8 blocks of it); the tree
   must have **at least 10 leaves**, otherwise it won't settle. A settled one stays on its tree and never despawns. Leaves
   cut down below 10, it becomes unsettled (wanders, may despawn).
-- The jar's recipe condition and the tab injection get `phasmids` with this mod (library §3.3, §4.1).
+- The jar's recipe condition and the creative tab get `phasmids` with this mod (library §3.3, §4.1).
 
 ## 6. Out of scope for v1
 

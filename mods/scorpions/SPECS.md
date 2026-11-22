@@ -102,7 +102,7 @@ scorpion glow), "Jar" (caught one in a jar), "Settled" (settled one in a sandy p
   sandstone or terracotta, its patch is those blocks connected to it within 8 blocks, at least 10 of them, otherwise it
   won't settle. A settled one stays on its patch and never despawns: a terrarium. It still rears up at players who come
   close, and fights back if hit.
-- The jar's recipe condition and the tab injection get `scorpions` with this mod (library §3.3, §4.1).
+- The jar's recipe condition and the creative tab get `scorpions` with this mod (library §3.3, §4.1).
 
 ## 7. Out of scope for v1
 

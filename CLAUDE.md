@@ -42,8 +42,7 @@ only). How the port went is in the history (`git show 2c09384:docs/SUNRISE-PORT.
   (fetched by `cargo creature native-check`; `surface.json` lists the whole API).
 - A module's root is its package: `sunrise-mod.toml` (id, version, `[native]` pins, `[dependencies] creature`),
   `Cargo.toml` (`sunrise-mod-api` by path from `.sunrise/sdk/`), `src/`, `assets/<id>/`, `data/<id>/sunrise/`; beside it
-  the repository's own `module.toml`, `SPECS.md`, `sources/` (Blockbench models, `sounds.toml`, Horizon's old
-  manifests).
+  the repository's own `module.toml`, `SPECS.md`, `sources/` (Blockbench models, `sounds.toml`).
 - Never modify Horizon's files in `~/.local/share/horizon-launcher` either.
 
 ## Building and testing
@@ -62,7 +61,9 @@ only). How the port went is in the history (`git show 2c09384:docs/SUNRISE-PORT.
   `native-check`, `install`, `release`; alias in `.cargo/config.toml`; the table in `CONTRIBUTING.md`).
 - Publishing: each finished module is a project on Sunrise's registry (`[registry]` in its `module.toml`, its README as
   the page, its `CHANGELOG.md`); `cargo creature release` prepares a version (`registry/` mirrors sunrise-mods' entries).
-  The steps: `docs/PUBLISHING.md`. A published file never changes: a change is a new version.
+  The steps: `docs/PUBLISHING.md`. A published file never changes: a change is a new version. Every module is also
+  listed by its source (`sources/<id>.toml`, tracking `main`): Nightly players build `main` itself, so keep it working
+  and pinned to the current Nightly (`docs/PUBLISHING.md`, "Built from source").
 - The README's banner and panels (`docs/media/`) are hand-made images: nothing regenerates them.
 - Before committing: rustfmt (tools and `src/`, `rustfmt.toml`), Clippy `-D warnings` on the tools,
   `cargo creature check`, `cargo creature native-check` (Clippy and tests of the ported crates on the pinned SDK); CI

@@ -78,7 +78,7 @@ Grazing land kept alive: the beetles slowly repair what the herds wear down.
 ## 4. Catching and settling ✅
 
 - **Caught in the glass jar** ✅ (library §4.1), like butterflies, fireflies and worms. Dung Beetles is a jar user: the
-  jar's recipe condition and the creative tab injection list it too (library §3.3, §4.1).
+  jar's recipe condition and the creative tab list it too (library §3.3, §4.1).
 - **Released in a pasture**, it settles there ✅ (library §4.2, rule **"pasture"**): released with at least **3 farm
   animals within 8 blocks**, it roams 8 blocks around the release block, follows the herd there, rolls its balls there
   and never despawns. With fewer than 3 animals left around, it becomes unsettled (wanders, may despawn).

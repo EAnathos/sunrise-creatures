@@ -19,7 +19,7 @@ How the repository is organised, how to build and test the mods, and the rules a
 | Path | Contents |
 |---|---|
 | `common/` | The library, `creature`: its package at the root (`sunrise-mod.toml`; `Cargo.toml` and `src/`, the crate `mod-creature`; `assets/creature/`, `data/creature/`: the jar, the guide, the creative tab, translations), `module.toml`, `SPECS.md` |
-| `mods/<mod>/` | One mod: its package at the root (`sunrise-mod.toml`; `Cargo.toml` and `src/`, the crate `mod-<mod>`; `assets/<mod>/`, `data/<mod>/`: entities, items, recipes, loot, spawns, textures, sounds, translations), `sources/` (`models/*.bbmodel`, `sounds.toml`, Horizon's old manifests while it is ported), `module.toml`, `SPECS.md`, `README.md` (its page for players) |
+| `mods/<mod>/` | One mod: its package at the root (`sunrise-mod.toml`; `Cargo.toml` and `src/`, the crate `mod-<mod>`; `assets/<mod>/`, `data/<mod>/`: entities, items, recipes, loot, spawns, textures, sounds, translations), `sources/` (`models/*.bbmodel`, `sounds.toml`), `module.toml`, `SPECS.md`, `README.md` (its page for players) |
 | `tools/` | The build tools, `cargo creature <command>` |
 | `docs/` | Series-wide documentation |
 | `.github/workflows/ci.yml` | CI (below) |

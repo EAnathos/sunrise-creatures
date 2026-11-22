@@ -314,7 +314,7 @@ Each moves here when a second mod needs it. Until then it stays in the vulture.
 
 | # | System | Today |
 |---|---|---|
-| 6.1 | **Riding and flight**: mount by right-click, **dynamic ridden flight** (steered by the look, banking into arc turns like a plane, vulture/SPECS.md §6.2), dismount, mount hearts (vanilla's on Sunrise; the `mount-hud` injection on Horizon), a saddle | the flight itself (glide, soaring, landing) moved here with the Seagulls ✅ (`creature::flight`, §3.14); riding and the wing poses stay in the mods |
+| 6.1 | **Riding and flight**: mount by right-click, **dynamic ridden flight** (steered by the look, banking into arc turns like a plane, vulture/SPECS.md §6.2), dismount, mount hearts (vanilla's), a saddle | the flight itself (glide, soaring, landing) moved here with the Seagulls ✅ (`creature::flight`, §3.14); riding and the wing poses stay in the mods |
 | 6.2 | **Taming and ownership**: owner on the entity, sit / follow, defend the owner, healing food, only the owner rides | following in flight ✅ in the library (`creature::flight::Follow`, §3.14: the vulture and the seagull); **friends** ✅ in the library (`creature::friend`: the friend's UUID and staying, saved on the creature as `creature:friend`, kept in the glass jar), used by the **Fairies**, the **Seagulls** (befriended with a fish), the **Sporelins** (with a mushroom; following on
 foot, which stays theirs while no other walker follows) and the **Vulture** (its owner and sitting; a save from before, which held them in `vulture:state`, is moved over once, tested in game); defending and riding come with the Living Flowers (planned) |
 | 6.3 | **Babies and growth**: smaller model, growth time, faster when fed | in the vulture |
@@ -384,9 +384,9 @@ What each item of the series is for, so a player knows how to make it and what t
 - Each mod registers its items' pages (`creature::bestiary::register_item`, `creature::items::ItemPage`) ✅: the item,
   the creatures that drop it, what else gives it and its uses, as language keys with icons. The glass jar's page shows
   only with a mod that uses the jar.
-- **The recipes are the modules' own files** ✅: Horizon gave a mod only custom recipe types, so
-  `cargo creature tab` reads every module's `data/<id>/recipe/` into the library's `recipes.rs` (the series' tags
-  expanded, Minecraft's drawn by an item of theirs), and `cargo creature check` fails when it is out of date. A page
+- **The recipes are the modules' own files** ✅: `cargo creature tab` reads every module's `data/<id>/recipe/` into the
+  library's `recipes.rs` (the series' tags expanded, Minecraft's drawn by an item of theirs), and `cargo creature check`
+  fails when it is out of date. A page
   can't show a recipe the game doesn't have.
 - Users: the library (the glass jar, the guide), Vulture (feather, raw and cooked meat), Butterflies (dust, confetti),
   Cyclops (eye, club, shepherd's crook), Fairies (fairy dust), Dung Beetles (dung ball).
