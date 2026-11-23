@@ -2,7 +2,8 @@
 //! `target/native-check/` whose crates are ours (their `src/` in place), each on the API of the pinned Sunrise SDK
 //! (`target/sunrise-sdk/`, fetched by `cargo sunrise-mod` in the library's staged package), the mods on the library as the
 //! `creature` crate (as the launcher gives it) and on the mods they require. Then `cargo clippy` on it, warnings denied,
-//! and their unit tests (`cargo test`: pure logic, nothing that needs a running game).
+//! and their unit tests (`cargo test`: nothing that needs a running game; the SDK's fake host, `mod_api::testing`, as a
+//! dev-dependency).
 //!
 //! Every crate must use the one SDK copy: two copies of its crates in one build collide.
 use std::path::Path;
@@ -11,10 +12,15 @@ use crate::install::run_in;
 use crate::modules::{self, LIBRARY, Module};
 
 pub fn run(sdk: Option<&str>) -> crate::Result {
-    let library = modules::library()?;
+    let all: Vec<Module> = std::iter::once(modules::library()?).chain(modules::mods()?).collect();
+    // A module whose `ported` and crate disagree would be left out without a word.
+    let problems: Vec<String> = all.iter().flat_map(Module::crate_problems).collect();
+    if !problems.is_empty() {
+        return Err(problems.join("\n"));
+    }
     let sdk = match sdk {
         Some(dir) => std::fs::canonicalize(dir).map_err(|e| format!("{dir}: {e}"))?,
-        None => fetch(&library)?,
+        None => fetch(&all[0])?,
     };
     let api = sdk.join("api/crates/sunrise-mod-api");
     if !api.join("Cargo.toml").is_file() {
@@ -25,10 +31,7 @@ pub fn run(sdk: Option<&str>) -> crate::Result {
     }
     let ws = crate::root().join("target/native-check");
     std::fs::create_dir_all(&ws).map_err(|e| format!("{}: {e}", ws.display()))?;
-    let modules: Vec<Module> = std::iter::once(library)
-        .chain(modules::mods()?)
-        .filter(|m| m.native().is_some())
-        .collect();
+    let modules: Vec<Module> = all.into_iter().filter(|m| m.native().is_some()).collect();
     for m in &modules {
         crate_manifest(&ws, m, &api)?;
     }
@@ -86,11 +89,14 @@ fn crate_manifest(ws: &Path, m: &Module, api: &Path) -> crate::Result {
             deps += &format!("{r} = {{ package = \"mod-{r}\", path = \"../{r}\" }}\n");
         }
     }
+    // The tests may use the SDK's fake host (`mod_api::testing`); the package itself never builds them.
     let text = format!(
         "[package]\nname = \"mod-{id}\"\nversion = \"0.0.0\"\nedition = \"2024\"\npublish = false\n\n\
-         [lib]\npath = {src:?}\n\n[dependencies]\n{deps}",
+         [lib]\npath = {src:?}\n\n[dependencies]\n{deps}\n\
+         [dev-dependencies]\nsunrise-mod-api = {{ path = {api:?}, features = [\"testing\"] }}\n",
         id = m.id,
         src = src.display().to_string(),
+        api = api.display().to_string(),
     );
     let dir = ws.join(&m.id);
     std::fs::create_dir_all(&dir).map_err(|e| format!("{}: {e}", dir.display()))?;

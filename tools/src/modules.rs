@@ -113,6 +113,53 @@ impl Module {
     pub fn buildable(&self) -> bool {
         self.manifest().is_some()
     }
+
+    /// How its `ported` and its crate disagree: a ported module needs its package and its crate (`Cargo.toml`,
+    /// `src/lib.rs`), or `native()` leaves it out of the build and of `native-check` without a word; a module that
+    /// isn't has no crate, which would be neither built nor checked. A content-only module may keep generated Rust in
+    /// `src/` (a model's, for when it is ported), just no `lib.rs`.
+    pub fn crate_problems(&self) -> Vec<String> {
+        problems(
+            self.ported,
+            self.manifest().is_some(),
+            self.dir.join("Cargo.toml").is_file(),
+            self.dir.join("src/lib.rs").is_file(),
+        )
+        .into_iter()
+        .map(|p| {
+            let toml = self.dir.join("module.toml");
+            format!("{}: {p}", toml.strip_prefix(crate::root()).unwrap_or(&toml).display())
+        })
+        .collect()
+    }
+}
+
+/// `crate_problems`, from what a module has.
+fn problems(ported: bool, manifest: bool, cargo: bool, lib: bool) -> Vec<&'static str> {
+    let mut found = Vec::new();
+    if ported {
+        if !manifest {
+            found.push("ported, but no sunrise-mod.toml");
+        }
+        if !cargo {
+            found.push("ported, but no Cargo.toml: its code would be neither built nor checked");
+        }
+        if !lib {
+            found.push("ported, but no src/lib.rs");
+        }
+    } else {
+        if cargo {
+            found.push("a Cargo.toml but not `ported = true`: its code would be neither built nor checked");
+        }
+        if lib {
+            found.push("a src/lib.rs but not `ported = true`: its code would be neither built nor checked");
+        }
+    }
+    if cargo && !lib {
+        found.push("a Cargo.toml but no src/lib.rs");
+    }
+    found.dedup();
+    found
 }
 
 pub fn library() -> crate::Result<Module> {
@@ -171,4 +218,29 @@ pub fn with_requirements(names: &[String]) -> crate::Result<Vec<Module>> {
         visit(name, &mut Vec::new(), &mut out)?;
     }
     Ok(out)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::problems;
+
+    #[test]
+    fn a_ported_module_has_its_package_and_its_crate() {
+        assert!(problems(true, true, true, true).is_empty());
+        assert_eq!(problems(true, true, false, true).len(), 1, "no Cargo.toml");
+        assert_eq!(
+            problems(true, true, true, false).len(),
+            2,
+            "no lib.rs, and a Cargo.toml without it"
+        );
+        assert_eq!(problems(true, false, true, true).len(), 1, "no package");
+    }
+
+    #[test]
+    fn a_content_only_module_has_no_crate() {
+        assert!(problems(false, true, false, false).is_empty());
+        assert!(problems(false, false, false, false).is_empty(), "a planned mod");
+        assert!(!problems(false, true, true, true).is_empty(), "a crate never built");
+        assert!(!problems(false, false, false, true).is_empty(), "a lib.rs never built");
+    }
 }

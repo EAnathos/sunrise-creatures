@@ -4,6 +4,8 @@
 //! - Each module: its `sunrise-mod.toml` carries its id, the version of its `Cargo.toml`, and the library's Sunrise and
 //!   mixins pins (`[native]`, as CI's `SUNRISE_REV`); its `Cargo.toml` takes the API from the pinned SDK; a mod
 //!   depends on the library and on every mod its `module.toml` requires.
+//! - Each module's `ported` agrees with its crate: ported, it has its package, `Cargo.toml` and `src/lib.rs`; not, it
+//!   has no `Cargo.toml` nor `src/lib.rs` (`Module::crate_problems`).
 //! - A mod's tab items are declared items; its `requires` name mods of the series, without cycles.
 //! - Every JSON file parses; each module's `en_us` and `fr_fr` lang files have the same keys.
 //! - Generated files are up to date: each model's Rust (`cargo creature model`), and each model has its pictures in
@@ -106,6 +108,7 @@ fn native_pins(t: &toml::Table) -> Option<(String, String)> {
 const API: &str = "sunrise-mod-api = { path = \".sunrise/sdk/api/crates/sunrise-mod-api\" }";
 
 fn module(m: &Module, mods: &[Module], revision: &(String, String), errors: &mut Vec<String>) {
+    errors.extend(m.crate_problems());
     let mut push = |e: String| errors.push(e);
     let mut versions = Vec::new();
     if let Some(path) = m.manifest() {
