@@ -383,6 +383,7 @@ static CREEPING: creature::creep::Creeping = creature::creep::Creeping {
     area: canopy,
     may: |m, _| !life::busy(m.id),
     rustle: Some(RUSTLE),
+    clings: true,
 };
 
 /// Its sounds (SPECS §2): a faint rustle of leaves as it crawls, a dry click as it drops to play dead (`life`).
@@ -516,6 +517,11 @@ fn pose(name: &str, age: f32, walk: f32, speed: f32, dead: bool) -> [f32; 3] {
     }
 }
 
+/// Drawn on a trunk (`creature::creep::clinging`): lifted so its tail is at its feet, and moved to the bark it faces
+/// (its middle is held 0.3 from it), in blocks.
+const CLING_LIFT: f32 = 0.3;
+const CLING_REACH: f32 = 0.27;
+
 /// Its own model in its kind's texture.
 struct Draw {
     stick: bool,
@@ -542,6 +548,11 @@ impl EntityRenderer for Draw {
         let dead = life::dead(entity.id);
         draw.push();
         creature::model::living_pose(draw, entity);
+        if !dead && creature::creep::clinging(entity.id) {
+            // On a trunk: upright, head up, its belly to the bark it faces, its tail at its feet.
+            draw.translate([0.0, CLING_LIFT, CLING_REACH]);
+            draw.rotate_about([1.0, 0.0, 0.0], -90.0, [0.0; 3]);
+        }
         draw.scale([scale; 3]);
         if dead {
             // On its back: lifted by its own height so it lies on the ground.

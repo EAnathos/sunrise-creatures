@@ -6,6 +6,8 @@ use std::sync::Mutex;
 
 use mod_api::{LevelRef, ServerHost};
 
+use crate::sync::Locked;
+
 /// Ticks until each (creature, body) pair may touch again.
 static WAITS: Mutex<BTreeMap<(u32, u32), i32>> = Mutex::new(BTreeMap::new());
 
@@ -21,7 +23,7 @@ pub fn due(
     every: i32,
 ) -> Vec<u32> {
     let touching = crate::projectile::hits(host, level, middle, kind, entity, reach);
-    let mut waits = WAITS.lock().unwrap();
+    let mut waits = WAITS.locked();
     // A body that moved away may be touched again at once when it comes back.
     waits.retain(|(e, b), _| *e != entity || touching.contains(b));
     touching
@@ -41,5 +43,5 @@ pub fn due(
 
 /// `entity` is gone (or a body it touched).
 pub fn forget(entity: u32) {
-    WAITS.lock().unwrap().retain(|(e, b), _| *e != entity && *b != entity);
+    WAITS.locked().retain(|(e, b), _| *e != entity && *b != entity);
 }

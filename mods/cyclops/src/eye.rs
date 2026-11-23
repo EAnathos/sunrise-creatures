@@ -9,6 +9,7 @@ use std::sync::Mutex;
 use std::time::Instant;
 
 use creature::body::{Behaviour, Body, World, distance};
+use creature::sync::Locked;
 use mod_api::{LevelRef, LivingIncomingDamageEvent, ParticleOptions, ServerHost, SoundSource};
 
 const PROJECTILES: [&str; 3] = ["minecraft:arrow", "minecraft:spectral_arrow", "minecraft:trident"];
@@ -35,9 +36,9 @@ static DAZED: Mutex<BTreeMap<u32, Instant>> = Mutex::new(BTreeMap::new());
 
 /// From `level_tick_post`: notes the arrows and tridents near a cyclops.
 pub fn watch(host: &mut dyn ServerHost, level: LevelRef) {
-    let cyclopes: Vec<[f64; 3]> = FACING.lock().unwrap().values().map(|(at, _)| *at).collect();
+    let cyclopes: Vec<[f64; 3]> = FACING.locked().values().map(|(at, _)| *at).collect();
     if cyclopes.is_empty() {
-        FLYING.lock().unwrap().clear();
+        FLYING.locked().clear();
         return;
     }
     let mut flying = BTreeMap::new();
@@ -54,15 +55,15 @@ pub fn watch(host: &mut dyn ServerHost, level: LevelRef) {
             }
         }
     }
-    *FLYING.lock().unwrap() = flying;
+    *FLYING.locked() = flying;
 }
 
 /// From the cyclops's tick: where it stands and faces, and its stars and cry while dazed.
 pub fn tick(host: &mut dyn ServerHost, level: LevelRef, entity: u32, at: [f64; 3]) {
     if let Some(r) = host.entity(entity).and_then(|e| e.rotation(host)) {
-        FACING.lock().unwrap().insert(entity, (at, r[0]));
+        FACING.locked().insert(entity, (at, r[0]));
     }
-    if CRY.lock().unwrap().remove(&entity) {
+    if CRY.locked().remove(&entity) {
         level.play_sound(
             host,
             "cyclops:entity.cyclops.stunned",
@@ -97,11 +98,11 @@ pub fn struck(event: &mut LivingIncomingDamageEvent<'_>) {
     let Ok(cyclops) = u32::try_from(event.entity) else {
         return;
     };
-    let Some((c, yaw)) = FACING.lock().unwrap().get(&cyclops).copied() else {
+    let Some((c, yaw)) = FACING.locked().get(&cyclops).copied() else {
         return;
     };
     // The projectile: by its id, or, when the hit names none, the nearest one noted.
-    let flying = FLYING.lock().unwrap();
+    let flying = FLYING.locked();
     let projectile = match u32::try_from(event.source.direct) {
         Ok(id) if id > 0 => flying.get(&id).copied(),
         _ => flying
@@ -127,27 +128,26 @@ pub fn struck(event: &mut LivingIncomingDamageEvent<'_>) {
     if (EYE_LOW..=EYE_HIGH).contains(&hit[1]) && along(hit, side).abs() <= EYE_SIDE {
         let doubled = event.container.new_damage() * 2.0;
         event.container.set_new_damage(doubled);
-        STRUCK.lock().unwrap().insert(cyclops);
-        CRY.lock().unwrap().insert(cyclops);
-        DAZED.lock().unwrap().insert(cyclops, Instant::now());
+        STRUCK.locked().insert(cyclops);
+        CRY.locked().insert(cyclops);
+        DAZED.locked().insert(cyclops, Instant::now());
     }
 }
 
 /// Seconds since cyclops `entity` was struck in the eye, while it is dazed.
 pub fn dazed(entity: u32) -> Option<f32> {
     DAZED
-        .lock()
-        .unwrap()
+        .locked()
         .get(&entity)
         .map(|at| at.elapsed().as_secs_f32())
         .filter(|s| *s < STUN as f32 / 20.0)
 }
 
 pub fn forget(entity: u32) {
-    FACING.lock().unwrap().remove(&entity);
-    STRUCK.lock().unwrap().remove(&entity);
-    CRY.lock().unwrap().remove(&entity);
-    DAZED.lock().unwrap().remove(&entity);
+    FACING.locked().remove(&entity);
+    STRUCK.locked().remove(&entity);
+    CRY.locked().remove(&entity);
+    DAZED.locked().remove(&entity);
 }
 
 /// Dazed: it stands still and does nothing, whatever it was doing.
@@ -158,7 +158,7 @@ pub struct Stunned {
 
 impl Behaviour for Stunned {
     fn can_use(&mut self, m: &mut Body, _: &World<'_>) -> bool {
-        if STRUCK.lock().unwrap().remove(&m.id) {
+        if STRUCK.locked().remove(&m.id) {
             self.ticks = STUN;
         }
         self.ticks > 0

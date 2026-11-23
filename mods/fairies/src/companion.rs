@@ -13,6 +13,7 @@ use std::collections::BTreeSet;
 use std::sync::Mutex;
 
 use creature::body::{Behaviour, Body, World, distance};
+use creature::sync::Locked;
 
 /// Its friend further than this (blocks): it comes to them at once (the mod's tick teleports it).
 pub const TELEPORT: f64 = 24.0;
@@ -42,11 +43,11 @@ static ACTIVE: Mutex<BTreeSet<u32>> = Mutex::new(BTreeSet::new());
 
 /// Whether this behaviour moves it now (it is flying).
 pub fn active(fairy: u32) -> bool {
-    ACTIVE.lock().unwrap().contains(&fairy)
+    ACTIVE.locked().contains(&fairy)
 }
 
 pub fn forget(fairy: u32) {
-    ACTIVE.lock().unwrap().remove(&fairy);
+    ACTIVE.locked().remove(&fairy);
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -139,7 +140,7 @@ impl Behaviour for Fairy {
                     self.ticks = 0;
                 }
                 self.mode = Some(mode);
-                ACTIVE.lock().unwrap().insert(m.id);
+                ACTIVE.locked().insert(m.id);
                 true
             }
             None => false,
@@ -147,7 +148,7 @@ impl Behaviour for Fairy {
     }
     fn stop(&mut self, m: &mut Body, _: &World<'_>) {
         self.mode = None;
-        ACTIVE.lock().unwrap().remove(&m.id);
+        ACTIVE.locked().remove(&m.id);
     }
     fn tick(&mut self, m: &mut Body, cx: &World<'_>) {
         m.no_gravity = true;

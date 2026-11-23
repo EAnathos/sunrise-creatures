@@ -29,13 +29,14 @@ use std::time::Instant;
 
 use creature::bestiary::{Fact, Species};
 use creature::body::{Behaviour, Body, World};
+use creature::sync::Locked;
 use creature::territory::Ground;
 use mod_api::{
     AnvilUpdateEvent, BlockEntityDrawContext, ClientHost, Compound, EntityInteractEvent, EntityJoinLevelEvent,
     EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, GoalSpec, Heightmap, HitHost, Hooks, Host, HostSide,
     InteractionResult, ItemPart, LevelRef, LevelTickPostEvent, LivingDeathEvent, LivingIncomingDamageEvent,
-    LivingRenderState, MobFilter, RegisterEntityRenderersEvent, Registrar, RegistrationContext, ServerHost,
-    SoundSource, Text, TooltipEvent,
+    LivingRenderState, MobFilter, PlayerLoggedOutEvent, RegisterEntityRenderersEvent, Registrar, RegistrationContext,
+    ServerHost, SoundSource, Text, TooltipEvent,
 };
 
 pub const CYCLOPS: &str = "cyclops:cyclops";
@@ -331,9 +332,9 @@ impl Hooks for Cyclops {
         if event.kind == "minecraft:sheep"
             && let Ok(attacker) = u32::try_from(event.source.causing)
             && let Ok(sheep) = u32::try_from(event.entity)
-            && let Some(&shepherd) = SHEPHERD.lock().unwrap().get(&sheep)
+            && let Some(&shepherd) = SHEPHERD.locked().get(&sheep)
         {
-            ANGERED.lock().unwrap().insert(shepherd, attacker);
+            ANGERED.locked().insert(shepherd, attacker);
         }
         Flow::Continue
     }
@@ -373,7 +374,7 @@ impl Hooks for Cyclops {
             }
             let id = event.entity;
             if let Some(at) = e.position(host) {
-                CYCLOPS_AT.lock().unwrap().insert(id, at);
+                CYCLOPS_AT.locked().insert(id, at);
                 eye::tick(host, level, id, at);
             }
             creature::body::tick(host, id, || {
@@ -387,20 +388,25 @@ impl Hooks for Cyclops {
         });
     }
 
+    /// A player gone: whether they saw a flock is asked again when they come back (the fact is learnt once anyway).
+    fn player_logged_out(&self, _: &mut dyn ServerHost, event: &mut PlayerLoggedOutEvent<'_>) {
+        flock::NOTED.locked().remove(&event.player);
+    }
+
     fn living_death(&self, _: &mut dyn ServerHost, event: &mut LivingDeathEvent<'_>) -> Flow {
         if event.kind == CYCLOPS {
-            CYCLOPS_AT.lock().unwrap().remove(&event.entity);
-            RAISED.lock().unwrap().remove(&event.entity);
-            LIFTED.lock().unwrap().remove(&event.entity);
+            CYCLOPS_AT.locked().remove(&event.entity);
+            RAISED.locked().remove(&event.entity);
+            LIFTED.locked().remove(&event.entity);
             smash::forget(event.entity);
-            ANGERED.lock().unwrap().remove(&event.entity);
+            ANGERED.locked().remove(&event.entity);
             eye::forget(event.entity);
             creature::body::forget(event.entity);
         } else if event.kind == boulder::BOULDER {
             boulder::forget(event.entity);
         } else if event.kind == "minecraft:sheep" {
-            FLOCK.lock().unwrap().remove(&event.entity);
-            SHEPHERD.lock().unwrap().remove(&event.entity);
+            FLOCK.locked().remove(&event.entity);
+            SHEPHERD.locked().remove(&event.entity);
         }
         Flow::Continue
     }

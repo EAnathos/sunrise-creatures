@@ -34,12 +34,13 @@ use std::sync::{Arc, Mutex, OnceLock};
 
 use creature::body::{Behaviour, Body, World};
 use creature::flight::{Controls, Flight, Wings};
+use creature::sync::Locked;
 use mod_api::{
     BlockEntityDrawContext, ClientHost, ClientTickPostEvent, EntityInteractEvent, EntityJoinLevelEvent,
-    EntityMountEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, GoalSpec, HitHost, Hooks, HostSide,
-    InteractionResult, KeyRegistration, LivingDeathEvent, LivingIncomingDamageEvent, LivingRenderState,
-    MenuClickedEvent, MenuClosedEvent, PayloadCodec, PayloadId, PlayerInputEvent, RegisterEntityRenderersEvent,
-    Registrar, RegistrationContext, ServerHost, SoundSource, ToServer,
+    EntityLeaveLevelEvent, EntityMountEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, GoalSpec,
+    HitHost, Hooks, HostSide, InteractionResult, KeyRegistration, LivingDeathEvent, LivingIncomingDamageEvent,
+    LivingRenderState, MenuClickedEvent, MenuClosedEvent, PayloadCodec, PayloadId, PlayerInputEvent,
+    RegisterEntityRenderersEvent, Registrar, RegistrationContext, ServerHost, SoundSource, ToServer,
 };
 
 pub const KIND: &str = "vulture:vulture";
@@ -291,7 +292,7 @@ pub fn target(cx: &World<'_>, id: u32) -> Option<Target> {
             .as_ref()
             .is_some_and(|p| p.entity_id == e.id() && owner == Some(creature::friend::ints(p.uuid)))
     {
-        LET_GO.lock().unwrap().push(id);
+        LET_GO.locked().push(id);
         return None;
     }
     let at = e.position(host)?;
@@ -308,12 +309,12 @@ static LET_GO: Mutex<Vec<u32>> = Mutex::new(Vec::new());
 
 /// From a behaviour: vulture `id` strikes `target` with its beak.
 pub fn strike(id: u32, target: u32) {
-    STRIKES.lock().unwrap().push((id, target));
+    STRIKES.locked().push((id, target));
 }
 
 /// From a behaviour: particles `kind` around `at`.
 pub fn particles(id: u32, kind: &'static str, at: [f64; 3], count: i32) {
-    PARTICLES.lock().unwrap().push((id, kind, at, count));
+    PARTICLES.locked().push((id, kind, at, count));
 }
 
 /// Hits seen by the damage hook (victim, who caused it), for the vultures defending their owners (`defend`).
@@ -328,7 +329,7 @@ fn apply(host: &mut dyn ServerHost, id: u32) {
         return;
     };
     let mine = |list: &Mutex<Vec<(u32, u32)>>| {
-        let mut all = list.lock().unwrap();
+        let mut all = list.locked();
         let (mine, rest): (Vec<_>, Vec<_>) = all.drain(..).partition(|s| s.0 == id);
         *all = rest;
         mine
@@ -342,7 +343,7 @@ fn apply(host: &mut dyn ServerHost, id: u32) {
         }
     }
     let shown: Vec<_> = {
-        let mut all = PARTICLES.lock().unwrap();
+        let mut all = PARTICLES.locked();
         let (mine, rest): (Vec<_>, Vec<_>) = all.drain(..).partition(|p| p.0 == id);
         *all = rest;
         mine
@@ -351,7 +352,7 @@ fn apply(host: &mut dyn ServerHost, id: u32) {
         creature::particles::puff(host, level, kind, at, 0.4, count);
     }
     let let_go = {
-        let mut all = LET_GO.lock().unwrap();
+        let mut all = LET_GO.locked();
         let had = all.contains(&id);
         all.retain(|v| *v != id);
         had
@@ -377,7 +378,7 @@ fn defend(host: &mut dyn ServerHost, id: u32) {
         return;
     };
     let owner = owner.entity().id();
-    let hits: Vec<(u32, u32)> = HITS.lock().unwrap().clone();
+    let hits: Vec<(u32, u32)> = HITS.locked().clone();
     let target = hits.iter().rev().find_map(|&(victim, by)| {
         if victim == owner && by != id {
             Some(by)
@@ -521,7 +522,7 @@ impl EntityRenderer for Draw {
             pitch: mob.map_or(0.0, |m| m.x_rot),
             walk_position: mob.map_or(0.0, |m| m.walk_animation_pos),
             walk_speed: mob.map_or(0.0, |m| m.walk_animation_speed),
-            flying: FLYING.lock().unwrap().get(&entity.id).copied().unwrap_or(false),
+            flying: FLYING.locked().get(&entity.id).copied().unwrap_or(false),
         };
         let flapping = creature::flight::flapping(entity.id);
         let look = state::look(entity.id);
@@ -682,7 +683,7 @@ impl Hooks for Vulture {
     /// Hits on and by its owner, for `defend`.
     fn living_incoming_damage(&self, _: &mut dyn HitHost, event: &mut LivingIncomingDamageEvent<'_>) -> Flow {
         if let (Ok(victim), Ok(by)) = (u32::try_from(event.entity), u32::try_from(event.source.causing)) {
-            let mut hits = HITS.lock().unwrap();
+            let mut hits = HITS.locked();
             hits.push((victim, by));
             let excess = hits.len().saturating_sub(16);
             hits.drain(..excess);
@@ -706,9 +707,16 @@ impl Hooks for Vulture {
             ride::forget(event.entity);
             creature::friend::forget(event.entity);
             creature::body::forget(event.entity);
-            FLYING.lock().unwrap().remove(&event.entity);
+            FLYING.locked().remove(&event.entity);
         }
         Flow::Continue
+    }
+
+    /// Its state is dropped once it is gone (not at its death: it ticks, and is drawn, until it leaves the level).
+    fn entity_leave_level(&self, _: &mut dyn ServerHost, event: &mut EntityLeaveLevelEvent<'_>) {
+        if event.kind == KIND {
+            state::forget(event.entity);
+        }
     }
 
     /// The talons key (SPECS §6.4), sent to the server, where the ridden vulture takes it. A mod's own mapping is read
@@ -750,7 +758,8 @@ impl Hooks for Vulture {
             creature::sounds::play_queued(host, id, SoundSource::Neutral);
             state::save(host, event.dimension, id);
             if let Some(e) = host.entity(id) {
-                FLYING.lock().unwrap().insert(id, !e.on_ground(host).unwrap_or(true));
+                let flying = !e.on_ground(host).unwrap_or(true);
+                FLYING.locked().insert(id, flying);
                 if let Some(level) = e.level(host) {
                     state::look_for_food(host, level, id);
                 }

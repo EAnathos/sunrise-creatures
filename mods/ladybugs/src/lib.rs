@@ -15,6 +15,7 @@ use creature::bestiary::{Fact, Species};
 use creature::colours::{Colour, Look, Pattern, Scheme, Variety};
 use creature::jar::Catchable;
 use creature::model::{WHITE, draw_layer, multiply};
+use creature::sync::Locked;
 use luck::Action;
 use mod_api::{
     BlockEntityDrawContext, EntityInteractEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, Hooks,
@@ -226,6 +227,7 @@ static CREEPING: creature::creep::Creeping = creature::creep::Creeping {
         cx.daylight && !cx.raining && !creature::flutter::flying(m.id) && !luck::perched(m.id) && !luck::gathering(m.id)
     },
     rustle: None,
+    clings: false,
 };
 
 /// They come out near players by day in their biomes (the library's spawning): 1 to 3, up to 6 near a player.
@@ -349,7 +351,7 @@ fn tick(host: &mut dyn ServerHost, dimension: &str, id: u32) {
             None => luck::set_perched(id, false),
             Some(v) => {
                 let health = host.living(v).and_then(|l| l.health(&*host));
-                let before = RIDDEN.lock().unwrap().get(&id).copied();
+                let before = RIDDEN.locked().get(&id).copied();
                 if let (Some(h), Some(b)) = (health, before)
                     && h < b
                 {
@@ -512,11 +514,12 @@ fn act(host: &mut dyn ServerHost, action: Action) {
                 }
             }
             if let Some(l) = host.entity(player).and_then(|p| host.living(p)) {
-                RIDDEN.lock().unwrap().insert(bug, l.health(&*host).unwrap_or(0.0));
+                let health = l.health(&*host).unwrap_or(0.0);
+                RIDDEN.locked().insert(bug, health);
             }
         }
         Action::Leave { bug } => {
-            RIDDEN.lock().unwrap().remove(&bug);
+            RIDDEN.locked().remove(&bug);
             if let Some(b) = host.entity(bug) {
                 b.stop_riding(host);
             }
@@ -526,7 +529,7 @@ fn act(host: &mut dyn ServerHost, action: Action) {
 }
 
 fn forget(id: u32) {
-    RIDDEN.lock().unwrap().remove(&id);
+    RIDDEN.locked().remove(&id);
     creature::flutter::gone(id);
     luck::forget(id);
 }

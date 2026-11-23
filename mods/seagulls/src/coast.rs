@@ -11,6 +11,7 @@ use std::sync::Mutex;
 
 use creature::body::{Behaviour, Body, Vec3, World};
 use creature::flight::{Controls, Flight, Following, heading_of};
+use creature::sync::Locked;
 
 use crate::{CRY, LAUGH, SPLASH, WINGS};
 
@@ -38,12 +39,12 @@ pub(crate) enum Action {
 static ACTIONS: Mutex<Vec<Action>> = Mutex::new(Vec::new());
 
 fn queue(action: Action) {
-    ACTIONS.lock().unwrap().push(action);
+    ACTIONS.locked().push(action);
 }
 
 /// What the behaviours queued since the last call.
 pub(crate) fn actions() -> Vec<Action> {
-    std::mem::take(&mut *ACTIONS.lock().unwrap())
+    std::mem::take(&mut *ACTIONS.locked())
 }
 
 /// What the mod's tick finds around each seagull (every 10 ticks): the nearest food on the ground, the player in a
@@ -63,11 +64,11 @@ pub(crate) struct Around {
 static AROUND: Mutex<BTreeMap<u32, Around>> = Mutex::new(BTreeMap::new());
 
 pub(crate) fn set_around(id: u32, around: Around) {
-    AROUND.lock().unwrap().insert(id, around);
+    AROUND.locked().insert(id, around);
 }
 
 fn around(id: u32) -> Around {
-    AROUND.lock().unwrap().get(&id).cloned().unwrap_or_default()
+    AROUND.locked().get(&id).cloned().unwrap_or_default()
 }
 
 /// For its drawing (single player: the renderer reads them): diving with its wings folded back, floating.
@@ -78,15 +79,15 @@ static CARRIED: Mutex<BTreeMap<u32, String>> = Mutex::new(BTreeMap::new());
 static LUCKY: Mutex<BTreeMap<u32, ([f64; 3], u128)>> = Mutex::new(BTreeMap::new());
 
 pub(crate) fn diving(id: u32) -> bool {
-    DIVING.lock().unwrap().contains_key(&id)
+    DIVING.locked().contains_key(&id)
 }
 
 pub(crate) fn carried(id: u32) -> Option<String> {
-    CARRIED.lock().unwrap().get(&id).cloned()
+    CARRIED.locked().get(&id).cloned()
 }
 
 pub(crate) fn set_carried(id: u32, item: Option<String>) {
-    let mut all = CARRIED.lock().unwrap();
+    let mut all = CARRIED.locked();
     match item {
         Some(i) => all.insert(id, i),
         None => all.remove(&id),
@@ -96,8 +97,7 @@ pub(crate) fn set_carried(id: u32, item: Option<String>) {
 /// The lucky spots of `player`'s seagulls.
 pub(crate) fn lucky_spots(player: u128) -> Vec<[f64; 3]> {
     LUCKY
-        .lock()
-        .unwrap()
+        .locked()
         .values()
         .filter(|(_, p)| *p == player)
         .map(|(at, _)| *at)
@@ -105,10 +105,10 @@ pub(crate) fn lucky_spots(player: u128) -> Vec<[f64; 3]> {
 }
 
 pub(crate) fn forget(id: u32) {
-    AROUND.lock().unwrap().remove(&id);
-    DIVING.lock().unwrap().remove(&id);
-    CARRIED.lock().unwrap().remove(&id);
-    LUCKY.lock().unwrap().remove(&id);
+    AROUND.locked().remove(&id);
+    DIVING.locked().remove(&id);
+    CARRIED.locked().remove(&id);
+    LUCKY.locked().remove(&id);
 }
 
 /// The behaviours, in priority order.
@@ -430,14 +430,14 @@ impl Behaviour for Dive {
         }
         if !on && self.on {
             self.wait = DIVE_EVERY.0 + m.random.next_int_bound(DIVE_EVERY.1).unwrap_or(0);
-            DIVING.lock().unwrap().remove(&m.id);
+            DIVING.locked().remove(&m.id);
         }
         self.on = on;
         on
     }
     fn stop(&mut self, m: &mut Body, _: &World<'_>) {
         self.on = false;
-        DIVING.lock().unwrap().remove(&m.id);
+        DIVING.locked().remove(&m.id);
         self.flight.land(m);
     }
     fn tick(&mut self, m: &mut Body, cx: &World<'_>) {
@@ -450,7 +450,7 @@ impl Behaviour for Dive {
                     && m.position.y > spot[1] + DIVE_HEIGHT * 0.5
                 {
                     self.phase = DivePhase::Plunge;
-                    DIVING.lock().unwrap().insert(m.id, ());
+                    DIVING.locked().insert(m.id, ());
                 }
             }
             DivePhase::Plunge => {
@@ -481,7 +481,7 @@ impl Behaviour for Dive {
                 self.phase = if left > 0 {
                     DivePhase::Under(left - 1)
                 } else {
-                    DIVING.lock().unwrap().remove(&m.id);
+                    DIVING.locked().remove(&m.id);
                     self.flight = Flight::default();
                     DivePhase::Back
                 };
@@ -614,12 +614,12 @@ impl Behaviour for LuckySpot {
     fn can_use(&mut self, m: &mut Body, cx: &World<'_>) -> bool {
         let a = around(m.id);
         let Some((player, staying, at)) = friend(m, cx) else {
-            LUCKY.lock().unwrap().remove(&m.id);
+            LUCKY.locked().remove(&m.id);
             return false;
         };
         let on = !staying && (a.bobber.is_some() || a.friend_boating);
         if !on {
-            LUCKY.lock().unwrap().remove(&m.id);
+            LUCKY.locked().remove(&m.id);
             self.spot = None;
             return false;
         }
@@ -638,7 +638,7 @@ impl Behaviour for LuckySpot {
         }
         match self.spot {
             Some(s) => {
-                LUCKY.lock().unwrap().insert(m.id, (s, player));
+                LUCKY.locked().insert(m.id, (s, player));
                 true
             }
             None => false,
@@ -735,7 +735,7 @@ impl Behaviour for Eat {
                 item,
                 befriends,
             });
-            AROUND.lock().unwrap().entry(m.id).or_default().food = None;
+            AROUND.locked().entry(m.id).or_default().food = None;
             self.ticks = 0;
             return;
         }
@@ -825,7 +825,7 @@ mod tests {
 
     #[test]
     fn lucky_spots_are_their_friend_s() {
-        LUCKY.lock().unwrap().insert(5, ([1.0, 2.0, 3.0], 77));
+        LUCKY.locked().insert(5, ([1.0, 2.0, 3.0], 77));
         assert_eq!(lucky_spots(77), vec![[1.0, 2.0, 3.0]]);
         assert!(lucky_spots(78).is_empty());
         forget(5);

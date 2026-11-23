@@ -15,6 +15,7 @@ use std::sync::{Arc, Mutex};
 use coast::{Action, Around};
 use creature::bestiary::{Fact, Species};
 use creature::flight::{Soaring, Wings};
+use creature::sync::Locked;
 use mod_api::{
     BlockEntityDrawContext, EntityInteractEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, Hand,
     Hooks, HostSide, InteractionResult, ItemFishedEvent, LivingDeathEvent, RegisterEntityRenderersEvent, Registrar,
@@ -175,9 +176,9 @@ const CAST_REACH: f64 = 6.0;
 /// Where player `player`'s bobber is, guessed: `CAST_REACH` ahead of where they cast along their look, on the water
 /// there; none when there is no water there or no cast.
 fn bobber(host: &dyn ServerHost, level: mod_api::LevelRef, player: u128, now: i64) -> Option<[f64; 3]> {
-    let (eye, look, at) = CASTS.lock().unwrap().get(&player).copied()?;
+    let (eye, look, at) = CASTS.locked().get(&player).copied()?;
     if now - at > CAST_FOR {
-        CASTS.lock().unwrap().remove(&player);
+        CASTS.locked().remove(&player);
         return None;
     }
     let n = look[0].hypot(look[2]).max(0.01);
@@ -205,11 +206,9 @@ fn tick(host: &mut dyn ServerHost, dimension: &str, id: u32) {
     let Some(e) = host.entity(id) else {
         return;
     };
-    let flying = !e.on_ground(&*host).unwrap_or(true) && !e.is_in_water(&*host).unwrap_or(false);
-    FLYING
-        .lock()
-        .unwrap()
-        .insert(id, (flying, e.is_in_water(&*host).unwrap_or(false)));
+    let in_water = e.is_in_water(&*host).unwrap_or(false);
+    let flying = !e.on_ground(&*host).unwrap_or(true) && !in_water;
+    FLYING.locked().insert(id, (flying, in_water));
     if (e.tick_count(&*host).unwrap_or(0) + id as i32) % LOOK_EVERY == 0 {
         look_around(host, id);
     }
@@ -252,7 +251,7 @@ fn look_around(host: &mut dyn ServerHost, id: u32) {
                     .is_some_and(|s| creature::hand::is(&*host, &s, "minecraft:fishing_rod"))
             });
             if !rod {
-                CASTS.lock().unwrap().remove(&p.uuid());
+                CASTS.locked().remove(&p.uuid());
             }
             let now = level.game_time(&*host).unwrap_or(0);
             around.bobber = bobber(&*host, level, p.uuid(), now).filter(|b| distance(*b) < BOBBER_RANGE);
@@ -447,7 +446,7 @@ fn forget(id: u32) {
     creature::body::forget(id);
     creature::friend::forget(id);
     coast::forget(id);
-    FLYING.lock().unwrap().remove(&id);
+    FLYING.locked().remove(&id);
 }
 
 /// How it holds itself this frame: in flight its body takes the flight's pitch and banks with the turn, its wings
@@ -523,12 +522,7 @@ struct Draw;
 impl EntityRenderer for Draw {
     fn submit(&self, entity: &EntityRenderState, draw: &mut dyn BlockEntityDrawContext) -> Result<(), String> {
         let mob = entity.living.as_ref();
-        let (flying, floating) = FLYING
-            .lock()
-            .unwrap()
-            .get(&entity.id)
-            .copied()
-            .unwrap_or((false, false));
+        let (flying, floating) = FLYING.locked().get(&entity.id).copied().unwrap_or((false, false));
         let frame = Frame {
             age: entity.age,
             head_yaw: mob.map_or(0.0, |m| m.y_rot),
@@ -624,11 +618,11 @@ impl Hooks for Seagulls {
                     && let Some((eye, look)) = creature::hand::eye_and_look(&*host, p)
                 {
                     let now = p.entity().level(&*host).and_then(|l| l.game_time(&*host)).unwrap_or(0);
-                    CASTS.lock().unwrap().insert(event.player, (eye, look, now));
+                    CASTS.locked().insert(event.player, (eye, look, now));
                 }
             }
             2..=4 => {
-                CASTS.lock().unwrap().remove(&event.player);
+                CASTS.locked().remove(&event.player);
             }
             _ => {}
         }

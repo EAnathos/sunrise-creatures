@@ -9,6 +9,7 @@
 use std::collections::BTreeMap;
 use std::sync::Mutex;
 
+use creature::sync::Locked;
 use mod_api::ServerHost;
 
 /// The rider of a vulture this tick: where they look and what they press.
@@ -43,7 +44,7 @@ static RIDERS: Mutex<BTreeMap<u32, Rider>> = Mutex::new(BTreeMap::new());
 
 /// From the `player_input` hook: `riding` whether the player rides a vulture (only their keys are kept).
 pub fn heard(player: u128, flags: i32, riding: bool) {
-    let mut keys = KEYS.lock().unwrap();
+    let mut keys = KEYS.locked();
     if riding {
         keys.insert(player, flags);
     } else {
@@ -53,7 +54,7 @@ pub fn heard(player: u128, flags: i32, riding: bool) {
 
 /// From `entity_mount` (getting off) and `player_logged_out`: player `player`'s keys are forgotten.
 pub fn left(player: u128) {
-    KEYS.lock().unwrap().remove(&player);
+    KEYS.locked().remove(&player);
 }
 
 /// From the vulture's tick, before its behaviours: its rider now, if a player rides it.
@@ -68,7 +69,7 @@ pub fn read(host: &dyn ServerHost, id: u32) {
                 .server_players()
                 .into_iter()
                 .find(|p| p.entity().id() == first.id())?;
-            let flags = KEYS.lock().unwrap().get(&player.uuid()).copied().unwrap_or(0);
+            let flags = KEYS.locked().get(&player.uuid()).copied().unwrap_or(0);
             let yaw = player.entity().rotation(host)?[0];
             let axis = |plus: i32, minus: i32| {
                 f32::from(i8::from(flags & plus != 0)) - f32::from(i8::from(flags & minus != 0))
@@ -82,7 +83,7 @@ pub fn read(host: &dyn ServerHost, id: u32) {
                 descend: flags & (SNEAK | SPRINT) != 0,
             })
         });
-    let mut riders = RIDERS.lock().unwrap();
+    let mut riders = RIDERS.locked();
     match rider {
         Some(r) => riders.insert(id, r),
         None => riders.remove(&id),
@@ -91,11 +92,11 @@ pub fn read(host: &dyn ServerHost, id: u32) {
 
 /// Its rider this tick, if any.
 pub fn of(id: u32) -> Option<Rider> {
-    RIDERS.lock().unwrap().get(&id).copied()
+    RIDERS.locked().get(&id).copied()
 }
 
 pub fn forget(id: u32) {
-    RIDERS.lock().unwrap().remove(&id);
+    RIDERS.locked().remove(&id);
 }
 
 /// How far below its feet ground still counts as landed, in blocks.
@@ -123,12 +124,12 @@ mod tests {
     #[test]
     fn keys_make_the_rider_s_axes() {
         heard(7, FORWARD | LEFT | SNEAK, true);
-        let flags = KEYS.lock().unwrap()[&7];
+        let flags = KEYS.locked()[&7];
         assert_eq!(flags & FORWARD, FORWARD);
         assert_eq!(flags & (SNEAK | SPRINT), SNEAK);
         heard(8, FORWARD, false);
-        assert!(!KEYS.lock().unwrap().contains_key(&8));
+        assert!(!KEYS.locked().contains_key(&8));
         left(7);
-        assert!(!KEYS.lock().unwrap().contains_key(&7));
+        assert!(!KEYS.locked().contains_key(&7));
     }
 }

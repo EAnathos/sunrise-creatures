@@ -18,6 +18,7 @@ use mod_api::{
     LivingBreatheEvent, ServerHost, SoundSource, Tag, UseOnEvent,
 };
 
+use crate::sync::Locked;
 use crate::territory::Ground;
 use crate::{colours, hand, jar};
 
@@ -60,7 +61,7 @@ static SPAWN_TICKS: Mutex<u32> = Mutex::new(0);
 
 /// From a mod's `register`.
 pub fn register(aquatic: &'static Aquatic) {
-    let mut all = AQUATIC.lock().unwrap();
+    let mut all = AQUATIC.locked();
     if !all.iter().any(|a| a.kind == aquatic.kind) {
         all.push(aquatic);
     }
@@ -68,11 +69,11 @@ pub fn register(aquatic: &'static Aquatic) {
 
 /// From a mod's `register`: its creatures spawn in water.
 pub fn spawns(spawning: &'static Spawning) {
-    SPAWNING.lock().unwrap().push(spawning);
+    SPAWNING.locked().push(spawning);
 }
 
 fn of(kind: &str) -> Option<&'static Aquatic> {
-    AQUATIC.lock().unwrap().iter().copied().find(|a| a.kind == kind)
+    AQUATIC.locked().iter().copied().find(|a| a.kind == kind)
 }
 
 /// Whether creatures of `kind` live in water.
@@ -106,14 +107,14 @@ pub fn tick(host: &mut dyn ServerHost, entity: u32, kind: &str) -> bool {
         e.set_no_gravity(host, wet);
     }
     if let Some(at) = e.position(&*host) {
-        AT.lock().unwrap().insert(entity, (aquatic.kind, at));
+        AT.locked().insert(entity, (aquatic.kind, at));
     }
     if wet {
-        DRY.lock().unwrap().remove(&entity);
+        DRY.locked().remove(&entity);
         return true;
     }
     let out = {
-        let mut dry = DRY.lock().unwrap();
+        let mut dry = DRY.locked();
         let t = dry.entry(entity).or_insert(0);
         *t += 1;
         *t
@@ -146,8 +147,8 @@ pub fn water_over(cx: &crate::body::World<'_>, at: [f64; 3], up: i32) -> f64 {
 
 /// From the mod, when one is gone.
 pub fn forget(entity: u32) {
-    DRY.lock().unwrap().remove(&entity);
-    AT.lock().unwrap().remove(&entity);
+    DRY.locked().remove(&entity);
+    AT.locked().remove(&entity);
 }
 
 /// Whether `stack` on `kind` is a catch: a water bucket on a water creature.
@@ -286,7 +287,7 @@ pub fn release(host: &mut dyn ServerHost, event: &UseOnEvent<'_>) -> bool {
 fn held(host: &dyn Host, stack: &ItemStack) -> Option<jar::Held> {
     jar::held(stack).or_else(|| {
         let item = hand::id(host, stack);
-        let aquatic = AQUATIC.lock().unwrap().iter().copied().find(|a| a.bucket == item)?;
+        let aquatic = AQUATIC.locked().iter().copied().find(|a| a.bucket == item)?;
         Some(jar::Held {
             kind: aquatic.kind.to_owned(),
             look: None,
@@ -350,14 +351,14 @@ pub(crate) fn spawn(host: &mut dyn ServerHost, level: LevelRef) {
         return;
     }
     {
-        let mut t = SPAWN_TICKS.lock().unwrap();
+        let mut t = SPAWN_TICKS.locked();
         *t += 1;
         if *t < SPAWN_EVERY {
             return;
         }
         *t = 0;
     }
-    let spawning: Vec<&'static Spawning> = SPAWNING.lock().unwrap().clone();
+    let spawning: Vec<&'static Spawning> = SPAWNING.locked().clone();
     if spawning.is_empty() {
         return;
     }
@@ -377,8 +378,7 @@ pub(crate) fn spawn(host: &mut dyn ServerHost, level: LevelRef) {
                 continue;
             }
             let near = AT
-                .lock()
-                .unwrap()
+                .locked()
                 .values()
                 .filter(|(kind, at)| *kind == s.kind && (at[0] - p[0]).hypot(at[2] - p[2]) < SPAWN_NEAR)
                 .count();

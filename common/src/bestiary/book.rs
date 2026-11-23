@@ -2,6 +2,8 @@
 //! screen (`draw`: the Creatures and Items tabs, a creature's or an item's page, the 3D view), clicked and scrolled.
 use super::*;
 
+use crate::sync::Locked;
+
 /// From a module's `hooks()`: its item gets a page in the Items tab (`items`).
 pub fn register_item(page: &'static ItemPage) {
     items::register(page);
@@ -87,18 +89,31 @@ struct Book {
     detail_last: usize,
 }
 
-static BOOK: Mutex<Book> = Mutex::new(Book {
-    tab: Tab::Creatures,
-    entries: Vec::new(),
-    selected: 0,
-    morph: 0,
-    scroll: 0,
-    grid_scroll: 0,
-    item: 0,
-    item_scroll: 0,
-    detail_scroll: 0,
-    detail_last: 0,
-});
+impl Book {
+    const CLOSED: Book = Book {
+        tab: Tab::Creatures,
+        entries: Vec::new(),
+        selected: 0,
+        morph: 0,
+        scroll: 0,
+        grid_scroll: 0,
+        item: 0,
+        item_scroll: 0,
+        detail_scroll: 0,
+        detail_last: 0,
+    };
+}
+
+static BOOK: Mutex<Book> = Mutex::new(Book::CLOSED);
+
+/// Runs `f` on the book, taken out of `BOOK` meanwhile: the drawing and the clicks call the game (and draw creatures,
+/// whose renderers are the mods'), with no lock held.
+fn with_book<R>(f: impl FnOnce(&mut Book) -> R) -> R {
+    let mut book = std::mem::replace(&mut *BOOK.locked(), Book::CLOSED);
+    let r = f(&mut book);
+    *BOOK.locked() = book;
+    r
+}
 
 /// The morphs `entry` met, sorted by colour, then pattern, then pattern colour (the scheme's order).
 fn sorted_morphs(sp: &Species, entry: &Entry) -> Vec<Look> {
@@ -130,7 +145,7 @@ pub fn received(host: &mut dyn ClientHost, data: &[u8]) {
     }
     let (flag, chunk) = (data[0], String::from_utf8_lossy(&data[1..]));
     let text = {
-        let mut accum = ACCUM.lock().unwrap();
+        let mut accum = ACCUM.locked();
         if flag == b'S' || flag == b'B' {
             accum.clear();
         }
@@ -155,7 +170,7 @@ pub fn received(host: &mut dyn ClientHost, data: &[u8]) {
         })
         .collect();
     {
-        let mut book = BOOK.lock().unwrap();
+        let mut book = BOOK.locked();
         book.entries = entries;
         book.selected = book.selected.min(book.entries.len().saturating_sub(1));
         book.morph = 0;
@@ -620,21 +635,22 @@ pub fn draw(host: &dyn ClientHost, event: &mut ScreenRenderPostEvent<'_>) {
     }
     let batch = &mut *event.draw;
     let [x, y] = origin(event.screen.rect);
-    let mut book = BOOK.lock().unwrap();
-    // The ribbons, the open one in the paper's colour; the cover around two pages and the fold between them.
-    for (tab, r, label) in ribbons(host, x, y) {
-        let open = tab == book.tab;
-        batch.fill([r[0], r[1], r[2], r[3] + 4.0], if open { PAPER } else { RIBBON_SHUT });
-        let colour = if open { INK } else { 0xEFE4C8 };
-        batch.text(&label, [r[0] + 4.0, r[1] + 3.0], ink(colour), false);
-    }
-    batch.fill([x - 4.0, y - 4.0, WIDTH + 8.0, HEIGHT + 8.0], COVER);
-    batch.fill([x, y, WIDTH, HEIGHT], PAPER);
-    batch.fill([x + PAGE - 1.0, y, 2.0, HEIGHT], FOLD);
-    match book.tab {
-        Tab::Creatures => draw_creatures(host, batch, &mut book, x, y),
-        Tab::Items => draw_items(host, batch, &mut book, x, y),
-    }
+    with_book(|book| {
+        // The ribbons, the open one in the paper's colour; the cover around two pages and the fold between them.
+        for (tab, r, label) in ribbons(host, x, y) {
+            let open = tab == book.tab;
+            batch.fill([r[0], r[1], r[2], r[3] + 4.0], if open { PAPER } else { RIBBON_SHUT });
+            let colour = if open { INK } else { 0xEFE4C8 };
+            batch.text(&label, [r[0] + 4.0, r[1] + 3.0], ink(colour), false);
+        }
+        batch.fill([x - 4.0, y - 4.0, WIDTH + 8.0, HEIGHT + 8.0], COVER);
+        batch.fill([x, y, WIDTH, HEIGHT], PAPER);
+        batch.fill([x + PAGE - 1.0, y, 2.0, HEIGHT], FOLD);
+        match book.tab {
+            Tab::Creatures => draw_creatures(host, batch, book, x, y),
+            Tab::Items => draw_items(host, batch, book, x, y),
+        }
+    })
 }
 
 /// The right page's scrollbar, when there are more rows of icons than shown.
@@ -819,50 +835,51 @@ pub fn clicked(host: &dyn ClientHost, event: &ScreenMouseButtonPressedPreEvent<'
     let [x, y] = origin(event.screen.rect);
     let mouse = event.screen.mouse;
     let [mx, my] = mouse;
-    let mut book = BOOK.lock().unwrap();
-    for (tab, r, _) in ribbons(host, x, y) {
-        if inside(mouse, r) {
-            if book.tab != tab {
-                book.tab = tab;
-                book.detail_scroll = 0;
+    with_book(|book| {
+        for (tab, r, _) in ribbons(host, x, y) {
+            if inside(mouse, r) {
+                if book.tab != tab {
+                    book.tab = tab;
+                    book.detail_scroll = 0;
+                }
+                return true;
+            }
+        }
+        if book.tab == Tab::Items {
+            for (k, row, col) in item_grid(items::pages().len()) {
+                if let Some([cx, cy]) = cell(x, y, row, col, book.item_scroll)
+                    && inside(mouse, [cx, cy, CELL, CELL])
+                {
+                    book.item = k;
+                    book.detail_scroll = 0;
+                    return true;
+                }
             }
             return true;
         }
-    }
-    if book.tab == Tab::Items {
-        for (k, row, col) in item_grid(items::pages().len()) {
-            if let Some([cx, cy]) = cell(x, y, row, col, book.item_scroll)
-                && inside(mouse, [cx, cy, CELL, CELL])
-            {
-                book.item = k;
+        for (k, row, col) in grid(&book.entries).0 {
+            let Some([cx, cy]) = cell(x, y, row, col, book.grid_scroll) else {
+                continue;
+            };
+            if inside(mouse, [cx, cy, CELL, CELL]) {
+                book.selected = k;
+                book.morph = 0;
+                book.scroll = 0;
                 book.detail_scroll = 0;
                 return true;
             }
         }
-        return true;
-    }
-    for (k, row, col) in grid(&book.entries).0 {
-        let Some([cx, cy]) = cell(x, y, row, col, book.grid_scroll) else {
-            continue;
-        };
-        if inside(mouse, [cx, cy, CELL, CELL]) {
-            book.selected = k;
-            book.morph = 0;
-            book.scroll = 0;
-            book.detail_scroll = 0;
-            return true;
+        let (gx, gy) = (x + MARGIN, y + SWATCHES_TOP);
+        if mx >= gx && mx < gx + PER_LINE as f32 * STEP && my >= gy && my < gy + ROWS_SHOWN as f32 * STEP {
+            let (col, row) = (((mx - gx) / STEP) as usize, ((my - gy) / STEP) as usize);
+            let k = (book.scroll + row) * PER_LINE + col;
+            let count = book.entries.get(book.selected).map_or(0, |e| e.morphs.len());
+            if k < count {
+                book.morph = k;
+            }
         }
-    }
-    let (gx, gy) = (x + MARGIN, y + SWATCHES_TOP);
-    if mx >= gx && mx < gx + PER_LINE as f32 * STEP && my >= gy && my < gy + ROWS_SHOWN as f32 * STEP {
-        let (col, row) = (((mx - gx) / STEP) as usize, ((my - gy) / STEP) as usize);
-        let k = (book.scroll + row) * PER_LINE + col;
-        let count = book.entries.get(book.selected).map_or(0, |e| e.morphs.len());
-        if k < count {
-            book.morph = k;
-        }
-    }
-    true
+        true
+    })
 }
 
 /// One step of the wheel on `scroll`, up to `last`.
@@ -882,35 +899,36 @@ pub fn scrolled(host: &dyn ClientHost, screen: &ScreenView<'_>, scroll: f64) -> 
     }
     let [x, y] = origin(screen.rect);
     let [mx, my] = screen.mouse;
-    let mut book = BOOK.lock().unwrap();
-    if mx >= x + PAGE && mx < x + WIDTH && my >= y && my < y + HEIGHT {
-        if book.tab == Tab::Items {
-            let last = items::pages().len().div_ceil(PER_ROW).saturating_sub(GRID_ROWS);
-            step(&mut book.item_scroll, scroll, last);
-        } else {
-            let last = grid_rows(&book.entries).saturating_sub(GRID_ROWS);
-            step(&mut book.grid_scroll, scroll, last);
+    with_book(|book| {
+        if mx >= x + PAGE && mx < x + WIDTH && my >= y && my < y + HEIGHT {
+            if book.tab == Tab::Items {
+                let last = items::pages().len().div_ceil(PER_ROW).saturating_sub(GRID_ROWS);
+                step(&mut book.item_scroll, scroll, last);
+            } else {
+                let last = grid_rows(&book.entries).saturating_sub(GRID_ROWS);
+                step(&mut book.grid_scroll, scroll, last);
+            }
+            return true;
         }
-        return true;
-    }
-    if !(mx >= x && mx < x + PAGE && my >= y && my < y + HEIGHT) {
-        return true;
-    }
-    let has_swatches = book.tab == Tab::Creatures
-        && book
-            .entries
-            .get(book.selected)
-            .and_then(|e| species(&e.species))
-            .is_some_and(|s| s.scheme.is_some());
-    if has_swatches && my >= y + SWATCHES_TOP {
-        let count = book.entries.get(book.selected).map_or(0, |e| e.morphs.len());
-        let last = rows(count).saturating_sub(ROWS_SHOWN);
-        step(&mut book.scroll, scroll, last);
-    } else {
-        let last = book.detail_last;
-        step(&mut book.detail_scroll, scroll, last);
-    }
-    true
+        if !(mx >= x && mx < x + PAGE && my >= y && my < y + HEIGHT) {
+            return true;
+        }
+        let has_swatches = book.tab == Tab::Creatures
+            && book
+                .entries
+                .get(book.selected)
+                .and_then(|e| species(&e.species))
+                .is_some_and(|s| s.scheme.is_some());
+        if has_swatches && my >= y + SWATCHES_TOP {
+            let count = book.entries.get(book.selected).map_or(0, |e| e.morphs.len());
+            let last = rows(count).saturating_sub(ROWS_SHOWN);
+            step(&mut book.scroll, scroll, last);
+        } else {
+            let last = book.detail_last;
+            step(&mut book.detail_scroll, scroll, last);
+        }
+        true
+    })
 }
 
 /// `minecraft:plains` → `biome.minecraft.plains`.

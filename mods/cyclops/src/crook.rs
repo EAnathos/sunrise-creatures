@@ -4,6 +4,7 @@
 use std::collections::BTreeSet;
 use std::sync::Mutex;
 
+use creature::sync::Locked;
 use mod_api::{Hand, LevelRef, ParticleOptions, ServerHost};
 
 pub const CROOK: &str = "cyclops:shepherds_crook";
@@ -29,7 +30,7 @@ pub static HERDED: Mutex<BTreeSet<u32>> = Mutex::new(BTreeSet::new());
 /// From `level_tick_post`.
 pub fn tick(host: &mut dyn ServerHost, level: LevelRef) {
     {
-        let mut t = TICKS.lock().unwrap();
+        let mut t = TICKS.locked();
         *t += 1;
         if *t < EVERY {
             return;
@@ -48,11 +49,11 @@ pub fn tick(host: &mut dyn ServerHost, level: LevelRef) {
         .filter_map(|p| Some((p.entity().position(&*host)?, p.entity().id())))
         .collect();
     if shepherds.is_empty() {
-        HERDED.lock().unwrap().clear();
+        HERDED.locked().clear();
         return;
     }
     let mut herded = BTreeSet::new();
-    let was = HERDED.lock().unwrap().clone();
+    let was = HERDED.locked().clone();
     let mut animals = Vec::new();
     for (p, _) in &shepherds {
         let from = [p[0] - REACH, p[1] - REACH, p[2] - REACH];
@@ -96,5 +97,5 @@ pub fn tick(host: &mut dyn ServerHost, level: LevelRef) {
             crate::flock::follow(host, animal, player_at, SPEED);
         }
     }
-    *HERDED.lock().unwrap() = herded;
+    *HERDED.locked() = herded;
 }

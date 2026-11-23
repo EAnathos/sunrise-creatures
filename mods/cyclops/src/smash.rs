@@ -4,6 +4,7 @@
 use std::collections::BTreeMap;
 use std::sync::Mutex;
 
+use creature::sync::Locked;
 use creature::territory::Ground;
 use mod_api::{BlockUpdateFlags, GameRuleValue, LevelRef, ParticleOptions, ServerHost};
 
@@ -56,12 +57,12 @@ static BLOWS: Mutex<BTreeMap<u32, [f64; 3]>> = Mutex::new(BTreeMap::new());
 
 /// From the club goal: `cyclops`'s club came down at `at`.
 pub fn blow(cyclops: u32, at: [f64; 3]) {
-    BLOWS.lock().unwrap().insert(cyclops, at);
+    BLOWS.locked().insert(cyclops, at);
 }
 
 /// From the cyclops's tick: its club's last blow breaks its blocks.
 pub fn tick(host: &mut dyn ServerHost, level: LevelRef, cyclops: u32) {
-    let at = BLOWS.lock().unwrap().remove(&cyclops);
+    let at = BLOWS.locked().remove(&cyclops);
     if let Some(at) = at {
         tear(host, level, at, CLUB_RADIUS);
     }
@@ -69,7 +70,7 @@ pub fn tick(host: &mut dyn ServerHost, level: LevelRef, cyclops: u32) {
 
 /// From its death: a blow it had no tick left to make is dropped.
 pub fn forget(cyclops: u32) {
-    BLOWS.lock().unwrap().remove(&cyclops);
+    BLOWS.locked().remove(&cyclops);
 }
 
 /// Whether `name` is a block a blow breaks.

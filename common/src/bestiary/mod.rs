@@ -38,6 +38,7 @@ use mod_api::{
 use crate::colours::{self, Look, Scheme};
 use crate::items::{self, Recipe, Station};
 pub use crate::items::{ItemPage, Use};
+use crate::sync::Locked;
 
 /// A fact a player can learn about a species: an item drawn beside it and its text's language key (empty: a drop, its
 /// item alone, on the lines below the other facts under the heading "Drops").
@@ -103,7 +104,7 @@ static SPECIES: Mutex<Vec<&'static Species>> = Mutex::new(Vec::new());
 
 /// From a mod's `register`: its species get pages in the book.
 pub fn register(species: &'static Species) {
-    let mut all = SPECIES.lock().unwrap();
+    let mut all = SPECIES.locked();
     if !all.iter().any(|s| s.id == species.id) {
         all.push(species);
     }
@@ -116,12 +117,12 @@ static VIEW_SIZES: Mutex<BTreeMap<&'static str, [f32; 2]>> = Mutex::new(BTreeMap
 /// From a mod's `register`: creature `kind` is `width` × `height` blocks, for the book's 3D view to fit it: a vanilla
 /// one (the game has no read of a type's size), or one of ours whose model is bigger than its box (`crate::mob::ours`).
 pub fn view_size(kind: &'static str, width: f32, height: f32) {
-    VIEW_SIZES.lock().unwrap().insert(kind, [width, height]);
+    VIEW_SIZES.locked().insert(kind, [width, height]);
 }
 
 /// The size `view_size` gave `kind`.
 pub(crate) fn view_size_of(kind: &str) -> Option<[f32; 2]> {
-    VIEW_SIZES.lock().unwrap().get(kind).copied()
+    VIEW_SIZES.locked().get(kind).copied()
 }
 
 /// A registered species, by its entity type.
@@ -130,7 +131,7 @@ pub fn species_of(id: &str) -> Option<&'static Species> {
 }
 
 fn species(id: &str) -> Option<&'static Species> {
-    SPECIES.lock().unwrap().iter().copied().find(|s| s.id == id)
+    SPECIES.locked().iter().copied().find(|s| s.id == id)
 }
 
 /// Whether `species` spawns in `biome` of `dimension` (`None`: in any dimension it spawns in).
@@ -297,7 +298,7 @@ static TICKS: Mutex<BTreeMap<u32, u32>> = Mutex::new(BTreeMap::new());
 /// `CHECK_EVERY` ticks of an entity.
 pub fn tick(host: &mut dyn ServerHost, dimension: &str, entity: u32, kind: &str) {
     {
-        let mut ticks = TICKS.lock().unwrap();
+        let mut ticks = TICKS.locked();
         let t = ticks.entry(entity).or_insert(entity % CHECK_EVERY);
         *t += 1;
         if *t < CHECK_EVERY {
@@ -346,7 +347,7 @@ pub fn tick(host: &mut dyn ServerHost, dimension: &str, entity: u32, kind: &str)
 
 /// From the library's `entity_leave_level`: an entity gone is no longer counted.
 pub fn forget(entity: u32) {
-    TICKS.lock().unwrap().remove(&entity);
+    TICKS.locked().remove(&entity);
 }
 
 /// The players within `MEET` blocks of `at` in `dimension`, for a mod's facts seen happen (a creeper exploding).

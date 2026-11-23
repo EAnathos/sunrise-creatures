@@ -15,6 +15,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Mutex;
 
 use creature::bestiary::{Fact, Species};
+use creature::sync::Locked;
 use mod_api::{
     BlockEntityDrawContext, EntityBreedEvent, EntityChangeBlockEvent, EntityDropItemEvent, EntityEnterLoveModeEvent,
     EntityInteractEvent, EntityJoinLevelEvent, EntityLeaveLevelEvent, EntityTameEvent, EntityTickPostEvent,
@@ -114,7 +115,7 @@ fn species(c: &'static Creature) -> Species {
     Species {
         id: c.id,
         biomes: leak(biomes),
-        wild: |id| !NOT_WILD_IDS.lock().unwrap().contains(&id),
+        wild: |id| !NOT_WILD_IDS.locked().contains(&id),
         facts: leak(facts),
         icon: Box::leak(format!("{}_spawn_egg", c.id).into_boxed_str()),
         scheme: None,
@@ -157,7 +158,7 @@ fn mark(host: &mut dyn ServerHost, id: u32) {
     if let Some(e) = host.entity(id) {
         e.add_tag(host, NOT_WILD);
     }
-    NOT_WILD_IDS.lock().unwrap().insert(id);
+    NOT_WILD_IDS.locked().insert(id);
 }
 
 /// Whether creature `id`, back from a save, isn't wild: tagged, or tamed before this mod was installed.
@@ -276,14 +277,14 @@ impl Hooks for VanillaBestiary {
     /// One back from a save, or just born tame, is known by its tag.
     fn entity_join_level(&self, host: &mut dyn ServerHost, event: &mut EntityJoinLevelEvent<'_>) -> Flow {
         if creature(event.kind).is_some() && saved_not_wild(host, event.entity) {
-            NOT_WILD_IDS.lock().unwrap().insert(event.entity);
+            NOT_WILD_IDS.locked().insert(event.entity);
         }
         Flow::Continue
     }
 
     fn entity_leave_level(&self, _: &mut dyn ServerHost, event: &mut EntityLeaveLevelEvent<'_>) {
-        NOT_WILD_IDS.lock().unwrap().remove(&event.entity);
-        CREEPERS.lock().unwrap().remove(&event.entity);
+        NOT_WILD_IDS.locked().remove(&event.entity);
+        CREEPERS.locked().remove(&event.entity);
     }
 
     /// Fed what breeds it: the player who fed it found out what it eats.
@@ -375,10 +376,7 @@ impl Hooks for VanillaBestiary {
                 return;
             }
             if let Some(at) = host.entity(event.entity).and_then(|e| e.position(host)) {
-                CREEPERS
-                    .lock()
-                    .unwrap()
-                    .insert(event.entity, (at, event.dimension.to_owned()));
+                CREEPERS.locked().insert(event.entity, (at, event.dimension.to_owned()));
             }
         });
     }
@@ -387,8 +385,7 @@ impl Hooks for VanillaBestiary {
     fn explosion_prime(&self, host: &mut dyn ServerHost, event: &mut ExplosionPrimeEvent) {
         let c = event.center;
         let creeper = CREEPERS
-            .lock()
-            .unwrap()
+            .locked()
             .values()
             .find(|(at, _)| (0..3).map(|k| (at[k] - c[k]).powi(2)).sum::<f64>() < 4.0)
             .map(|(_, dimension)| dimension.clone());

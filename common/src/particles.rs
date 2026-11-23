@@ -6,6 +6,8 @@ use std::sync::Mutex;
 
 use mod_api::{LevelRef, ParticleKey, ParticleOptions, Registrar, ServerHost};
 
+use crate::sync::Locked;
+
 /// Every particle a mod of the series sends.
 const USED: &[&str] = &[
     "minecraft:happy_villager",
@@ -30,7 +32,7 @@ static KEYS: Mutex<BTreeMap<&'static str, ParticleKey>> = Mutex::new(BTreeMap::n
 
 /// From the library's `register`.
 pub fn declare(r: &mut dyn Registrar) {
-    let mut keys = KEYS.lock().unwrap();
+    let mut keys = KEYS.locked();
     for id in USED {
         keys.insert(id, r.particle_key(id));
     }
@@ -38,7 +40,7 @@ pub fn declare(r: &mut dyn Registrar) {
 
 /// The key of particle `id` (`minecraft:dust`), if the library asked for it.
 pub fn key(id: &str) -> Option<ParticleKey> {
-    KEYS.lock().unwrap().get(id).copied()
+    KEYS.locked().get(id).copied()
 }
 
 /// A puff of `count` particles `id` around `at`, spread over `spread` blocks each way.

@@ -10,6 +10,8 @@ use std::sync::Mutex;
 
 use mod_api::{AttachmentCodec, AttachmentError, AttachmentType, Compound, Holder, Registrar, ServerHost, Tag};
 
+use crate::sync::Locked;
+
 /// Whom a creature is the friend of, and whether it stays where it is.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Friend {
@@ -101,22 +103,22 @@ pub fn befriend(host: &mut dyn ServerHost, entity: u32, player: u128) {
         staying: false,
     });
     let saved = FRIEND.set(host, Holder::Entity(entity), friend).is_ok();
-    FRIENDS.lock().unwrap().insert(entity, Known { friend, dirty: !saved });
+    FRIENDS.locked().insert(entity, Known { friend, dirty: !saved });
 }
 
 /// Whether `entity`'s save has been read (`tick`): until then, `of` says nothing about it.
 pub fn loaded(entity: u32) -> bool {
-    FRIENDS.lock().unwrap().contains_key(&entity)
+    FRIENDS.locked().contains_key(&entity)
 }
 
 /// Whose friend `entity` is, if it has one (from a goal or a hook).
 pub fn of(entity: u32) -> Option<Friend> {
-    FRIENDS.lock().unwrap().get(&entity).and_then(|k| k.friend)
+    FRIENDS.locked().get(&entity).and_then(|k| k.friend)
 }
 
 /// Told to stay where it is, or to follow again; saved by the next `tick`.
 pub fn set_staying(entity: u32, staying: bool) {
-    if let Some(k) = FRIENDS.lock().unwrap().get_mut(&entity)
+    if let Some(k) = FRIENDS.locked().get_mut(&entity)
         && let Some(f) = k.friend.as_mut()
     {
         f.staying = staying;
@@ -126,14 +128,14 @@ pub fn set_staying(entity: u32, staying: bool) {
 
 /// From the mod's `entity_tick_post`: its saved friend the first time, a change saved.
 pub fn tick(host: &mut dyn ServerHost, entity: u32) {
-    let known = FRIENDS.lock().unwrap().get(&entity).copied();
+    let known = FRIENDS.locked().get(&entity).copied();
     match known {
         None => {
             // Not readable yet (its first tick after loading): next tick.
             let Ok(saved) = FRIEND.get_existing(host, Holder::Entity(entity)) else {
                 return;
             };
-            FRIENDS.lock().unwrap().insert(
+            FRIENDS.locked().insert(
                 entity,
                 Known {
                     friend: saved.flatten(),
@@ -143,7 +145,7 @@ pub fn tick(host: &mut dyn ServerHost, entity: u32) {
         }
         Some(k) if k.dirty => {
             if FRIEND.set(host, Holder::Entity(entity), k.friend).is_ok()
-                && let Some(k) = FRIENDS.lock().unwrap().get_mut(&entity)
+                && let Some(k) = FRIENDS.locked().get_mut(&entity)
             {
                 k.dirty = false;
             }
@@ -154,7 +156,7 @@ pub fn tick(host: &mut dyn ServerHost, entity: u32) {
 
 /// From the mod's `living_death` (or when it is caught in a jar).
 pub fn forget(entity: u32) {
-    FRIENDS.lock().unwrap().remove(&entity);
+    FRIENDS.locked().remove(&entity);
 }
 
 #[cfg(test)]

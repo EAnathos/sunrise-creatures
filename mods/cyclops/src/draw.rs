@@ -1,4 +1,6 @@
 //! Its drawing's poses: strides, the club's blow, the boulder lifted and hurled, dazed.
+use creature::sync::Locked;
+
 use super::*;
 
 /// The club raised over its head, then brought down (degrees on the right arm), `since` seconds after it was raised.
@@ -42,8 +44,7 @@ pub(crate) struct Moment {
 impl Moment {
     pub(crate) fn of(id: u32) -> Moment {
         let since = |m: &Mutex<BTreeMap<u32, Instant>>| {
-            m.lock()
-                .unwrap()
+            m.locked()
                 .get(&id)
                 .map(|at| at.elapsed().as_secs_f32())
                 .filter(|s| *s < 2.0)

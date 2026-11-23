@@ -10,6 +10,7 @@ use std::collections::BTreeMap;
 use std::sync::Mutex;
 
 use creature::body::{Behaviour, Body, World};
+use creature::sync::Locked;
 
 /// What the mod's tick does for a behaviour.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -23,7 +24,7 @@ pub(crate) enum Action {
 static ACTIONS: Mutex<Vec<Action>> = Mutex::new(Vec::new());
 
 pub(crate) fn actions() -> Vec<Action> {
-    std::mem::take(&mut *ACTIONS.lock().unwrap())
+    std::mem::take(&mut *ACTIONS.locked())
 }
 
 /// The ladybugs riding a player, for their drawing and the right-click that lets one go (single player).
@@ -34,11 +35,11 @@ static LANDED: Mutex<BTreeMap<u32, i64>> = Mutex::new(BTreeMap::new());
 static CLUSTER: Mutex<BTreeMap<u32, [f64; 3]>> = Mutex::new(BTreeMap::new());
 
 pub(crate) fn perched(id: u32) -> bool {
-    PERCHED.lock().unwrap().contains_key(&id)
+    PERCHED.locked().contains_key(&id)
 }
 
 pub(crate) fn set_perched(id: u32, on: bool) {
-    let mut all = PERCHED.lock().unwrap();
+    let mut all = PERCHED.locked();
     if on {
         all.insert(id, ());
     } else {
@@ -47,16 +48,16 @@ pub(crate) fn set_perched(id: u32, on: bool) {
 }
 
 pub(crate) fn landed(id: u32, day: i64) {
-    LANDED.lock().unwrap().insert(id, day);
+    LANDED.locked().insert(id, day);
 }
 
 /// Whether ladybug `id` has somewhere to gather now (its crawl waits).
 pub(crate) fn gathering(id: u32) -> bool {
-    CLUSTER.lock().unwrap().contains_key(&id)
+    CLUSTER.locked().contains_key(&id)
 }
 
 pub(crate) fn set_cluster(id: u32, at: Option<[f64; 3]>) {
-    let mut all = CLUSTER.lock().unwrap();
+    let mut all = CLUSTER.locked();
     match at {
         Some(at) => all.insert(id, at),
         None => all.remove(&id),
@@ -64,9 +65,9 @@ pub(crate) fn set_cluster(id: u32, at: Option<[f64; 3]>) {
 }
 
 pub(crate) fn forget(id: u32) {
-    PERCHED.lock().unwrap().remove(&id);
-    LANDED.lock().unwrap().remove(&id);
-    CLUSTER.lock().unwrap().remove(&id);
+    PERCHED.locked().remove(&id);
+    LANDED.locked().remove(&id);
+    CLUSTER.locked().remove(&id);
 }
 
 /// Landing on a player (SPECS §4): one chance in this many ticks while one stands still near it (one in 20 a minute),
@@ -125,7 +126,7 @@ impl Behaviour for Perch {
             return self.to.is_some();
         }
         let near = creature::body::distance(at, m.position.array()) < NEAR;
-        let today = LANDED.lock().unwrap().get(&m.id).copied() == Some(day_of(cx));
+        let today = LANDED.locked().get(&m.id).copied() == Some(day_of(cx));
         if near && !today && cx.daylight && self.still >= STILL_FOR && m.random.next_int_bound(LAND_ONE_IN) == Some(0) {
             self.to = Some(p.entity_id);
             self.ticks = 0;
@@ -139,7 +140,7 @@ impl Behaviour for Perch {
             self.ticks += 1;
             let sprinting = cx.player.as_ref().is_some_and(|p| p.sprinting);
             if self.ticks >= self.stay || sprinting {
-                ACTIONS.lock().unwrap().push(Action::Leave { bug: m.id });
+                ACTIONS.locked().push(Action::Leave { bug: m.id });
             }
             return;
         }
@@ -155,7 +156,7 @@ impl Behaviour for Perch {
         m.no_gravity = true;
         creature::flutter::steer(m, head, SPEED);
         if creature::body::distance(m.position.array(), head) < REACH {
-            ACTIONS.lock().unwrap().push(Action::Land { bug: m.id, player: to });
+            ACTIONS.locked().push(Action::Land { bug: m.id, player: to });
             self.to = None;
         }
     }
@@ -171,11 +172,11 @@ pub(crate) struct Cluster;
 
 impl Behaviour for Cluster {
     fn can_use(&mut self, m: &mut Body, _: &World<'_>) -> bool {
-        let at = CLUSTER.lock().unwrap().get(&m.id).copied();
+        let at = CLUSTER.locked().get(&m.id).copied();
         at.is_some_and(|at| creature::body::distance(at, m.position.array()) > 0.3)
     }
     fn tick(&mut self, m: &mut Body, _: &World<'_>) {
-        let Some(at) = CLUSTER.lock().unwrap().get(&m.id).copied() else {
+        let Some(at) = CLUSTER.locked().get(&m.id).copied() else {
             return;
         };
         m.fall_distance = 0.0;
@@ -200,6 +201,6 @@ mod tests {
         assert!(perched(4));
         forget(4);
         assert!(!perched(4));
-        assert!(CLUSTER.lock().unwrap().get(&4).is_none());
+        assert!(CLUSTER.locked().get(&4).is_none());
     }
 }

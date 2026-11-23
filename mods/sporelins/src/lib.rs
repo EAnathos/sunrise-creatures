@@ -16,6 +16,7 @@ use std::sync::{Arc, Mutex};
 
 use creature::bestiary::{Fact, Species};
 use creature::colours::{Colour, Pattern, Scheme, Variety};
+use creature::sync::Locked;
 use creature::territory::Ground;
 use life::Action;
 use mod_api::{
@@ -211,7 +212,7 @@ const NIGHT_LIGHT: [u32; 2] = [0xFFE0C8, 0xF0D8A8];
 static GLOWING: Mutex<BTreeMap<u32, ()>> = Mutex::new(BTreeMap::new());
 
 fn glowing(id: u32) -> bool {
-    GLOWING.lock().unwrap().contains_key(&id)
+    GLOWING.locked().contains_key(&id)
 }
 
 /// From `entity_tick_post`, for each sporelin: its look, its behaviours (the library's tick of small creatures:
@@ -247,7 +248,7 @@ fn tick(host: &mut dyn ServerHost, dimension: &str, id: u32) {
     }
     let glows = friend.is_some() && night(Ground::new(&*host, level));
     if glows {
-        GLOWING.lock().unwrap().insert(id, ());
+        GLOWING.locked().insert(id, ());
         let light = creature::glow::Light {
             rgb: NIGHT_LIGHT[look_of(id)],
             radius: 3.0,
@@ -256,7 +257,7 @@ fn tick(host: &mut dyn ServerHost, dimension: &str, id: u32) {
             shown: |_| true,
         };
         creature::glow::shine(host, dimension, id, light);
-    } else if GLOWING.lock().unwrap().remove(&id).is_some() {
+    } else if GLOWING.locked().remove(&id).is_some() {
         creature::glow::dim(id);
     }
 }
@@ -514,7 +515,7 @@ fn forget(id: u32) {
     creature::friend::forget(id);
     creature::glow::dim(id);
     life::forget(id);
-    GLOWING.lock().unwrap().remove(&id);
+    GLOWING.locked().remove(&id);
 }
 
 /// How it holds itself this frame: walking, it waddles (its body rocks, its legs step, its arms swing); hiding, it

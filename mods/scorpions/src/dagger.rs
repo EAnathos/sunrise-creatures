@@ -14,6 +14,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::sync::{Mutex, OnceLock};
 
 use creature::projectile::{self, End, Launch};
+use creature::sync::Locked;
 use mod_api::{
     BlockEntityDrawContext, ClientHost, EntityRenderState, EntityRenderer, Hand, HostSide, InteractionResult,
     ItemDisplayContext, ItemKey, ItemPart, ItemStack, ServerHost, SoundSource, Text, TooltipEvent, UseItemEvent,
@@ -126,7 +127,7 @@ fn throw(host: &mut dyn ServerHost, player: u128, hand: Hand, stack: &ItemStack)
     if !creative && let Some(thrown) = host.entity(id).and_then(|e| host.living(e)) {
         let _ = thrown.set_hand_item(host, Hand::Main, Some(stack.clone()));
     }
-    FLYING.lock().unwrap().insert(id, player.entity().id());
+    FLYING.locked().insert(id, player.entity().id());
     creature::hand::use_one(host, player, hand);
     level.play_sound(
         host,
@@ -142,7 +143,7 @@ fn throw(host: &mut dyn ServerHost, player: u128, hand: Hand, stack: &ItemStack)
 /// From the thrown dagger's tick: in flight, the first body it meets is hurt and poisoned and it falls there as an item;
 /// landed, it stays stuck (`stuck`).
 pub fn tick(host: &mut dyn ServerHost, id: u32) {
-    if STUCK.lock().unwrap().contains_key(&id) {
+    if STUCK.locked().contains_key(&id) {
         stuck(host, id);
         return;
     }
@@ -154,8 +155,8 @@ pub fn tick(host: &mut dyn ServerHost, id: u32) {
         return;
     };
     let mut end = projectile::ended(id);
-    if end.is_none() && !SPENT.lock().unwrap().contains(&id) {
-        let thrower = FLYING.lock().unwrap().get(&id).copied().unwrap_or(u32::MAX);
+    if end.is_none() && !SPENT.locked().contains(&id) {
+        let thrower = FLYING.locked().get(&id).copied().unwrap_or(u32::MAX);
         if let Some(&target) = projectile::hits(&*host, level, at, THROWN, thrower, REACH).first()
             && let Some(t) = host.entity(target)
         {
@@ -178,7 +179,7 @@ pub fn tick(host: &mut dyn ServerHost, id: u32) {
     let Some(end) = end else {
         return;
     };
-    FLYING.lock().unwrap().remove(&id);
+    FLYING.locked().remove(&id);
     match end {
         // It hit a body: it bounces off and falls beside it, where it sticks as landed.
         End::Hit => {
@@ -191,7 +192,7 @@ pub fn tick(host: &mut dyn ServerHost, id: u32) {
             let sound = "minecraft:item.trident.hit_ground";
             level.play_sound(host, sound, at, SoundSource::Neutral, 0.8, 1.3, None);
             let ground = e.on_ground(host).unwrap_or(true);
-            STUCK.lock().unwrap().insert(id, Stuck { at, ticks: 0, ground });
+            STUCK.locked().insert(id, Stuck { at, ticks: 0, ground });
             hold_still(host, id, at);
         }
     }
@@ -217,7 +218,7 @@ fn bounce(host: &mut dyn ServerHost, id: u32, at: [f64; 3], level: mod_api::Leve
     if let (Some(stack), Some(living)) = (held, host.entity(new).and_then(|e| host.living(e))) {
         let _ = living.set_hand_item(host, Hand::Main, Some(stack));
     }
-    SPENT.lock().unwrap().insert(new);
+    SPENT.locked().insert(new);
 }
 
 /// The item the thrown dagger holds, one use worn, taken from it; none in creative, or when that use broke it.
@@ -255,7 +256,7 @@ fn hold_still(host: &mut dyn ServerHost, id: u32, at: [f64; 3]) {
 
 /// A stuck dagger's tick: held still; a player walking onto it takes it back (the item to their inventory).
 fn stuck(host: &mut dyn ServerHost, id: u32) {
-    let Some(state) = STUCK.lock().unwrap().get_mut(&id).map(|s| {
+    let Some(state) = STUCK.locked().get_mut(&id).map(|s| {
         s.ticks += 1;
         *s
     }) else {
@@ -292,9 +293,9 @@ fn stuck(host: &mut dyn ServerHost, id: u32) {
 
 /// From the mod's `living_death` (or a removal).
 pub fn forget(id: u32) {
-    FLYING.lock().unwrap().remove(&id);
-    SPENT.lock().unwrap().remove(&id);
-    STUCK.lock().unwrap().remove(&id);
+    FLYING.locked().remove(&id);
+    SPENT.locked().remove(&id);
+    STUCK.locked().remove(&id);
     projectile::forget(id);
 }
 
@@ -310,7 +311,7 @@ impl EntityRenderer for Draw {
         let flat = v[0].hypot(v[2]);
         let yaw = v[0].atan2(v[2]).to_degrees() as f32;
         let mut pitch = (-v[1]).atan2(flat).to_degrees() as f32;
-        let stuck = STUCK.lock().unwrap().get(&entity.id).copied();
+        let stuck = STUCK.locked().get(&entity.id).copied();
         let sunk = if stuck.is_some() { SUNK } else { 0.0 };
         // In the ground, its blade goes in, steeper than it came down; in flight it turns over forward, as a thrown
         // knife.

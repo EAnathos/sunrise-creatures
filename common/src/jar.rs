@@ -28,6 +28,7 @@ use mod_api::{
 
 use crate::colours;
 use crate::hand;
+use crate::sync::Locked;
 use crate::territory::Ground;
 
 pub const ITEM: &str = "creature:glass_jar";
@@ -60,7 +61,7 @@ static CATCHABLE: Mutex<Vec<&'static Catchable>> = Mutex::new(Vec::new());
 
 /// From a mod's `register`: its creatures can be caught.
 pub fn register(catchable: &'static Catchable) {
-    let mut all = CATCHABLE.lock().unwrap();
+    let mut all = CATCHABLE.locked();
     if !all.iter().any(|c| c.kind == catchable.kind) {
         all.push(catchable);
     }
@@ -68,11 +69,11 @@ pub fn register(catchable: &'static Catchable) {
 
 /// Whether a mod uses the jar (one registered a catchable creature): the guide shows its page only then.
 pub fn used() -> bool {
-    !CATCHABLE.lock().unwrap().is_empty()
+    !CATCHABLE.locked().is_empty()
 }
 
 fn catchable(kind: &str) -> Option<&'static Catchable> {
-    CATCHABLE.lock().unwrap().iter().copied().find(|c| c.kind == kind)
+    CATCHABLE.locked().iter().copied().find(|c| c.kind == kind)
 }
 
 /// What a jar holds: its creature's kind, look, friend and name.
@@ -129,7 +130,7 @@ fn empty(host: &dyn Host) -> Option<ItemStack> {
 /// The series' creative tab: after the empty jar, a jar holding each creature a mod lets it catch (in its usual look,
 /// by the creature's id), so a player in creative can place them on a shelf or let them out.
 pub(crate) fn fill_tab(host: &dyn Host, edit: mod_api::CreativeTabEdit) {
-    let mut all: Vec<&'static Catchable> = CATCHABLE.lock().unwrap().clone();
+    let mut all: Vec<&'static Catchable> = CATCHABLE.locked().clone();
     all.sort_by_key(|c| c.kind);
     let Some(empty) = host.item_from_snbt(&format!("{{id:{},count:1}}", quoted(ITEM))) else {
         return;

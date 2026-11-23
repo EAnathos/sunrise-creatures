@@ -10,6 +10,7 @@
 use std::sync::Mutex;
 
 use crate::recipes::RECIPES;
+use crate::sync::Locked;
 
 /// What a station makes a recipe in, as its icon shows it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -63,7 +64,7 @@ static PAGES: Mutex<Vec<&'static ItemPage>> = Mutex::new(Vec::new());
 
 /// From a module's `register`: its item gets a page.
 pub fn register(page: &'static ItemPage) {
-    let mut pages = PAGES.lock().unwrap();
+    let mut pages = PAGES.locked();
     if !pages.iter().any(|p| p.item == page.item) {
         pages.push(page);
     }
@@ -73,8 +74,7 @@ pub fn register(page: &'static ItemPage) {
 pub fn pages() -> Vec<&'static ItemPage> {
     let jar_used = crate::jar::used();
     PAGES
-        .lock()
-        .unwrap()
+        .locked()
         .iter()
         .copied()
         .filter(|p| p.item != crate::jar::ITEM || jar_used)

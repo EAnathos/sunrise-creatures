@@ -28,6 +28,7 @@ use std::sync::Mutex;
 use mod_api::{Host, LevelRef, ServerHost, SoundSource};
 
 use crate::body::{Behaviour, Body, World};
+use crate::sync::Locked;
 use crate::territory::{self, Ground};
 
 /// When a kind of flier is about.
@@ -133,7 +134,7 @@ static AT: Mutex<BTreeMap<u32, [f64; 3]>> = Mutex::new(BTreeMap::new());
 
 /// From a mod's `hooks()`: its kind comes out near players.
 pub fn spawns(spawning: &'static Spawning) {
-    let mut all = SPAWNING.lock().unwrap();
+    let mut all = SPAWNING.locked();
     if !all.iter().any(|s| s.kind == spawning.kind) {
         all.push(spawning);
     }
@@ -150,7 +151,7 @@ static ON: Mutex<Vec<(&'static str, On)>> = Mutex::new(Vec::new());
 /// are when it comes out; a kind that doesn't fly (the phasmids, the dung beetles) gives a `Kind` for its hours only.
 pub fn spawns_on(spawning: &'static Spawning, on: On) {
     spawns(spawning);
-    let mut all = ON.lock().unwrap();
+    let mut all = ON.locked();
     if !all.iter().any(|(k, _)| *k == spawning.kind) {
         all.push((spawning.kind, on));
     }
@@ -178,14 +179,14 @@ pub fn spawn(host: &mut dyn ServerHost, level: LevelRef) {
         return;
     }
     {
-        let mut t = SPAWN_TICKS.lock().unwrap();
+        let mut t = SPAWN_TICKS.locked();
         *t += 1;
         if *t < SPAWN_EVERY {
             return;
         }
         *t = 0;
     }
-    let spawning: Vec<&'static Spawning> = SPAWNING.lock().unwrap().clone();
+    let spawning: Vec<&'static Spawning> = SPAWNING.locked().clone();
     let mut random = crate::colours::Random::new(SPAWN_EVERY);
     let mut float = || (random.next() % 10_000) as f64 / 10_000.0;
     let players = host.players().server_players();
@@ -201,9 +202,8 @@ pub fn spawn(host: &mut dyn ServerHost, level: LevelRef) {
                 continue;
             }
             let near = {
-                let kinds = KINDS.lock().unwrap();
-                AT.lock()
-                    .unwrap()
+                let kinds = KINDS.locked();
+                AT.locked()
                     .iter()
                     .filter(|(id, at)| {
                         kinds.get(id).is_some_and(|k| k == s.kind) && (at[0] - p[0]).hypot(at[2] - p[2]) < SPAWN_NEAR
@@ -222,7 +222,7 @@ pub fn spawn(host: &mut dyn ServerHost, level: LevelRef) {
             ) else {
                 continue;
             };
-            let on = ON.lock().unwrap().iter().find(|(k, _)| *k == s.kind).map(|(_, on)| *on);
+            let on = ON.locked().iter().find(|(k, _)| *k == s.kind).map(|(_, on)| *on);
             let on_top = on.is_some();
             if on.is_some_and(|on| {
                 !on(
@@ -277,11 +277,11 @@ pub fn surface(ground: Ground<'_>, at: [i32; 3]) -> Option<i32> {
 
 /// Whether it is flying, for the drawing.
 pub fn flying(id: u32) -> bool {
-    FLYING.lock().unwrap().get(&id).copied().unwrap_or(false)
+    FLYING.locked().get(&id).copied().unwrap_or(false)
 }
 
 pub fn forget(id: u32) {
-    FLYING.lock().unwrap().remove(&id);
+    FLYING.locked().remove(&id);
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
@@ -540,7 +540,7 @@ impl Behaviour for Flutter {
                 }
             }
         }
-        FLYING.lock().unwrap().insert(m.id, self.mode != Mode::Rest);
+        FLYING.locked().insert(m.id, self.mode != Mode::Rest);
     }
 }
 
@@ -564,9 +564,9 @@ pub fn tick_post(
     crate::body::tick(host, entity, flight);
     crate::sounds::play_queued(host, entity, SoundSource::Neutral);
     territory::tick(host, entity);
-    KINDS.lock().unwrap().insert(entity, kind.to_string());
+    KINDS.locked().insert(entity, kind.to_string());
     if let Some(at) = host.entity(entity).and_then(|e| e.position(host)) {
-        AT.lock().unwrap().insert(entity, at);
+        AT.locked().insert(entity, at);
     }
     // A settled or befriended one stays.
     let kept = territory::settled(entity) || crate::friend::of(entity).is_some();
@@ -578,9 +578,10 @@ pub fn tick_post(
 /// From the mod's `living_death` (and when one despawns): what the library kept about it is dropped.
 pub fn gone(entity: u32) {
     crate::body::forget(entity);
+    crate::creep::let_go(entity);
     crate::colours::forget(entity);
     territory::forget(entity);
     forget(entity);
-    KINDS.lock().unwrap().remove(&entity);
-    AT.lock().unwrap().remove(&entity);
+    KINDS.locked().remove(&entity);
+    AT.locked().remove(&entity);
 }

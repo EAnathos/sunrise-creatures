@@ -14,6 +14,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Mutex;
 
 use creature::body::{Behaviour, Body, Vec3, World, distance, flat_distance};
+use creature::sync::Locked;
 
 /// What the mod's tick does for a behaviour.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -34,11 +35,11 @@ pub(crate) enum Action {
 static ACTIONS: Mutex<Vec<Action>> = Mutex::new(Vec::new());
 
 pub(crate) fn actions() -> Vec<Action> {
-    std::mem::take(&mut *ACTIONS.lock().unwrap())
+    std::mem::take(&mut *ACTIONS.locked())
 }
 
 fn queue(action: Action) {
-    ACTIONS.lock().unwrap().push(action);
+    ACTIONS.locked().push(action);
 }
 
 /// The sporelins hiding (for their drawing), where each one told to stay stays (from the mod's tick), and the ones
@@ -48,11 +49,11 @@ static STAYS_AT: Mutex<BTreeMap<u32, [f64; 3]>> = Mutex::new(BTreeMap::new());
 static SHAKING: Mutex<BTreeMap<u32, i32>> = Mutex::new(BTreeMap::new());
 
 pub(crate) fn hiding(id: u32) -> bool {
-    HIDING.lock().unwrap().contains(&id)
+    HIDING.locked().contains(&id)
 }
 
 fn set_hiding(id: u32, on: bool) {
-    let mut all = HIDING.lock().unwrap();
+    let mut all = HIDING.locked();
     if on {
         all.insert(id);
     } else {
@@ -61,11 +62,11 @@ fn set_hiding(id: u32, on: bool) {
 }
 
 pub(crate) fn stays_at(id: u32) -> Option<[f64; 3]> {
-    STAYS_AT.lock().unwrap().get(&id).copied()
+    STAYS_AT.locked().get(&id).copied()
 }
 
 pub(crate) fn set_stays_at(id: u32, at: Option<[f64; 3]>) {
-    let mut all = STAYS_AT.lock().unwrap();
+    let mut all = STAYS_AT.locked();
     match at {
         Some(at) => all.insert(id, at),
         None => all.remove(&id),
@@ -74,21 +75,17 @@ pub(crate) fn set_stays_at(id: u32, at: Option<[f64; 3]>) {
 
 /// It shakes its cap for `SHAKE` ticks (a bowl it won't fill).
 pub(crate) fn shake(id: u32) {
-    SHAKING.lock().unwrap().insert(id, SHAKE);
+    SHAKING.locked().insert(id, SHAKE);
 }
 
 /// How far into its shake it is (0 to 1), if it shakes.
 pub(crate) fn shaking(id: u32) -> Option<f32> {
-    SHAKING
-        .lock()
-        .unwrap()
-        .get(&id)
-        .map(|left| 1.0 - *left as f32 / SHAKE as f32)
+    SHAKING.locked().get(&id).map(|left| 1.0 - *left as f32 / SHAKE as f32)
 }
 
 /// From the mod's tick: its shake goes on, and ends.
 pub(crate) fn tick_shake(id: u32) {
-    let mut all = SHAKING.lock().unwrap();
+    let mut all = SHAKING.locked();
     if let Some(left) = all.get_mut(&id) {
         *left -= 1;
         if *left <= 0 {
@@ -98,9 +95,9 @@ pub(crate) fn tick_shake(id: u32) {
 }
 
 pub(crate) fn forget(id: u32) {
-    HIDING.lock().unwrap().remove(&id);
-    STAYS_AT.lock().unwrap().remove(&id);
-    SHAKING.lock().unwrap().remove(&id);
+    HIDING.locked().remove(&id);
+    STAYS_AT.locked().remove(&id);
+    SHAKING.locked().remove(&id);
 }
 
 const SHAKE: i32 = 30;

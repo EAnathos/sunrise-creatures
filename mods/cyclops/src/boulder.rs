@@ -6,6 +6,7 @@
 use std::sync::Mutex;
 
 use creature::projectile::{self, Launch};
+use creature::sync::Locked;
 use mod_api::{BlockEntityDrawContext, EntityRenderState, EntityRenderer, ParticleOptions, ServerHost, SoundSource};
 
 use crate::{model_boulder, smash};
@@ -46,7 +47,7 @@ pub fn aim(from: [f64; 3], to: [f64; 3]) -> [f64; 3] {
 
 /// From a cyclops's tick: the throws its fight asked for, as boulders in the world.
 pub fn launch(host: &mut dyn ServerHost, dimension: &str) {
-    let throws = std::mem::take(&mut *THROWS.lock().unwrap());
+    let throws = std::mem::take(&mut *THROWS.locked());
     for t in throws {
         let launch = Launch {
             velocity: t.velocity,

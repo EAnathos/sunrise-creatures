@@ -11,6 +11,8 @@ use std::time::Instant;
 
 use mod_api::{ColoredLight, ServerHost, VisualsEvent};
 
+use crate::sync::Locked;
+
 /// A creature's light: its colour (`0xRRGGBB`), reach (blocks) and strength (0 to 1), how high above its feet, and
 /// whether it shines at this moment (a firefly's pulse).
 #[derive(Clone, Copy, Debug)]
@@ -47,28 +49,81 @@ pub fn shine(host: &dyn ServerHost, dimension: &str, entity: u32, light: Light) 
     let near = crate::mob::nearest_player(host, dimension, at);
     let at = [at[0], at[1] + light.lift, at[2]];
     let when = Instant::now();
-    SHINING
-        .lock()
-        .unwrap()
-        .insert(entity, Shining { at, light, near, when });
+    SHINING.locked().insert(entity, Shining { at, light, near, when });
 }
 
 /// Creature `entity` no longer shines (it landed, it died).
 pub fn dim(entity: u32) {
-    SHINING.lock().unwrap().remove(&entity);
+    SHINING.locked().remove(&entity);
 }
 
 /// From the library's `visuals`: the lights of the creatures nearest a player.
 pub fn visuals(event: &mut VisualsEvent<'_>) {
-    let mut shining = SHINING.lock().unwrap();
-    shining.retain(|_, s| s.when.elapsed().as_secs() < KEPT_SECONDS);
-    let mut lights: Vec<(&u32, &Shining)> = shining
-        .iter()
-        .filter(|(id, s)| s.near <= REACH && (s.light.shown)(**id))
-        .collect();
-    lights.sort_by(|a, b| a.1.near.total_cmp(&b.1.near));
-    for (_, s) in lights.into_iter().take(LIGHTS) {
-        let l = s.light;
-        event.lights.push(ColoredLight::new(s.at, l.rgb, l.radius, l.intensity));
+    for (at, l) in lit() {
+        event.lights.push(ColoredLight::new(at, l.rgb, l.radius, l.intensity));
+    }
+}
+
+/// The lights to draw now, nearest first, at most `LIGHTS`: copied out of `SHINING`, then asked whether they shine
+/// with no lock held (`shown` is a mod's).
+fn lit() -> Vec<([f64; 3], Light)> {
+    let mut lights: Vec<(u32, f64, [f64; 3], Light)> = {
+        let mut shining = SHINING.locked();
+        shining.retain(|_, s| s.when.elapsed().as_secs() < KEPT_SECONDS);
+        shining
+            .iter()
+            .filter(|(_, s)| s.near <= REACH)
+            .map(|(id, s)| (*id, s.near, s.at, s.light))
+            .collect()
+    };
+    lights.retain(|(id, _, _, l)| (l.shown)(*id));
+    lights.sort_by(|a, b| a.1.total_cmp(&b.1));
+    lights.into_iter().take(LIGHTS).map(|(_, _, at, l)| (at, l)).collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A `shown` that reads the lights itself, as a mod's may (it would deadlock under `SHINING`'s lock).
+    fn reads_the_lights(_: u32) -> bool {
+        SHINING.locked().len() < usize::MAX
+    }
+
+    fn noted(id: u32, near: f64, shown: fn(u32) -> bool) {
+        let light = Light {
+            rgb: 0xFFFFFF,
+            radius: 4.0,
+            intensity: 1.0,
+            lift: 0.0,
+            shown,
+        };
+        let s = Shining {
+            at: [near, 0.0, 0.0],
+            light,
+            near,
+            when: Instant::now(),
+        };
+        SHINING.locked().insert(id, s);
+    }
+
+    #[test]
+    fn the_nearest_shown_lights_are_drawn_and_shown_runs_with_no_lock_held() {
+        for id in 0..12 {
+            noted(4_000_000 + id, f64::from(id), reads_the_lights);
+        }
+        noted(4_000_100, 0.5, |_| false);
+        noted(4_000_101, REACH + 1.0, |_| true);
+        let lit: Vec<f64> = lit()
+            .into_iter()
+            .filter(|(at, _)| at[0] < 100.0)
+            .map(|(at, _)| at[0])
+            .collect();
+        assert_eq!(lit.len(), LIGHTS, "the game's budget");
+        assert!(lit.windows(2).all(|w| w[0] <= w[1]), "nearest first");
+        assert!(!lit.contains(&0.5), "not shown at this moment");
+        for id in (0..12).chain([100, 101]) {
+            dim(4_000_000 + id);
+        }
     }
 }

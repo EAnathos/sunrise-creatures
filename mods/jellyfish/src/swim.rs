@@ -6,6 +6,7 @@ use std::collections::BTreeMap;
 use std::sync::Mutex;
 
 use creature::body::{Behaviour, Body, Vec3, World};
+use creature::sync::Locked;
 
 /// A pulse's length (ticks) and climb (blocks a tick); its sinking (blocks a tick) and drift between pulses.
 const PULSE_TICKS: i32 = 8;
@@ -27,14 +28,13 @@ static PULSING: Mutex<BTreeMap<u32, i32>> = Mutex::new(BTreeMap::new());
 /// How far into its pulse jellyfish `id` is (0 to 1), 0 between pulses.
 pub(crate) fn pulse(id: u32) -> f32 {
     PULSING
-        .lock()
-        .unwrap()
+        .locked()
         .get(&id)
         .map_or(0.0, |&left| left as f32 / PULSE_TICKS as f32)
 }
 
 pub(crate) fn forget(id: u32) {
-    PULSING.lock().unwrap().remove(&id);
+    PULSING.locked().remove(&id);
 }
 
 /// The water over its bell (blocks), up to `LOOK_UP`.
@@ -70,7 +70,7 @@ impl Behaviour for Swim {
         m.no_gravity = true;
         if self.pulse > 0 {
             self.pulse -= 1;
-            PULSING.lock().unwrap().insert(m.id, self.pulse);
+            PULSING.locked().insert(m.id, self.pulse);
             m.velocity = Vec3 {
                 x: self.drift[0],
                 y: PULSE_UP,
@@ -78,7 +78,7 @@ impl Behaviour for Swim {
             };
             return;
         }
-        PULSING.lock().unwrap().remove(&m.id);
+        PULSING.locked().remove(&m.id);
         let depth = depth(m, cx);
         // Never out of the water: just under the surface it sinks a little faster.
         let sink = if depth < 0.8 { SINK * 3.0 } else { SINK };
@@ -109,6 +109,6 @@ impl Behaviour for Swim {
     }
     fn stop(&mut self, m: &mut Body, _: &World<'_>) {
         self.pulse = 0;
-        PULSING.lock().unwrap().remove(&m.id);
+        PULSING.locked().remove(&m.id);
     }
 }

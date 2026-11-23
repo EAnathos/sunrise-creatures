@@ -15,6 +15,7 @@
 use std::collections::BTreeMap;
 use std::sync::Mutex;
 
+use creature::sync::Locked;
 use mod_api::{
     AttachmentCodec, AttachmentError, AttachmentType, Compound, Hand, Holder, HostTransaction, ItemResource, ItemStack,
     MenuClickedEvent, MenuClosedEvent, MenuRef, MenuReplace, PlayerRef, Registrar, ServerHost, Tag, Text,
@@ -158,7 +159,7 @@ fn open_screen(host: &mut dyn ServerHost, uuid: u128, id: u32, replace: MenuRepl
     let title = Text::translate("container.vulture.vulture", vec![]);
     if let Ok(Some(window)) = host.open_menu(uuid, rows, title, items, replace) {
         let storage = PER_CHEST * usize::from(saved.chests);
-        OPEN.lock().unwrap().insert(
+        OPEN.locked().insert(
             uuid,
             Open {
                 vulture: id,
@@ -171,7 +172,7 @@ fn open_screen(host: &mut dyn ServerHost, uuid: u128, id: u32, replace: MenuRepl
 
 /// From the `menu_closed` hook.
 pub fn closed(event: &MenuClosedEvent) {
-    let mut open = OPEN.lock().unwrap();
+    let mut open = OPEN.locked();
     if open.get(&event.uuid).is_some_and(|o| o.window == event.window) {
         open.remove(&event.uuid);
     }
@@ -185,7 +186,7 @@ pub fn closed(event: &MenuClosedEvent) {
 /// the right button; a full stack each with the middle one in creative, as a middle-click picks a full stack up); a
 /// click outside the window throws the cursor's stack (one with a right-click).
 pub fn clicked(host: &mut dyn ServerHost, event: &MenuClickedEvent) {
-    let Some(open) = OPEN.lock().unwrap().get(&event.uuid).copied() else {
+    let Some(open) = OPEN.locked().get(&event.uuid).copied() else {
         return;
     };
     if open.window != event.window {
@@ -452,7 +453,7 @@ static DRAGS: Mutex<BTreeMap<u128, (i32, Vec<usize>)>> = Mutex::new(BTreeMap::ne
 /// one each, or a full stack each (creative only); what is left stays on the cursor. A drag over one slot is a click.
 fn drag(host: &mut dyn ServerHost, player: PlayerRef, menu: MenuRef, open: Open, event: &MenuClickedEvent) {
     let (stage, kind) = (event.button & 3, (event.button >> 2) & 3);
-    let mut drags = DRAGS.lock().unwrap();
+    let mut drags = DRAGS.locked();
     match stage {
         0 => {
             drags.insert(event.uuid, (kind, Vec::new()));
@@ -670,8 +671,7 @@ fn button(host: &mut dyn ServerHost, uuid: u128, screen: Open, slot: usize) {
 /// Its death: its screen closes for whoever has it open, its saddle, chests and their contents fall where it died.
 pub fn died(host: &mut dyn ServerHost, id: u32) {
     let viewers: Vec<u128> = OPEN
-        .lock()
-        .unwrap()
+        .locked()
         .iter()
         .filter(|(_, o)| o.vulture == id)
         .map(|(uuid, _)| *uuid)

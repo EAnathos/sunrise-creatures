@@ -17,6 +17,7 @@ use creature::bestiary::{Fact, Species};
 use creature::friend::Friend;
 use creature::jar::Catchable;
 use creature::particles::key;
+use creature::sync::Locked;
 use mod_api::{
     ActiveEffect, AttachmentCodec, AttachmentError, AttachmentType, BlockEntityDrawContext, ClientHost, Compound,
     EmissiveEvent, EntityInteractEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, HitHost, Holder,
@@ -379,7 +380,7 @@ impl Hooks for Fairies {
         }
         let friend = u32::try_from(event.entity)
             .ok()
-            .and_then(|id| FRIEND_IDS.lock().unwrap().get(&id).copied());
+            .and_then(|id| FRIEND_IDS.locked().get(&id).copied());
         let by_friend = friend.is_some_and(|f| i64::from(f) == i64::from(event.source.causing));
         if by_friend { Flow::Cancel } else { Flow::Continue }
     }
@@ -410,7 +411,7 @@ impl Hooks for Fairies {
                 level.play_sound(host, AMBIENT, at, SoundSource::Neutral, 0.7, 1.0, None);
             }
             let ticks = {
-                let mut all = TICKS.lock().unwrap();
+                let mut all = TICKS.locked();
                 let t = all.entry(fairy).or_default();
                 *t = t.wrapping_add(1);
                 *t
@@ -419,7 +420,7 @@ impl Hooks for Fairies {
             if let Some(f) = friend {
                 let player = friend_player(host, f);
                 if let Some(p) = player {
-                    FRIEND_IDS.lock().unwrap().insert(fairy, p.entity().id());
+                    FRIEND_IDS.locked().insert(fairy, p.entity().id());
                 }
                 befriended(host, level, fairy, at, f, ticks);
                 // A friend more than `companion::TELEPORT` blocks away: it comes to them at once.
@@ -457,8 +458,8 @@ impl Hooks for Fairies {
         creature::friend::forget(event.entity);
         companion::forget(event.entity);
         creature::glow::dim(event.entity);
-        TICKS.lock().unwrap().remove(&event.entity);
-        FRIEND_IDS.lock().unwrap().remove(&event.entity);
+        TICKS.locked().remove(&event.entity);
+        FRIEND_IDS.locked().remove(&event.entity);
         Flow::Continue
     }
 

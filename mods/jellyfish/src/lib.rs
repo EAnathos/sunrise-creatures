@@ -15,6 +15,7 @@ use std::sync::{Arc, Mutex};
 use creature::aquatic::{Aquatic, Spawning};
 use creature::bestiary::{Fact, Species};
 use creature::colours::{Colour, Look, Pattern, Scheme, Variety};
+use creature::sync::Locked;
 use mod_api::{
     BlockEntityDrawContext, ClientHost, EmissiveEvent, EntityInteractEvent, EntityRenderState, EntityRenderer,
     EntityTickPostEvent, EquipmentSlot, Flow, Hooks, HostSide, InteractionResult, LivingDeathEvent,
@@ -311,7 +312,7 @@ fn tick(host: &mut dyn ServerHost, dimension: &str, id: u32) {
     let (Some(at), Some(level)) = (e.position(&*host), e.level(&*host)) else {
         return;
     };
-    AT.lock().unwrap().insert(id, at);
+    AT.locked().insert(id, at);
     let middle = [at[0], at[1] + 0.6, at[2]];
     for target in creature::touch::due(&*host, level, middle, KIND, id, STING_REACH, STING_EVERY) {
         sting(host, id, target);
@@ -336,8 +337,7 @@ fn facts(host: &mut dyn ServerHost, dimension: &str, id: u32, at: [f64; 3], glow
         return;
     }
     let bloom = AT
-        .lock()
-        .unwrap()
+        .locked()
         .values()
         .filter(|p| creature::body::distance(**p, at) < BLOOM_REACH)
         .count()
@@ -380,7 +380,7 @@ fn forget(id: u32) {
     creature::aquatic::forget(id);
     creature::glow::dim(id);
     swim::forget(id);
-    AT.lock().unwrap().remove(&id);
+    AT.locked().remove(&id);
 }
 
 /// How it holds itself this frame: its tentacles and arms swaying, flared out while it pulses.

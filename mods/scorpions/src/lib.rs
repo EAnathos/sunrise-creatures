@@ -26,6 +26,7 @@ use std::sync::{Arc, Mutex};
 use creature::bestiary::{Fact, Rarity, Species};
 use creature::colours::{Colour, Look, Pattern, Scheme, Variety};
 use creature::jar::Catchable;
+use creature::sync::Locked;
 use creature::territory::{self, Rule};
 use mod_api::{
     BlockEntityDrawContext, ClientHost, EmissiveEvent, EntityInteractEvent, EntityPart, EntityRenderState,
@@ -216,10 +217,10 @@ static MOODS: Mutex<BTreeMap<u32, bool>> = Mutex::new(BTreeMap::new());
 /// Mob victims of the dagger's venom: ticks of Poison remaining. The pinned native API can damage any mob but exposes
 /// potion-effect mutation only for players, so we reproduce Poison's health ticks and particles for mob targets.
 fn set_reared(id: u32, reared: bool) {
-    MOODS.lock().unwrap().insert(id, reared);
+    MOODS.locked().insert(id, reared);
 }
 fn reared(id: u32) -> bool {
-    MOODS.lock().unwrap().get(&id).copied().unwrap_or(false)
+    MOODS.locked().get(&id).copied().unwrap_or(false)
 }
 
 /// The pose of a part (degrees): the tail curls higher over the back and the claw fingers open when reared; the tail
@@ -250,14 +251,14 @@ const STRIKE_DAMAGE: f32 = 1.5;
 
 /// From a behaviour: `scorpion` strikes `target`, with a sting of its kind's poison when `sting` says so.
 pub(crate) fn strike(scorpion: u32, target: u32, sting: Option<usize>) {
-    STRIKES.lock().unwrap().push((scorpion, target, sting));
+    STRIKES.locked().push((scorpion, target, sting));
 }
 
 /// From `entity_tick_post`: the strikes `scorpion` made, dealt. A sting poisons: desert and badlands 5 s; the cave
 /// kind 8 s and dazes (Nausea) 4 s (SPECS §2).
 fn apply_strikes(host: &mut dyn ServerHost, scorpion: u32) {
     let mine: Vec<(u32, u32, Option<usize>)> = {
-        let mut all = STRIKES.lock().unwrap();
+        let mut all = STRIKES.locked();
         let (mine, rest) = all.drain(..).partition(|s| s.0 == scorpion);
         *all = rest;
         mine
@@ -344,7 +345,7 @@ impl Hooks for Scorpions {
         if event.source.damage_type == "minecraft:player_attack"
             && let Some(weapon) = event.weapon
         {
-            DAGGER_HITS.lock().unwrap().push((entity, weapon.clone()));
+            DAGGER_HITS.locked().push((entity, weapon.clone()));
         }
         Flow::Continue
     }
@@ -397,7 +398,7 @@ impl Hooks for Scorpions {
 static DAGGER_HITS: Mutex<Vec<(u32, mod_api::ItemStack)>> = Mutex::new(Vec::new());
 
 fn poison_dagger_hits(host: &mut dyn ServerHost) {
-    let hits: Vec<(u32, mod_api::ItemStack)> = std::mem::take(&mut *DAGGER_HITS.lock().unwrap());
+    let hits: Vec<(u32, mod_api::ItemStack)> = std::mem::take(&mut *DAGGER_HITS.locked());
     for (entity, weapon) in hits {
         if creature::hand::is(&*host, &weapon, dagger::DAGGER) {
             dagger::poison(host, entity);
@@ -422,7 +423,7 @@ const CRAWL_CFG: creature::crawl::Cfg = creature::crawl::Cfg {
 fn forget(entity: u32) {
     territory::forget(entity);
     creature::body::forget(entity);
-    MOODS.lock().unwrap().remove(&entity);
+    MOODS.locked().remove(&entity);
 }
 
 #[cfg(test)]

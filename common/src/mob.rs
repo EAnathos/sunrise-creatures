@@ -11,6 +11,7 @@ use std::sync::Mutex;
 use mod_api::{ActiveEffect, EntitySizeEvent, EntityTickPostEvent, Host, HostSide, MobRef, ServerHost, Tag};
 
 use crate::colours::Random;
+use crate::sync::Locked;
 
 /// A creature's box: width, height and eye height, in blocks.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -59,12 +60,12 @@ pub const GOAL_PREFIX: &str = "creature:";
 /// From the mod's `register` hook, for each of its creatures (`worms:worm`): its own box, its template's goals taken
 /// off for the mod's own (the mod adds them from its `EntityPart`), and spared by monsters (`spared`).
 pub fn ours(kind: &'static str, size: Size) {
-    OURS.lock().unwrap().insert(kind, size);
+    OURS.locked().insert(kind, size);
 }
 
 /// The box of one of the series' creatures.
 pub fn size_of(kind: &str) -> Option<Size> {
-    OURS.lock().unwrap().get(kind).copied()
+    OURS.locked().get(kind).copied()
 }
 
 /// Our creatures' template's height (`minecraft:wandering_trader`), which a client keeps for them: `entity_size` isn't
@@ -81,13 +82,13 @@ static CLIENT_SCALE: Mutex<BTreeMap<&'static str, f32>> = Mutex::new(BTreeMap::n
 /// never joins: it keeps the template's size.
 pub fn scale_client_box(kind: &'static str) -> f32 {
     let scale = size_of(kind).map_or(1.0, |s| s.height / TEMPLATE_HEIGHT);
-    CLIENT_SCALE.lock().unwrap().insert(kind, scale);
+    CLIENT_SCALE.locked().insert(kind, scale);
     scale
 }
 
 /// The base scale `scale_client_box` gave `kind`, 1 for the others.
 pub fn client_box_scale(kind: &str) -> f32 {
-    CLIENT_SCALE.lock().unwrap().get(kind).copied().unwrap_or(1.0)
+    CLIENT_SCALE.locked().get(kind).copied().unwrap_or(1.0)
 }
 
 /// Whether entity type `kind` is a boat or a raft (vanilla's, or a mod's named so): one sitting in it is out of the
@@ -98,7 +99,7 @@ pub fn is_boat(kind: &str) -> bool {
 
 /// Whether `kind` is one of the series' creatures.
 pub fn is_ours(kind: &str) -> bool {
-    OURS.lock().unwrap().contains_key(kind)
+    OURS.locked().contains_key(kind)
 }
 
 /// From the library's `entity_size`: our creature's own box in place of its template's (a trader's).
@@ -106,7 +107,8 @@ pub fn size(host: &dyn Host, event: &mut EntitySizeEvent<'_>) {
     let Some(kind) = event.entity.kind(host) else {
         return;
     };
-    if let Some(s) = OURS.lock().unwrap().get(kind.id(host).as_str()) {
+    let id = kind.id(host);
+    if let Some(s) = OURS.locked().get(id.as_str()) {
         *event.size = [s.width, s.height, s.eye_height];
     }
 }

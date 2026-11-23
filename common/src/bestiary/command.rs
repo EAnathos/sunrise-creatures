@@ -2,6 +2,8 @@
 //! player who runs it, `reset` forgets everything.
 use super::*;
 
+use crate::sync::Locked;
+
 /// The operators' command and its operator level.
 const COMMAND: &str = "bestiary";
 const COMMAND_LEVEL: u8 = 2;
@@ -74,7 +76,7 @@ fn unlock(host: &mut dyn ServerHost, player: u128, species: &Species) {
 /// The species a command names: its id (`minecraft:cow`), or the part after the colon when one species has it
 /// (`cow`).
 fn named(name: &str) -> Option<&'static Species> {
-    let all = SPECIES.lock().unwrap();
+    let all = SPECIES.locked();
     if let Some(s) = all.iter().find(|s| s.id == name) {
         return Some(s);
     }
@@ -112,7 +114,7 @@ pub fn perform(host: &mut dyn ServerHost, event: &RunModCommandEvent<'_>) -> boo
             answer(host, "commands.creature.bestiary.reset", vec![]);
         }
         (Some("unlock"), Some("all")) => {
-            let all: Vec<&'static Species> = SPECIES.lock().unwrap().clone();
+            let all: Vec<&'static Species> = SPECIES.locked().clone();
             for s in &all {
                 unlock(host, player, s);
             }
@@ -145,7 +147,7 @@ pub fn complete(event: &mut TabCompleteEvent<'_>) {
         return;
     }
     let typed = words[2];
-    let ids: Vec<&'static str> = SPECIES.lock().unwrap().iter().map(|s| s.id).collect();
+    let ids: Vec<&'static str> = SPECIES.locked().iter().map(|s| s.id).collect();
     for id in std::iter::once("all").chain(ids) {
         let short = id.split_once(':').map_or(id, |(_, path)| path);
         if id.starts_with(typed) || short.starts_with(typed) {

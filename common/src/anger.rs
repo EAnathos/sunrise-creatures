@@ -7,6 +7,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Mutex;
 
 use crate::body::{Body, World};
+use crate::sync::Locked;
 
 /// The kinds that fight back.
 static KINDS: Mutex<BTreeSet<&'static str>> = Mutex::new(BTreeSet::new());
@@ -15,24 +16,24 @@ static TARGETS: Mutex<BTreeMap<u32, u32>> = Mutex::new(BTreeMap::new());
 
 /// From a mod's `register`: creatures of `kind` fight back when hit.
 pub fn register(kind: &'static str) {
-    KINDS.lock().unwrap().insert(kind);
+    KINDS.locked().insert(kind);
 }
 
 /// From the library's damage hook: `entity`, of `kind`, was hit by `by`.
 pub(crate) fn hit(kind: &str, entity: u32, by: u32) {
-    if entity != by && KINDS.lock().unwrap().contains(kind) {
-        TARGETS.lock().unwrap().insert(entity, by);
+    if entity != by && KINDS.locked().contains(kind) {
+        TARGETS.locked().insert(entity, by);
     }
 }
 
 /// Whom `entity` fights, if anyone.
 pub fn target(entity: u32) -> Option<u32> {
-    TARGETS.lock().unwrap().get(&entity).copied()
+    TARGETS.locked().get(&entity).copied()
 }
 
 /// `entity` calms down (or is gone).
 pub fn forget(entity: u32) {
-    TARGETS.lock().unwrap().remove(&entity);
+    TARGETS.locked().remove(&entity);
 }
 
 /// From a behaviour: the creature's target and where it is, while it is still one to fight (alive, in its level, not a

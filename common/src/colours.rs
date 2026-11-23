@@ -20,6 +20,7 @@ use mod_api::{
 };
 
 use crate::model::{self, Part};
+use crate::sync::Locked;
 
 /// A colour a creature can take: its id (saved) and its tint, 0xRRGGBB.
 pub struct Colour {
@@ -114,7 +115,7 @@ static LOOKS: Mutex<BTreeMap<u32, Look>> = Mutex::new(BTreeMap::new());
 /// The look of creature `entity`, once `tick` has seen it; for a creature no tick has seen (the book's, drawn in a
 /// screen) the look the book shows (`set_preview`).
 pub fn look(entity: u32) -> Option<Look> {
-    LOOKS.lock().unwrap().get(&entity).copied().or(*PREVIEW.lock().unwrap())
+    LOOKS.locked().get(&entity).copied().or(*PREVIEW.locked())
 }
 
 /// The look the book shows its creature in.
@@ -122,13 +123,13 @@ static PREVIEW: Mutex<Option<Look>> = Mutex::new(None);
 
 /// From the book, before it draws a creature: the look to draw it in.
 pub fn set_preview(look: Option<Look>) {
-    *PREVIEW.lock().unwrap() = look;
+    *PREVIEW.locked() = look;
 }
 
 /// From the mod's `entity_tick_post`, for each of its creatures: its saved look the first time, or a new one rolled for
 /// the biome it is in.
 pub fn tick(host: &mut dyn ServerHost, entity: u32, scheme: &Scheme) {
-    if LOOKS.lock().unwrap().contains_key(&entity) {
+    if LOOKS.locked().contains_key(&entity) {
         return;
     }
     // Not readable yet (its first tick after loading): next tick, rather than rolling over a saved look.
@@ -152,7 +153,7 @@ pub fn tick(host: &mut dyn ServerHost, entity: u32, scheme: &Scheme) {
             look
         }
     };
-    LOOKS.lock().unwrap().insert(entity, look);
+    LOOKS.locked().insert(entity, look);
 }
 
 /// The morph a creature's tags name, over the look rolled for it: a whole look (`orange/eyespots/black`, as `key`
@@ -209,7 +210,7 @@ pub fn restore(host: &mut dyn ServerHost, entity: u32, look: &Compound) {
 
 /// From the mod's `living_death` (or when it is gone): forgets its look.
 pub fn forget(entity: u32) {
-    LOOKS.lock().unwrap().remove(&entity);
+    LOOKS.locked().remove(&entity);
 }
 
 fn from_saved(scheme: &Scheme, s: &Saved) -> Option<Look> {

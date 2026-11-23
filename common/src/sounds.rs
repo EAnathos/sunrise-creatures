@@ -8,26 +8,29 @@ use std::sync::Mutex;
 
 use mod_api::{ServerHost, SoundSource};
 
+use crate::sync::Locked;
+
 /// A sound a goal asked for: (mob, sound, volume, pitch).
 static QUEUE: Mutex<Vec<(u32, &'static str, f32, f32)>> = Mutex::new(Vec::new());
 
 pub fn queue(mob: u32, sound: &'static str, volume: f32, pitch: f32) {
-    if let Ok(mut q) = QUEUE.lock() {
-        q.push((mob, sound, volume, pitch));
-    }
+    QUEUE.locked().push((mob, sound, volume, pitch));
+}
+
+/// From the library when a creature is gone: what it queued and never played is dropped.
+pub fn forget(id: u32) {
+    QUEUE.locked().retain(|&(mob, ..)| mob != id);
 }
 
 /// What mob `id` queued, taken out of the queue.
 fn queued(id: u32) -> Vec<(&'static str, f32, f32)> {
     let mut play = Vec::new();
-    if let Ok(mut q) = QUEUE.lock() {
-        q.retain(|&(mob, sound, volume, pitch)| {
-            if mob == id {
-                play.push((sound, volume, pitch));
-            }
-            mob != id
-        });
-    }
+    QUEUE.locked().retain(|&(mob, sound, volume, pitch)| {
+        if mob == id {
+            play.push((sound, volume, pitch));
+        }
+        mob != id
+    });
     play
 }
 

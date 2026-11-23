@@ -16,6 +16,7 @@ use std::sync::Mutex;
 use mod_api::{Compound, Host, LevelRef, ServerHost, Tag};
 
 use crate::body::{Behaviour, Body, World};
+use crate::sync::Locked;
 
 /// How a projectile flies: its velocity (blocks a tick), its gravity (blocks a tick, each tick), how long it may fly
 /// (ticks), and its target (its entity id), if it has one, with how close it must come to its middle to hit it
@@ -52,8 +53,8 @@ pub fn launch(host: &mut dyn ServerHost, dimension: &str, kind: &str, from: [f64
     let mut nbt = Compound::new();
     nbt.insert("Invulnerable".into(), Tag::Byte(1));
     let id = host.summon(dimension, kind, from, nbt)?;
-    LAUNCHES.lock().unwrap().insert(id, launch);
-    VELOCITIES.lock().unwrap().insert(id, launch.velocity);
+    LAUNCHES.locked().insert(id, launch);
+    VELOCITIES.locked().insert(id, launch.velocity);
     Some(id)
 }
 
@@ -67,7 +68,7 @@ pub fn register(kind: &'static str, size: crate::mob::Size) {
 /// damage. Then the mod reads `ended`.
 pub fn tick_post(host: &mut dyn ServerHost, id: u32) {
     crate::body::tick(host, id, || vec![Box::new(Flight::default())]);
-    let Some(target) = REACHED.lock().unwrap().remove(&id) else {
+    let Some(target) = REACHED.locked().remove(&id) else {
         return;
     };
     let (Some(me), Some(target)) = (host.entity(id), host.entity(target)) else {
@@ -82,18 +83,18 @@ pub fn tick_post(host: &mut dyn ServerHost, id: u32) {
 
 /// How projectile `id`'s flight ended, if it has (taken: told once).
 pub fn ended(id: u32) -> Option<End> {
-    ENDED.lock().unwrap().remove(&id)
+    ENDED.locked().remove(&id)
 }
 
 /// Projectile `id`'s velocity now (for its drawing).
 pub fn velocity(id: u32) -> Option<[f64; 3]> {
-    VELOCITIES.lock().unwrap().get(&id).copied()
+    VELOCITIES.locked().get(&id).copied()
 }
 
 /// From the mod's hook: the projectile ends now (it hit something the hook found, `hits`).
 pub fn stop(id: u32, end: End) {
-    ENDED.lock().unwrap().insert(id, end);
-    LAUNCHES.lock().unwrap().remove(&id);
+    ENDED.locked().insert(id, end);
+    LAUNCHES.locked().remove(&id);
 }
 
 /// What projectile `id` at `at` touches now, for one with no target: the mobs (not items, orbs or other projectiles
@@ -126,10 +127,10 @@ pub fn hits(host: &dyn Host, level: LevelRef, at: [f64; 3], kind: &str, thrower:
 
 /// From the mod's `living_death` or once it removed the projectile.
 pub fn forget(id: u32) {
-    LAUNCHES.lock().unwrap().remove(&id);
-    VELOCITIES.lock().unwrap().remove(&id);
-    ENDED.lock().unwrap().remove(&id);
-    REACHED.lock().unwrap().remove(&id);
+    LAUNCHES.locked().remove(&id);
+    VELOCITIES.locked().remove(&id);
+    ENDED.locked().remove(&id);
+    REACHED.locked().remove(&id);
     crate::body::forget(id);
 }
 
@@ -144,7 +145,7 @@ pub struct Flight {
 impl Flight {
     fn end(&mut self, m: &Body, end: End) {
         self.done = true;
-        ENDED.lock().unwrap().insert(m.id, end);
+        ENDED.locked().insert(m.id, end);
     }
 }
 
@@ -160,10 +161,10 @@ impl Behaviour for Flight {
         m.no_gravity = true;
         m.fall_distance = 0.0;
         if self.launch.is_none() {
-            self.launch = LAUNCHES.lock().unwrap().remove(&m.id);
+            self.launch = LAUNCHES.locked().remove(&m.id);
         }
         // Stopped by the mod's hook, or a projectile without a launch (one saved mid-flight): it ends.
-        if ENDED.lock().unwrap().contains_key(&m.id) {
+        if ENDED.locked().contains_key(&m.id) {
             self.done = true;
             return;
         }
@@ -181,7 +182,7 @@ impl Behaviour for Flight {
             let d = [p[0] - m.position.x, p[1] + 0.6 - m.position.y, p[2] - m.position.z];
             let alive = cx.host().living(t).and_then(|l| l.alive(cx.host())).unwrap_or(false);
             if alive && d.iter().map(|v| v * v).sum::<f64>() < (reach + 0.6).powi(2) {
-                REACHED.lock().unwrap().insert(m.id, target);
+                REACHED.locked().insert(m.id, target);
                 self.end(m, End::Hit);
                 return;
             }
@@ -195,7 +196,7 @@ impl Behaviour for Flight {
         }
         launch.velocity[1] -= launch.gravity;
         self.launch = Some(launch);
-        VELOCITIES.lock().unwrap().insert(m.id, launch.velocity);
+        VELOCITIES.locked().insert(m.id, launch.velocity);
         m.velocity.x = launch.velocity[0];
         m.velocity.y = launch.velocity[1];
         m.velocity.z = launch.velocity[2];

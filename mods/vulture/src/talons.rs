@@ -12,6 +12,7 @@ use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use creature::body::{Body, World};
+use creature::sync::Locked;
 use mod_api::ServerHost;
 
 /// The key mapping's id and its default key.
@@ -39,29 +40,28 @@ fn now() -> u64 {
 
 /// From the server's `vulture:talons` payload: player `player`, riding a vulture, pressed the talons key.
 pub fn press(player: u128) {
-    PRESSED.lock().unwrap().insert(player, now());
+    PRESSED.locked().insert(player, now());
 }
 
 /// A press by `player` in the last half second, taken once.
 pub fn take_press(player: u128) -> bool {
     PRESSED
-        .lock()
-        .unwrap()
+        .locked()
         .remove(&player)
         .is_some_and(|at| now().saturating_sub(at) < 500)
 }
 
 /// From `player_logged_out`.
 pub fn left(player: u128) {
-    PRESSED.lock().unwrap().remove(&player);
+    PRESSED.locked().remove(&player);
 }
 
 pub fn carrying(id: u32) -> bool {
-    CARRIED.lock().unwrap().contains_key(&id)
+    CARRIED.locked().contains_key(&id)
 }
 
 pub fn release(id: u32) {
-    CARRIED.lock().unwrap().remove(&id);
+    CARRIED.locked().remove(&id);
 }
 
 /// From the ridden flight: catches the nearest creature below it that it can lift, or lets go of the one it holds.
@@ -105,14 +105,14 @@ pub fn toggle(m: &Body, cx: &World<'_>) {
             d(a.1).total_cmp(&d(b.1))
         });
     if let Some((id, _)) = catch {
-        CARRIED.lock().unwrap().insert(m.id, (id, [x, y - HANG, z]));
+        CARRIED.locked().insert(m.id, (id, [x, y - HANG, z]));
     }
 }
 
 /// From the ridden flight, every tick it carries: where to hold the catch, one tick ahead along the vulture's velocity
 /// (the catch moves after the vulture has moved), so it stays in the talons instead of trailing behind.
 pub fn follow(m: &Body) {
-    if let Some(entry) = CARRIED.lock().unwrap().get_mut(&m.id) {
+    if let Some(entry) = CARRIED.locked().get_mut(&m.id) {
         let v = m.velocity;
         entry.1 = [m.position.x + v.x, m.position.y + v.y - HANG, m.position.z + v.z];
     }
@@ -120,7 +120,7 @@ pub fn follow(m: &Body) {
 
 /// From `entity_tick_post`: keeps the catch under the vulture's talons; lets go of one that is gone.
 pub fn carry(host: &mut dyn ServerHost, id: u32) {
-    let Some((caught, at)) = CARRIED.lock().unwrap().get(&id).copied() else {
+    let Some((caught, at)) = CARRIED.locked().get(&id).copied() else {
         return;
     };
     let held = host.entity(caught).is_some_and(|e| {

@@ -1,4 +1,6 @@
 //! Its flock (SPECS §2): the sheep that came with it follow it, and it turns on whoever hurts one of them.
+use creature::sync::Locked;
+
 use super::*;
 
 /// Whom each cyclops is to turn on, for hurting one of its sheep (from `living_incoming_damage`, which can't change a
@@ -7,7 +9,7 @@ pub(crate) static ANGERED: Mutex<BTreeMap<u32, u32>> = Mutex::new(BTreeMap::new(
 
 /// From the cyclops's tick: whoever hurt one of its sheep becomes its target.
 pub(crate) fn anger(host: &mut dyn ServerHost, cyclops: u32) {
-    let Some(attacker) = ANGERED.lock().unwrap().remove(&cyclops) else {
+    let Some(attacker) = ANGERED.locked().remove(&cyclops) else {
         return;
     };
     let (Some(m), Some(t)) = (
@@ -38,7 +40,7 @@ pub(crate) static FLOCK_TICKS: Mutex<u32> = Mutex::new(0);
 
 pub(crate) fn flock(host: &mut dyn ServerHost, level: LevelRef) {
     {
-        let mut t = FLOCK_TICKS.lock().unwrap();
+        let mut t = FLOCK_TICKS.locked();
         *t += 1;
         if *t < FLOCK_EVERY {
             return;
@@ -66,20 +68,20 @@ pub(crate) fn flock(host: &mut dyn ServerHost, level: LevelRef) {
         if distance > FLOCK_RANGE {
             continue;
         }
-        let known = FLOCK.lock().unwrap().get(sheep).copied();
+        let known = FLOCK.locked().get(sheep).copied();
         let of_flock = known.unwrap_or_else(|| {
             let tagged = host
                 .entity(*sheep)
                 .and_then(|e| e.tags(&*host))
                 .is_some_and(|tags| tags.iter().any(|t| t == FLOCK_TAG));
-            FLOCK.lock().unwrap().insert(*sheep, tagged);
+            FLOCK.locked().insert(*sheep, tagged);
             tagged
         });
         // Not while a player's crook herds it.
-        if !of_flock || crook::HERDED.lock().unwrap().contains(sheep) {
+        if !of_flock || crook::HERDED.locked().contains(sheep) {
             continue;
         }
-        SHEPHERD.lock().unwrap().insert(*sheep, shepherd);
+        SHEPHERD.locked().insert(*sheep, shepherd);
         with_flock.insert(shepherd);
         if distance > FOLLOW_FROM
             && let Some(&(_, c)) = cyclopes.iter().find(|(id, _)| *id == shepherd)
@@ -100,7 +102,7 @@ pub(crate) fn flock(host: &mut dyn ServerHost, level: LevelRef) {
         let sees = cyclopes.iter().any(|(id, c)| {
             with_flock.contains(id) && (0..3).map(|k| (c[k] - at[k]).powi(2)).sum::<f64>() < SEE_FLOCK * SEE_FLOCK
         });
-        if sees && NOTED.lock().unwrap().insert(player.uuid()) {
+        if sees && NOTED.locked().insert(player.uuid()) {
             creature::bestiary::learn(host, player.uuid(), CYCLOPS, FLOCK_FACT);
         }
     }
@@ -109,7 +111,7 @@ pub(crate) fn flock(host: &mut dyn ServerHost, level: LevelRef) {
 /// The entities within `range` blocks of a cyclops (as their tick knows them, `CYCLOPS_AT`): (id, kind, position).
 pub(crate) fn entities_near_cyclopes(host: &dyn Host, level: LevelRef, range: f64) -> Vec<(u32, String, [f64; 3])> {
     let mut found = BTreeMap::new();
-    let cyclopes: Vec<[f64; 3]> = CYCLOPS_AT.lock().unwrap().values().copied().collect();
+    let cyclopes: Vec<[f64; 3]> = CYCLOPS_AT.locked().values().copied().collect();
     for c in cyclopes {
         let (from, to) = (
             [c[0] - range, c[1] - 16.0, c[2] - range],

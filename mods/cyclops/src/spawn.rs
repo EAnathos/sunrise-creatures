@@ -1,4 +1,6 @@
 //! Where it appears (SPECS §2): rarely, at a cave mouth near a player, with its flock.
+use creature::sync::Locked;
+
 use super::*;
 
 /// Where it appears (SPECS §2): rarely, at a cave mouth near a player. Every `SPAWN_EVERY` ticks, one chance in
@@ -20,7 +22,7 @@ pub(crate) fn spawn(host: &mut dyn ServerHost, level: LevelRef) {
     let dimension = level.dimension().id(&*host).unwrap_or_default();
     let dimension = dimension.as_str();
     {
-        let mut t = SPAWN_TICKS.lock().unwrap();
+        let mut t = SPAWN_TICKS.locked();
         *t += 1;
         if *t < SPAWN_EVERY {
             return;
@@ -42,8 +44,7 @@ pub(crate) fn spawn(host: &mut dyn ServerHost, level: LevelRef) {
             continue;
         };
         let crowded = CYCLOPS_AT
-            .lock()
-            .unwrap()
+            .locked()
             .values()
             .any(|c| (c[0] - p[0]).hypot(c[2] - p[2]) < ALONE);
         if crowded {
@@ -62,7 +63,7 @@ pub(crate) fn spawn(host: &mut dyn ServerHost, level: LevelRef) {
             }
             let feet = [f64::from(at[0]) + 0.5, f64::from(at[1]), f64::from(at[2]) + 0.5];
             if let Some(id) = host.summon(dimension, CYCLOPS, feet, Compound::new()) {
-                CYCLOPS_AT.lock().unwrap().insert(id, feet);
+                CYCLOPS_AT.locked().insert(id, feet);
                 let count = FLOCK_SIZE.0 + random.next() % (FLOCK_SIZE.1 - FLOCK_SIZE.0 + 1);
                 for _ in 0..count {
                     sheep(host, level, at, &mut random);
@@ -156,7 +157,7 @@ pub(crate) fn sheep(host: &mut dyn ServerHost, level: LevelRef, at: [i32; 3], ra
             if let Some(e) = host.entity(id) {
                 e.add_tag(host, FLOCK_TAG);
             }
-            FLOCK.lock().unwrap().insert(id, true);
+            FLOCK.locked().insert(id, true);
         }
         return;
     }

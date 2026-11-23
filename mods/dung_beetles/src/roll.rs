@@ -8,6 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Mutex;
 
 use creature::body::{Behaviour, Body, Vec3, World, flat_distance, turned};
+use creature::sync::Locked;
 use creature::territory;
 
 /// What the mod's tick does for it.
@@ -22,7 +23,7 @@ pub(crate) enum Action {
 static ACTIONS: Mutex<Vec<Action>> = Mutex::new(Vec::new());
 
 pub(crate) fn actions() -> Vec<Action> {
-    std::mem::take(&mut *ACTIONS.lock().unwrap())
+    std::mem::take(&mut *ACTIONS.locked())
 }
 
 /// Its ball, for its drawing: being shaped (how far along, 0 to 1), rolled, or buried (how far along).
@@ -39,11 +40,11 @@ static BUSY: Mutex<BTreeSet<u32>> = Mutex::new(BTreeSet::new());
 static TAKEN: Mutex<BTreeSet<u32>> = Mutex::new(BTreeSet::new());
 
 pub(crate) fn ball(id: u32) -> Option<Ball> {
-    BALL.lock().unwrap().get(&id).copied()
+    BALL.locked().get(&id).copied()
 }
 
 fn set_ball(id: u32, ball: Option<Ball>) {
-    let mut all = BALL.lock().unwrap();
+    let mut all = BALL.locked();
     match ball {
         Some(b) => all.insert(id, b),
         None => all.remove(&id),
@@ -52,7 +53,7 @@ fn set_ball(id: u32, ball: Option<Ball>) {
 
 /// For its crawl (`creature::creep::Creeping::may`): busy with its ball or its herd.
 pub(crate) fn busy(id: u32) -> bool {
-    BUSY.lock().unwrap().contains(&id)
+    BUSY.locked().contains(&id)
 }
 
 /// A player took beetle `id`'s ball (SPECS §2.1): whether it had one to take.
@@ -61,14 +62,14 @@ pub(crate) fn take(id: u32) -> bool {
         return false;
     }
     set_ball(id, None);
-    TAKEN.lock().unwrap().insert(id);
+    TAKEN.locked().insert(id);
     true
 }
 
 pub(crate) fn forget(id: u32) {
-    BALL.lock().unwrap().remove(&id);
-    BUSY.lock().unwrap().remove(&id);
-    TAKEN.lock().unwrap().remove(&id);
+    BALL.locked().remove(&id);
+    BUSY.locked().remove(&id);
+    TAKEN.locked().remove(&id);
 }
 
 /// The herd (SPECS §2): how far it sees grazing animals and how often it looks (ticks), how near one it keeps
@@ -298,7 +299,7 @@ impl Behaviour for Roll {
         if self.wait.is_none() {
             self.wait = Some(m.random.between(BALL_EVERY));
         }
-        if TAKEN.lock().unwrap().remove(&m.id) {
+        if TAKEN.locked().remove(&m.id) {
             self.phase = Phase::Startled(LOOK_AROUND);
             self.wait = Some(m.random.between(BALL_EVERY));
         }
@@ -331,7 +332,7 @@ impl Behaviour for Roll {
             }
         }
         let busy = self.phase != Phase::Idle;
-        let mut all = BUSY.lock().unwrap();
+        let mut all = BUSY.locked();
         if busy {
             all.insert(m.id);
         } else {
@@ -350,7 +351,7 @@ impl Behaviour for Roll {
                     if shape {
                         self.phase = Phase::Shape(SHAPE);
                         set_ball(m.id, Some(Ball::Shaping(0.0)));
-                        ACTIONS.lock().unwrap().push(Action::Shaped { id: m.id });
+                        ACTIONS.locked().push(Action::Shaped { id: m.id });
                     } else {
                         self.phase = Phase::Idle;
                     }
@@ -394,7 +395,7 @@ impl Behaviour for Roll {
                     self.phase = Phase::Bury(left - 1, stars);
                 } else {
                     let here = cell(m.position);
-                    ACTIONS.lock().unwrap().push(Action::Buried {
+                    ACTIONS.locked().push(Action::Buried {
                         id: m.id,
                         block: [here[0], here[1] - 1, here[2]],
                         stars,

@@ -11,6 +11,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Mutex;
 
 use creature::body::{Behaviour, Body, Vec3, World};
+use creature::sync::Locked;
 
 /// What the mod's tick does for a behaviour.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -24,7 +25,7 @@ pub(crate) enum Action {
 static ACTIONS: Mutex<Vec<Action>> = Mutex::new(Vec::new());
 
 pub(crate) fn actions() -> Vec<Action> {
-    std::mem::take(&mut *ACTIONS.lock().unwrap())
+    std::mem::take(&mut *ACTIONS.locked())
 }
 
 /// Whether each phasmid keeps still (its crawl waits), and whether it lies playing dead (for its drawing).
@@ -35,21 +36,21 @@ static SPOTTED: Mutex<BTreeMap<u32, BTreeSet<u128>>> = Mutex::new(BTreeMap::new(
 
 /// For its crawl (`creature::creep::Creeping::may`): it keeps still.
 pub(crate) fn busy(id: u32) -> bool {
-    BUSY.lock().unwrap().contains(&id)
+    BUSY.locked().contains(&id)
 }
 
 pub(crate) fn dead(id: u32) -> bool {
-    DEAD.lock().unwrap().contains(&id)
+    DEAD.locked().contains(&id)
 }
 
 pub(crate) fn forget(id: u32) {
-    BUSY.lock().unwrap().remove(&id);
-    DEAD.lock().unwrap().remove(&id);
-    SPOTTED.lock().unwrap().remove(&id);
+    BUSY.locked().remove(&id);
+    DEAD.locked().remove(&id);
+    SPOTTED.locked().remove(&id);
 }
 
 fn set(set: &Mutex<BTreeSet<u32>>, id: u32, on: bool) {
-    let mut all = set.lock().unwrap();
+    let mut all = set.locked();
     if on {
         all.insert(id);
     } else {
@@ -96,12 +97,12 @@ impl Behaviour for Watch {
         let mut near = false;
         if let Some(p) = player {
             near = creature::body::distance(p.position.array(), m.position.array()) < STILL_NEAR;
-            let already = SPOTTED.lock().unwrap().get(&m.id).is_some_and(|s| s.contains(&p.uuid));
+            let already = SPOTTED.locked().get(&m.id).is_some_and(|s| s.contains(&p.uuid));
             if looks_at(p.eye, p.look, middle(m)) {
                 self.looked += 1;
                 if self.looked == SPOT_TICKS && !already {
-                    SPOTTED.lock().unwrap().entry(m.id).or_default().insert(p.uuid);
-                    ACTIONS.lock().unwrap().push(Action::Spotted {
+                    SPOTTED.locked().entry(m.id).or_default().insert(p.uuid);
+                    ACTIONS.locked().push(Action::Spotted {
                         id: m.id,
                         player: p.uuid,
                     });
@@ -221,7 +222,7 @@ impl Behaviour for PlayDead {
             self.drop = ground_below(m, cx);
             set(&DEAD, m.id, true);
             creature::sounds::queue(m.id, crate::CLICK, 0.6, 1.0 + m.random.next_float() * 0.3);
-            ACTIONS.lock().unwrap().push(Action::Dropped { id: m.id });
+            ACTIONS.locked().push(Action::Dropped { id: m.id });
         }
         self.phase != Phase::Up
     }
@@ -230,6 +231,7 @@ impl Behaviour for PlayDead {
         match self.phase {
             Phase::Up => {}
             Phase::Lying(left) => {
+                creature::creep::let_go(m.id);
                 // It drops through the foliage to the ground, and lies there.
                 if let Some(y) = self.drop.take()
                     && y < m.position.y
@@ -264,16 +266,19 @@ impl Behaviour for PlayDead {
                 }
             }
             Phase::Climbing(at) => {
-                // Up the bark, through the leaves, until it stands on them (no collision while it climbs).
-                m.no_gravity = true;
-                m.velocity = Vec3 { x: 0.0, y: 0.0, z: 0.0 };
+                // Up the bark, through the leaves, until it stands on them (no collision while it climbs), its belly
+                // to the bark while there is bark beside it.
                 m.position = Vec3 {
                     x: at[0],
                     y: m.position.y + CLIMB,
                     z: at[2],
                 };
+                creature::creep::hold_on(m, cx);
+                m.no_gravity = true;
+                m.velocity = Vec3 { x: 0.0, y: 0.0, z: 0.0 };
                 let top = m.position.y - at[1] > 24.0;
                 if on_canopy(m, cx) || top {
+                    creature::creep::let_go(m.id);
                     m.no_gravity = false;
                     self.phase = Phase::Up;
                 }

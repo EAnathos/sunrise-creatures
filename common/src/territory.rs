@@ -24,6 +24,8 @@ use mod_api::{
     AttachmentCodec, AttachmentError, AttachmentType, Compound, Holder, Host, LevelRef, Registrar, ServerHost, Tag,
 };
 
+use crate::sync::Locked;
+
 /// The flowers within this many blocks of the anchor make the area; it reaches this far around them and up.
 pub const PATCH: i32 = 8;
 /// A garden counts at least this many farmland blocks; it is looked for up to `BLOCKS_MAX`.
@@ -148,7 +150,7 @@ static ANCHORS: Mutex<BTreeMap<u32, Known>> = Mutex::new(BTreeMap::new());
 /// From the jar's release (or a mod): `entity` settles with `anchor`.
 pub fn settle(host: &mut dyn ServerHost, entity: u32, anchor: [i32; 3]) {
     let _ = ANCHOR.set(host, Holder::Entity(entity), Some(anchor));
-    ANCHORS.lock().unwrap().insert(
+    ANCHORS.locked().insert(
         entity,
         Known {
             anchor: Some(anchor),
@@ -159,14 +161,14 @@ pub fn settle(host: &mut dyn ServerHost, entity: u32, anchor: [i32; 3]) {
 
 /// From the mod's `entity_tick_post`: its saved anchor the first time, and a moved or lost one saved.
 pub fn tick(host: &mut dyn ServerHost, entity: u32) {
-    let known = ANCHORS.lock().unwrap().get(&entity).copied();
+    let known = ANCHORS.locked().get(&entity).copied();
     match known {
         None => {
             // Not readable yet (its first tick after loading): next tick.
             let Ok(saved) = ANCHOR.get_existing(host, Holder::Entity(entity)) else {
                 return;
             };
-            ANCHORS.lock().unwrap().insert(
+            ANCHORS.locked().insert(
                 entity,
                 Known {
                     anchor: saved.flatten(),
@@ -176,7 +178,7 @@ pub fn tick(host: &mut dyn ServerHost, entity: u32) {
         }
         Some(k) if k.dirty => {
             let _ = ANCHOR.set(host, Holder::Entity(entity), k.anchor);
-            if let Some(k) = ANCHORS.lock().unwrap().get_mut(&entity) {
+            if let Some(k) = ANCHORS.locked().get_mut(&entity) {
                 k.dirty = false;
             }
         }
@@ -186,12 +188,12 @@ pub fn tick(host: &mut dyn ServerHost, entity: u32) {
 
 /// From the mod's `living_death`.
 pub fn forget(entity: u32) {
-    ANCHORS.lock().unwrap().remove(&entity);
+    ANCHORS.locked().remove(&entity);
 }
 
 /// Where creature `entity` is settled (its anchor), if it is.
 pub fn anchor(entity: u32) -> Option<[i32; 3]> {
-    ANCHORS.lock().unwrap().get(&entity).and_then(|k| k.anchor)
+    ANCHORS.locked().get(&entity).and_then(|k| k.anchor)
 }
 
 /// Whether it is settled (a settled creature never despawns, and doesn't count as wild for the bestiary).
@@ -227,7 +229,7 @@ pub fn check(host: &dyn Host, entity: u32) -> Vec<[i32; 3]> {
     }
     let distance = |p: &[i32; 3]| (0..3).map(|k| (p[k] - anchor[k]).pow(2)).sum::<i32>();
     let moved = flowers.iter().min_by_key(|p| distance(p)).copied();
-    if let Some(k) = ANCHORS.lock().unwrap().get_mut(&entity) {
+    if let Some(k) = ANCHORS.locked().get_mut(&entity) {
         k.anchor = moved;
         k.dirty = true;
     }
@@ -317,7 +319,7 @@ pub fn check_sand(host: &dyn Host, entity: u32) -> Vec<[i32; 3]> {
     if patch.len() >= SAND_MIN {
         return patch;
     }
-    if let Some(k) = ANCHORS.lock().unwrap().get_mut(&entity) {
+    if let Some(k) = ANCHORS.locked().get_mut(&entity) {
         k.anchor = None;
         k.dirty = true;
     }
@@ -384,7 +386,7 @@ pub fn check_tree(host: &dyn Host, entity: u32) -> Vec<[i32; 3]> {
     if leafy(&ground, &tree) {
         return tree;
     }
-    if let Some(k) = ANCHORS.lock().unwrap().get_mut(&entity) {
+    if let Some(k) = ANCHORS.locked().get_mut(&entity) {
         k.anchor = None;
         k.dirty = true;
     }
@@ -428,7 +430,7 @@ pub fn check_pasture(host: &dyn Host, entity: u32) -> bool {
     if herd_at(ground, anchor) {
         return true;
     }
-    if let Some(k) = ANCHORS.lock().unwrap().get_mut(&entity) {
+    if let Some(k) = ANCHORS.locked().get_mut(&entity) {
         k.anchor = None;
         k.dirty = true;
     }
@@ -472,7 +474,7 @@ pub fn check_garden(host: &dyn Host, entity: u32) -> Vec<[i32; 3]> {
     if garden.len() >= GARDEN_MIN {
         return garden;
     }
-    if let Some(k) = ANCHORS.lock().unwrap().get_mut(&entity) {
+    if let Some(k) = ANCHORS.locked().get_mut(&entity) {
         k.anchor = None;
         k.dirty = true;
     }

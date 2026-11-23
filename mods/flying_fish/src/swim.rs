@@ -8,6 +8,7 @@ use std::f64::consts::TAU;
 use std::sync::Mutex;
 
 use creature::body::{Behaviour, Body, Vec3, World, turned, unit};
+use creature::sync::Locked;
 
 /// Its speed swimming and gliding (blocks a tick), and how fast it climbs out.
 const SWIM_SPEED: f64 = 0.1;
@@ -60,17 +61,17 @@ static BUMPED: Mutex<BTreeMap<u32, [f64; 2]>> = Mutex::new(BTreeMap::new());
 /// Flying fish `id`, gliding, ran into something at `from`: it bounces off and drops (SPECS §3).
 pub(crate) fn bump(id: u32, at: [f64; 3], from: [f64; 3]) {
     let away = unit([at[0] - from[0], at[2] - from[2]]).unwrap_or([0.0, 1.0]);
-    BUMPED.lock().unwrap().insert(id, away);
+    BUMPED.locked().insert(id, away);
 }
 
 /// Whether flying fish `id` is gliding (its fins spread).
 pub(crate) fn gliding(id: u32) -> bool {
-    GLIDING.lock().unwrap().contains(&id)
+    GLIDING.locked().contains(&id)
 }
 
 /// Whether flying fish `id` just ended a long glide.
 pub(crate) fn glided(id: u32) -> bool {
-    let mut all = GLIDED.lock().unwrap();
+    let mut all = GLIDED.locked();
     let was = all.contains(&id);
     all.retain(|g| *g != id);
     was
@@ -78,21 +79,21 @@ pub(crate) fn glided(id: u32) -> bool {
 
 /// Where shoals took off since the last call.
 pub(crate) fn took_off() -> Vec<[f64; 3]> {
-    std::mem::take(&mut *TOOK_OFF.lock().unwrap())
+    std::mem::take(&mut *TOOK_OFF.locked())
 }
 
 pub(crate) fn forget(id: u32) {
-    FISH.lock().unwrap().remove(&id);
-    PANIC.lock().unwrap().remove(&id);
-    GLIDING.lock().unwrap().remove(&id);
-    GLIDED.lock().unwrap().retain(|g| *g != id);
-    BUMPED.lock().unwrap().remove(&id);
+    FISH.locked().remove(&id);
+    PANIC.locked().remove(&id);
+    GLIDING.locked().remove(&id);
+    GLIDED.locked().retain(|g| *g != id);
+    BUMPED.locked().remove(&id);
 }
 
 /// A threat at `from` frightens the fish at `at` and its shoal: each takes off within half a second, away from it.
 pub(crate) fn scare(at: [f64; 3], from: [f64; 3]) {
-    let fish = FISH.lock().unwrap();
-    let mut panic = PANIC.lock().unwrap();
+    let fish = FISH.locked();
+    let mut panic = PANIC.locked();
     let mut count = 0;
     for (id, (p, _)) in fish.iter() {
         if creature::body::distance(*p, at) > SPREAD || panic.contains_key(id) {
@@ -106,7 +107,7 @@ pub(crate) fn scare(at: [f64; 3], from: [f64; 3]) {
         count += 1;
     }
     if count >= SHOAL_TAKEOFF {
-        TOOK_OFF.lock().unwrap().push(at);
+        TOOK_OFF.locked().push(at);
     }
 }
 
@@ -207,7 +208,7 @@ impl Fish {
     /// Its shoal's pull on its heading: their heading, toward them when it strays, away when too near.
     fn shoal(&self, m: &Body) -> [f64; 2] {
         let at = m.position.array();
-        let fish = FISH.lock().unwrap();
+        let fish = FISH.locked();
         let (mut heading, mut toward, mut n) = ([0.0, 0.0], [0.0, 0.0], 0.0);
         for (id, (p, d)) in fish.iter() {
             let dist = creature::body::distance(*p, at);
@@ -234,7 +235,7 @@ impl Fish {
         let hit = self.health >= 0.0 && m.health < self.health;
         self.health = m.health;
         let told = {
-            let mut panic = PANIC.lock().unwrap();
+            let mut panic = PANIC.locked();
             match panic.get_mut(&m.id) {
                 Some((0, away)) => {
                     let away = *away;
@@ -266,7 +267,7 @@ impl Fish {
         if let Some(from) = from {
             scare(at, from);
             let away = unit([at[0] - from[0], at[2] - from[2]]).unwrap_or(self.dir);
-            PANIC.lock().unwrap().remove(&m.id);
+            PANIC.locked().remove(&m.id);
             return Some(away);
         }
         let for_nothing = !cx.raining && m.random.next_int_bound(FOR_NOTHING) == Some(0);
@@ -352,7 +353,7 @@ impl Fish {
                 m.random.next_int_bound(BEATS + 1).unwrap_or(0)
             };
             self.phase = Phase::Glide(self.stretch(m, cx), beats);
-            GLIDING.lock().unwrap().insert(m.id);
+            GLIDING.locked().insert(m.id);
             creature::sounds::queue(m.id, SPLASH, 0.6, 1.2 + m.random.next_float() * 0.2);
             creature::sounds::queue(m.id, GLIDE, 0.4, 0.9 + m.random.next_float() * 0.2);
             self.glide(m, cx);
@@ -387,7 +388,7 @@ impl Fish {
         m.no_gravity = true;
         m.fall_distance = 0.0;
         // It ran into a player or a mob: it bounces off and drops, unhurt.
-        if let Some(away) = BUMPED.lock().unwrap().remove(&m.id) {
+        if let Some(away) = BUMPED.locked().remove(&m.id) {
             self.dir = away;
             return self.land(m, 0.15, 0.1);
         }
@@ -454,9 +455,9 @@ impl Fish {
         let at = m.position.array();
         let far = (at[0] - self.start[0]).hypot(at[2] - self.start[2]);
         if far > LONG_GLIDE {
-            GLIDED.lock().unwrap().push(m.id);
+            GLIDED.locked().push(m.id);
         }
-        GLIDING.lock().unwrap().remove(&m.id);
+        GLIDING.locked().remove(&m.id);
         self.phase = Phase::Swim;
         self.rest = REST;
         self.diving = true;
@@ -480,7 +481,7 @@ impl Fish {
 
 impl Behaviour for Fish {
     fn can_use(&mut self, m: &mut Body, _: &World<'_>) -> bool {
-        FISH.lock().unwrap().insert(m.id, (m.position.array(), self.dir));
+        FISH.locked().insert(m.id, (m.position.array(), self.dir));
         m.in_water || self.phase != Phase::Swim
     }
     fn tick(&mut self, m: &mut Body, cx: &World<'_>) {
@@ -492,7 +493,7 @@ impl Behaviour for Fish {
     }
     fn stop(&mut self, m: &mut Body, _: &World<'_>) {
         if self.phase != Phase::Swim {
-            GLIDING.lock().unwrap().remove(&m.id);
+            GLIDING.locked().remove(&m.id);
             self.phase = Phase::Swim;
         }
     }
@@ -513,13 +514,11 @@ mod tests {
     #[test]
     fn a_fright_spreads_through_the_shoal() {
         for id in 900..906 {
-            FISH.lock()
-                .unwrap()
-                .insert(id, ([f64::from(id - 900), 60.0, 0.0], [0.0, 1.0]));
+            FISH.locked().insert(id, ([f64::from(id - 900), 60.0, 0.0], [0.0, 1.0]));
         }
-        FISH.lock().unwrap().insert(999, ([100.0, 60.0, 0.0], [0.0, 1.0]));
+        FISH.locked().insert(999, ([100.0, 60.0, 0.0], [0.0, 1.0]));
         scare([0.0, 60.0, 0.0], [-3.0, 60.0, 0.0]);
-        let panic = PANIC.lock().unwrap();
+        let panic = PANIC.locked();
         assert!((900..906).all(|id| panic.get(&id).is_some_and(|(_, away)| away[0] > 0.5)));
         assert!(!panic.contains_key(&999));
         assert!(!took_off().is_empty());

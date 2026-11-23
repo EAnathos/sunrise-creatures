@@ -1,4 +1,6 @@
 //! Its fight (SPECS §2): the club's overhead blow in reach, a boulder lifted and hurled out of it (`Smash`).
+use creature::sync::Locked;
+
 use super::*;
 
 /// The club's blow (SPECS §2): it walks up to its target, raises the club over its head for `WINDUP` ticks, then
@@ -38,13 +40,12 @@ pub(crate) fn apply(host: &mut dyn ServerHost, cyclops: u32) {
     let Some(me) = host.entity(cyclops) else {
         return;
     };
-    if LET_GO.lock().unwrap().remove(&cyclops)
-        && let Some(m) = host.mob(me)
-    {
+    let let_go = LET_GO.locked().remove(&cyclops);
+    if let_go && let Some(m) = host.mob(me) {
         m.set_target(host, None);
     }
     let hits: Vec<u32> = {
-        let mut all = HITS.lock().unwrap();
+        let mut all = HITS.locked();
         let (mine, rest): (Vec<_>, Vec<_>) = all.drain(..).partition(|h| h.0 == cyclops);
         *all = rest;
         mine.into_iter().map(|h| h.1).collect()
@@ -83,7 +84,7 @@ fn target(m: &Body, cx: &World<'_>) -> Option<(u32, [f64; 3], f64)> {
     let creative = cx.player.as_ref().is_some_and(|p| p.entity_id == e.id() && p.creative);
     let far = (at[0] - m.position.x).hypot(at[2] - m.position.z) > GIVE_UP;
     if !alive || creative || far {
-        LET_GO.lock().unwrap().insert(m.id);
+        LET_GO.locked().insert(m.id);
         return None;
     }
     let eye = at[1] + e.dimensions(host).map_or(1.6, |d| d[1] * 0.85);
@@ -139,7 +140,7 @@ impl Behaviour for Smash {
             self.windup -= 1;
             if self.windup == 0 {
                 if reach < REACH + 0.5 && club_height {
-                    HITS.lock().unwrap().push((m.id, who));
+                    HITS.locked().push((m.id, who));
                 }
                 // The club comes down in front of it, at its feet, whether or not it hits.
                 let (dx, dz) = (t[0] - m.position.x, t[2] - m.position.z);
@@ -163,7 +164,7 @@ impl Behaviour for Smash {
                 let from = [m.position.x, m.position.y + THROW_HEIGHT, m.position.z];
                 let to = [t[0], t[1] + 0.9, t[2]];
                 let velocity = boulder::aim(from, to);
-                boulder::THROWS.lock().unwrap().push(boulder::Throw {
+                boulder::THROWS.locked().push(boulder::Throw {
                     from,
                     velocity,
                     target: who,
@@ -179,14 +180,14 @@ impl Behaviour for Smash {
         if throwable && self.throw_cooldown <= 0 && sees(cx, m.id, who) {
             self.throwing = THROW_WINDUP;
             m.stop_walking = true;
-            LIFTED.lock().unwrap().insert(m.id, Instant::now());
+            LIFTED.locked().insert(m.id, Instant::now());
             creature::sounds::queue(m.id, ROAR, 1.5, 1.0);
             return;
         }
         if reach < REACH && club_height && self.cooldown <= 0 {
             self.windup = WINDUP;
             m.stop_walking = true;
-            RAISED.lock().unwrap().insert(m.id, Instant::now());
+            RAISED.locked().insert(m.id, Instant::now());
             return;
         }
         self.repath -= 1;

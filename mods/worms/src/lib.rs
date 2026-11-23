@@ -15,6 +15,7 @@ use std::sync::{Arc, OnceLock};
 
 use creature::bestiary::{Fact, Species};
 use creature::jar::Catchable;
+use creature::sync::Locked;
 use creature::territory::{self, Rule};
 use mod_api::{
     BlockEntityDrawContext, EntityInteractEvent, EntityPart, EntityRenderState, EntityRenderer, EntityTickPostEvent,
@@ -171,7 +172,7 @@ fn tend(host: &mut dyn ServerHost, entity: u32) {
         return;
     }
     {
-        let mut ticks = TICKS.lock().unwrap();
+        let mut ticks = TICKS.locked();
         let t = ticks.entry(entity).or_insert(entity % GROW_EVERY);
         *t += 1;
         if *t < GROW_EVERY {
@@ -185,11 +186,11 @@ fn tend(host: &mut dyn ServerHost, entity: u32) {
     }
     let mut random = creature::colours::Random::new(entity);
     // More than `MAX_WORMS` worms in this garden: each helps less, so that together they count as `MAX_WORMS`.
-    let worms = TICKS
-        .lock()
-        .unwrap()
-        .keys()
-        .filter(|w| territory::anchor(**w).is_some_and(|a| garden.contains(&a)))
+    let worms: Vec<u32> = TICKS.locked().keys().copied().collect();
+    // Out of `TICKS`' lock: `anchor` takes the library's.
+    let worms = worms
+        .into_iter()
+        .filter(|w| territory::anchor(*w).is_some_and(|a| garden.contains(&a)))
         .count()
         .max(1);
     if worms > MAX_WORMS && (random.next() % worms as u64) as usize >= MAX_WORMS {
@@ -255,7 +256,7 @@ fn rain(host: &mut dyn ServerHost, level: mod_api::LevelRef) {
         return;
     }
     {
-        let mut t = RAIN_TICKS.lock().unwrap();
+        let mut t = RAIN_TICKS.locked();
         *t += 1;
         if *t < RAIN_EVERY {
             return;
@@ -276,8 +277,7 @@ fn rain(host: &mut dyn ServerHost, level: mod_api::LevelRef) {
         };
         let ground = territory::Ground::new(&*host, level);
         let near = WORMS_AT
-            .lock()
-            .unwrap()
+            .locked()
             .values()
             .filter(|w| (w[0] - p[0]).hypot(w[2] - p[2]) < RAIN_NEAR)
             .count();
@@ -343,8 +343,8 @@ impl EntityRenderer for Draw {
 /// A worm forgotten (dead, despawned).
 fn forget(entity: u32) {
     territory::forget(entity);
-    TICKS.lock().unwrap().remove(&entity);
-    WORMS_AT.lock().unwrap().remove(&entity);
+    TICKS.locked().remove(&entity);
+    WORMS_AT.locked().remove(&entity);
 }
 
 #[derive(Default)]
@@ -391,7 +391,7 @@ impl Hooks for Worms {
             territory::tick(host, event.entity);
             tend(host, event.entity);
             if let Some(at) = host.entity(event.entity).and_then(|e| e.position(host)) {
-                WORMS_AT.lock().unwrap().insert(event.entity, at);
+                WORMS_AT.locked().insert(event.entity, at);
             }
             if creature::mob::despawn_far(host, event.dimension, event.entity, territory::settled(event.entity)) {
                 forget(event.entity);

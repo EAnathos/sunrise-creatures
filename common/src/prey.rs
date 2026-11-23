@@ -12,6 +12,8 @@ use std::sync::Mutex;
 
 use mod_api::{ParticleOptions, ServerHost, SoundSource};
 
+use crate::sync::Locked;
+
 /// A hunter of a prey: its entity type, how far it sees the prey (blocks) and its speed going for it (its navigation's
 /// multiplier).
 pub struct Hunter {
@@ -42,7 +44,7 @@ const REACH: f64 = 1.3;
 
 /// From a mod's `register`.
 pub fn register(prey: &'static Prey) {
-    let mut all = PREY.lock().unwrap();
+    let mut all = PREY.locked();
     if !all.iter().any(|p| p.kind == prey.kind) {
         all.push(prey);
     }
@@ -50,7 +52,7 @@ pub fn register(prey: &'static Prey) {
 
 /// From a mod's `register`: after a catch of `kind`, `caught` runs on its hunter (the flying fish's dolphin is fed).
 pub fn when_caught(kind: &'static str, caught: Caught) {
-    let mut all = CAUGHT.lock().unwrap();
+    let mut all = CAUGHT.locked();
     if !all.iter().any(|(k, _)| *k == kind) {
         all.push((kind, caught));
     }
@@ -59,7 +61,7 @@ pub fn when_caught(kind: &'static str, caught: Caught) {
 /// From a mod's `register`: its creature `hunter` hunts `prey` too, another mod's (by its entity id). Nothing happens
 /// when that mod isn't installed.
 pub fn add_hunter(prey: &'static str, hunter: &'static Hunter) {
-    let mut all = ADDED.lock().unwrap();
+    let mut all = ADDED.locked();
     if !all.iter().any(|(p, h)| *p == prey && h.kind == hunter.kind) {
         all.push((prey, hunter));
     }
@@ -67,7 +69,7 @@ pub fn add_hunter(prey: &'static str, hunter: &'static Hunter) {
 
 /// The hunters of `prey`: its own, then those added by other mods.
 fn hunters(prey: &Prey) -> Vec<&'static Hunter> {
-    let added = ADDED.lock().unwrap();
+    let added = ADDED.locked();
     prey.hunters
         .iter()
         .chain(added.iter().filter(|(p, _)| *p == prey.kind).map(|(_, h)| *h))
@@ -76,16 +78,18 @@ fn hunters(prey: &Prey) -> Vec<&'static Hunter> {
 
 /// The prey hunter `hunter` goes for, if any: for a hunter of the series' mods, which goes for it itself.
 pub fn quarry(hunter: u32) -> Option<u32> {
-    CHASED
-        .lock()
-        .unwrap()
-        .iter()
-        .find(|(_, h)| **h == hunter)
-        .map(|(p, _)| *p)
+    CHASED.locked().iter().find(|(_, h)| **h == hunter).map(|(p, _)| *p)
+}
+
+/// The hunter still going for prey `entity`, if `near` finds it still near (the engine's): `CHASED` is read under its
+/// lock, released before `near` asks the engine anything.
+fn kept<T>(entity: u32, near: impl FnOnce(u32) -> Option<T>) -> Option<T> {
+    let chased = CHASED.locked().get(&entity).copied();
+    chased.and_then(near)
 }
 
 fn of(kind: &str) -> Option<&'static Prey> {
-    PREY.lock().unwrap().iter().copied().find(|p| p.kind == kind)
+    PREY.locked().iter().copied().find(|p| p.kind == kind)
 }
 
 /// From the mod's `entity_tick_post`, for each creature of a prey kind: its hunter goes for it, and eats it once there.
@@ -101,7 +105,7 @@ pub fn tick(host: &mut dyn ServerHost, dimension: &str, entity: u32, kind: &str)
         return false;
     };
     let hunters = hunters(prey);
-    let kept = CHASED.lock().unwrap().get(&entity).copied().and_then(|h| {
+    let kept = kept(entity, |h| {
         let hunter = host.entity(h)?;
         let kind = hunter.kind(&*host)?.id(&*host);
         let range = hunters.iter().find(|x| x.kind == kind)?.range;
@@ -130,10 +134,10 @@ pub fn tick(host: &mut dyn ServerHost, dimension: &str, entity: u32, kind: &str)
             .map(|(h, there, _)| (h, there))
     });
     let Some((hunter, there)) = chase else {
-        CHASED.lock().unwrap().remove(&entity);
+        CHASED.locked().remove(&entity);
         return false;
     };
-    CHASED.lock().unwrap().insert(entity, hunter);
+    CHASED.locked().insert(entity, hunter);
     if crate::body::distance(there, at) <= REACH {
         // The prey's fact and its mod's `when_caught` are about its own hunters, not those other mods added.
         let own = host
@@ -141,12 +145,7 @@ pub fn tick(host: &mut dyn ServerHost, dimension: &str, entity: u32, kind: &str)
             .and_then(|h| h.kind(&*host))
             .is_some_and(|k| prey.hunters.iter().any(|x| x.kind == k.id(&*host)));
         eaten(host, dimension, prey, entity, at, own);
-        let caught = CAUGHT
-            .lock()
-            .unwrap()
-            .iter()
-            .find(|(k, _)| *k == prey.kind)
-            .map(|(_, f)| *f);
+        let caught = CAUGHT.locked().iter().find(|(k, _)| *k == prey.kind).map(|(_, f)| *f);
         if let Some(caught) = caught.filter(|_| own) {
             caught(host, hunter);
         }
@@ -196,5 +195,20 @@ fn eaten(host: &mut dyn ServerHost, dimension: &str, prey: &Prey, entity: u32, a
 
 /// From the library when a creature is gone.
 pub fn forget(entity: u32) {
-    CHASED.lock().unwrap().retain(|p, h| *p != entity && *h != entity);
+    CHASED.locked().retain(|p, h| *p != entity && *h != entity);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_hunter_kept_is_checked_with_no_lock_held() {
+        CHASED.locked().insert(3_000_000, 3_000_001);
+        // `quarry` locks `CHASED`: under the lock, as before, it would wait for itself forever.
+        assert_eq!(kept(3_000_000, quarry), Some(3_000_000));
+        assert_eq!(kept(3_000_002, quarry), None, "not chased");
+        forget(3_000_001);
+        assert_eq!(quarry(3_000_001), None, "a hunter gone is forgotten with its prey");
+    }
 }

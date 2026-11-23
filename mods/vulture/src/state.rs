@@ -18,6 +18,7 @@ use std::collections::BTreeMap;
 use std::sync::Mutex;
 
 use creature::body::Body;
+use creature::sync::Locked;
 use mod_api::{AttachmentCodec, AttachmentError, AttachmentType, Compound, Holder, LevelRef, ServerHost, Tag};
 
 fn set_stats(m: &mut Body, current: &mut Saved, health: f32, pace: f32) {
@@ -180,7 +181,7 @@ static BRED: Mutex<std::collections::BTreeSet<u32>> = Mutex::new(std::collection
 
 /// Whether vulture `id` is in love (another vulture's breeding goal asks).
 pub fn in_love(id: u32) -> bool {
-    SHARED.lock().unwrap().get(&id).is_some_and(|s| s.in_love)
+    SHARED.locked().get(&id).is_some_and(|s| s.in_love)
 }
 
 /// Rolls a stat between `range`'s ends from `roll` (0 to 1).
@@ -192,7 +193,7 @@ pub fn stat(range: (f32, f32), roll: f32) -> f32 {
 /// parents' and a fresh roll's, like a horse's.
 pub fn breed(a: &Body, b: u32, rolls: [f32; 2]) {
     {
-        let mut bred = BRED.lock().unwrap();
+        let mut bred = BRED.locked();
         if bred.contains(&a.id) || bred.contains(&b) {
             return;
         }
@@ -209,7 +210,7 @@ pub fn breed(a: &Body, b: u32, rolls: [f32; 2]) {
         pace: mix(mine.pace, other.pace, PACE, rolls[1]),
         ..Saved::default()
     };
-    BIRTHS.lock().unwrap().push(Birth {
+    BIRTHS.locked().push(Birth {
         at: [a.position.x, a.position.y, a.position.z],
         baby,
     });
@@ -217,7 +218,7 @@ pub fn breed(a: &Body, b: u32, rolls: [f32; 2]) {
 
 /// From `entity_tick_post`: summons the babies waiting to be born, with their state.
 pub fn births(host: &mut dyn ServerHost, dimension: &str) {
-    let births = std::mem::take(&mut *BIRTHS.lock().unwrap());
+    let births = std::mem::take(&mut *BIRTHS.locked());
     for birth in births {
         if let Some(id) = host.summon(dimension, "vulture:vulture", birth.at, Compound::new()) {
             if let Some(owner) = birth.baby.owner {
@@ -230,7 +231,7 @@ pub fn births(host: &mut dyn ServerHost, dimension: &str) {
 
 /// Its flight speed as a share of the base speed.
 pub fn pace(id: u32) -> f64 {
-    SHARED.lock().unwrap().get(&id).map_or(1.0, |s| {
+    SHARED.locked().get(&id).map_or(1.0, |s| {
         if s.current.pace > 0.0 {
             f64::from(s.current.pace)
         } else {
@@ -267,17 +268,12 @@ const LOVE: i32 = 600;
 
 /// Its state as last handed over by the goal.
 pub fn saved(id: u32) -> Saved {
-    SHARED
-        .lock()
-        .unwrap()
-        .get(&id)
-        .map(|s| s.current.clone())
-        .unwrap_or_default()
+    SHARED.locked().get(&id).map(|s| s.current.clone()).unwrap_or_default()
 }
 
 /// Asks the mob for `change` (from a hook).
 pub fn request(id: u32, change: Change) {
-    let mut map = SHARED.lock().unwrap();
+    let mut map = SHARED.locked();
     let shared = map.entry(id).or_default();
     shared.pending.push(change);
     // Saved at once: `current` is changed here too, so the goal's next hand-over won't see a difference.
@@ -298,12 +294,12 @@ pub fn request(id: u32, change: Change) {
 
 /// Whether it is on a lead.
 pub fn leashed(id: u32) -> bool {
-    SHARED.lock().unwrap().get(&id).is_some_and(|s| s.leashed)
+    SHARED.locked().get(&id).is_some_and(|s| s.leashed)
 }
 
 /// Whether it is hurt (for raw meat to heal it).
 pub fn hurt(id: u32) -> bool {
-    SHARED.lock().unwrap().get(&id).is_some_and(|s| s.hurt)
+    SHARED.locked().get(&id).is_some_and(|s| s.hurt)
 }
 
 /// What the drawing needs of a vulture, which its render state doesn't carry. Shared through a static, single player
@@ -329,12 +325,12 @@ pub fn look(id: u32) -> Look {
         growth: 1.0,
         ..Look::default()
     };
-    SHARED.lock().unwrap().get(&id).map_or(grown, |s| s.look)
+    SHARED.locked().get(&id).map_or(grown, |s| s.look)
 }
 
 /// From the `Eat` behaviour: it is eating now.
 pub fn pecked(m: &Body) {
-    if let Some(s) = SHARED.lock().unwrap().get_mut(&m.id) {
+    if let Some(s) = SHARED.locked().get_mut(&m.id) {
         s.look.ate_at = m.age.max(0) as u32;
     }
 }
@@ -344,35 +340,36 @@ static TAMING_SEEN: Mutex<Vec<u128>> = Mutex::new(Vec::new());
 
 /// From the `Eat` behaviour: `player` saw it eat a taming chicken.
 pub fn taming_seen(player: u128) {
-    TAMING_SEEN.lock().unwrap().push(player);
+    TAMING_SEEN.locked().push(player);
 }
 
 pub fn take_taming_seen() -> Vec<u128> {
-    std::mem::take(&mut *TAMING_SEEN.lock().unwrap())
+    std::mem::take(&mut *TAMING_SEEN.locked())
 }
 
 /// From the talons (`talons::toggle`): they snap down now.
 pub fn grabbed(m: &Body) {
-    if let Some(s) = SHARED.lock().unwrap().get_mut(&m.id) {
+    if let Some(s) = SHARED.locked().get_mut(&m.id) {
         s.look.grabbed_at = m.age.max(0) as u32;
     }
 }
 
 /// Changes vulture `id`'s state (from a behaviour: tamed, sitting, love, age).
 pub fn with(id: u32, change: impl FnOnce(&mut Saved)) {
-    let mut map = SHARED.lock().unwrap();
-    let shared = map.entry(id).or_default();
-    change(&mut shared.current);
+    // Changed out of the lock: `change` is the caller's.
+    let mut current = SHARED.locked().entry(id).or_default().current.clone();
+    change(&mut current);
+    SHARED.locked().entry(id).or_default().current = current;
 }
 
 /// Ticks of love it has left.
 pub fn love(id: u32) -> i32 {
-    SHARED.lock().unwrap().get(&id).map_or(0, |s| s.love)
+    SHARED.locked().get(&id).map_or(0, |s| s.love)
 }
 
 /// Its love over (it bred).
 pub fn end_love(id: u32) {
-    if let Some(s) = SHARED.lock().unwrap().get_mut(&id) {
+    if let Some(s) = SHARED.locked().get_mut(&id) {
         s.love = 0;
         s.in_love = false;
     }
@@ -398,7 +395,7 @@ fn growth(age: i32) -> f32 {
 /// From its first behaviour, every tick: applies a state just loaded and the changes the hooks asked, counts its age
 /// and love. Whether a baby was just fed (for its hearts). `ridden`, `fighting`: whether it has a rider, a target.
 pub fn sync(m: &mut Body, ridden: bool, fighting: bool) -> bool {
-    let mut map = SHARED.lock().unwrap();
+    let mut map = SHARED.locked();
     let shared = map.entry(m.id).or_default();
     if let Some(saved) = shared.loaded.take() {
         let (health, pace) = (saved.health, saved.pace);
@@ -426,7 +423,7 @@ pub fn sync(m: &mut Body, ridden: bool, fighting: bool) -> bool {
     }
     shared.in_love = shared.love > 0;
     if !shared.in_love {
-        BRED.lock().unwrap().remove(&m.id);
+        BRED.locked().remove(&m.id);
     }
     let mut fed = false;
     for change in std::mem::take(&mut shared.pending) {
@@ -472,19 +469,19 @@ pub fn sync(m: &mut Body, ridden: bool, fighting: bool) -> bool {
 
 /// Its state's change since it was saved is to be saved (a behaviour tamed it, made it sit...).
 pub fn touch(id: u32) {
-    if let Some(s) = SHARED.lock().unwrap().get_mut(&id) {
+    if let Some(s) = SHARED.locked().get_mut(&id) {
         s.dirty = true;
     }
 }
 
 /// The meat found for it, if any.
 pub fn food(id: u32) -> Option<Food> {
-    SHARED.lock().unwrap().get(&id).and_then(|s| s.food)
+    SHARED.locked().get(&id).and_then(|s| s.food)
 }
 
 /// It ate `food`: the hook takes one from the stack.
 pub fn eaten(id: u32, food: Food) {
-    if let Some(s) = SHARED.lock().unwrap().get_mut(&id) {
+    if let Some(s) = SHARED.locked().get_mut(&id) {
         s.food = None;
         s.ate = Some(food.item);
     }
@@ -494,7 +491,7 @@ pub fn eaten(id: u32, food: Food) {
 /// for a hungry vulture (the library's `creature::food`).
 pub fn look_for_food(host: &mut dyn ServerHost, level: LevelRef, id: u32) {
     let (pos, hungry, ate) = {
-        let mut map = SHARED.lock().unwrap();
+        let mut map = SHARED.locked();
         let Some(s) = map.get_mut(&id) else {
             return;
         };
@@ -516,31 +513,36 @@ pub fn look_for_food(host: &mut dyn ServerHost, level: LevelRef, id: u32) {
         taming: f.id == TAMING_FOOD,
         thrower: f.thrower,
     });
-    if let Some(s) = SHARED.lock().unwrap().get_mut(&id) {
+    if let Some(s) = SHARED.locked().get_mut(&id) {
         s.food = found;
     }
 }
 
 /// From `entity_tick_post`: reads the saves the first time (moving an old save's owner to the friend), writes them
-/// when the state changed; the owner and sitting go to the library's friend.
+/// when the state changed; the owner and sitting go to the library's friend. The state is read under its lock and
+/// written back after: the lock is never held while the game or the friend is called.
 pub fn save(host: &mut dyn ServerHost, dimension: &str, id: u32) {
     creature::friend::tick(host, id);
     if !creature::friend::loaded(id) {
         // Not reachable yet (just loaded): read again next tick rather than take it for a new vulture.
         return;
     }
-    let mut map = SHARED.lock().unwrap();
-    let shared = map.entry(id).or_default();
-    if shared.dimension != dimension {
-        shared.dimension = dimension.to_owned();
-    }
+    let (read, current, dirty) = {
+        let mut map = SHARED.locked();
+        let shared = map.entry(id).or_default();
+        if shared.dimension != dimension {
+            shared.dimension = dimension.to_owned();
+        }
+        (shared.read, shared.current.clone(), shared.dirty)
+    };
     let holder = Holder::Entity(id);
-    if !shared.read {
+    if !read {
         let mut saved = match STATE.get_existing(host, holder) {
             Ok(saved) => saved,
             Err(_) => return,
         };
         let mut friend = creature::friend::of(id);
+        let mut moved = false;
         // A save from before: its owner moves to the friend, and `vulture:state` is written again without it.
         if friend.is_none()
             && let Some(old) = saved.as_ref().and_then(|s| s.owner.map(|o| (o, s.sitting)))
@@ -548,44 +550,72 @@ pub fn save(host: &mut dyn ServerHost, dimension: &str, id: u32) {
             creature::friend::befriend(host, id, creature::friend::uuid(old.0));
             creature::friend::set_staying(id, old.1);
             friend = creature::friend::of(id);
-            shared.dirty = true;
+            moved = true;
         }
         if let Some(f) = friend {
             let s = saved.get_or_insert_with(Saved::default);
             s.owner = Some(f.uuid);
             s.sitting = f.staying;
         }
-        if let Some(saved) = saved {
-            shared.current = saved.clone();
-            shared.loaded = Some(saved);
-        }
-        shared.read = true;
+        loaded(id, saved, moved);
         return;
     }
     let friend = creature::friend::of(id);
-    match (shared.current.owner, friend) {
+    match (current.owner, friend) {
         // Tamed (or born tamed) since: the friend is saved.
         (Some(owner), f) if f.is_none_or(|f| f.uuid != owner) => {
             creature::friend::befriend(host, id, creature::friend::uuid(owner));
-            creature::friend::set_staying(id, shared.current.sitting);
+            creature::friend::set_staying(id, current.sitting);
         }
-        (Some(_), Some(f)) if f.staying != shared.current.sitting => {
-            creature::friend::set_staying(id, shared.current.sitting);
+        (Some(_), Some(f)) if f.staying != current.sitting => {
+            creature::friend::set_staying(id, current.sitting);
         }
         // Never untamed by a state that lost its owner: the friend wins, and is applied to the mob.
         (None, Some(f)) => {
-            let mut saved = shared.current.clone();
-            saved.owner = Some(f.uuid);
-            saved.sitting = f.staying;
-            shared.current = saved.clone();
-            shared.loaded = Some(saved);
+            if let Some(shared) = SHARED.locked().get_mut(&id) {
+                let mut saved = shared.current.clone();
+                saved.owner = Some(f.uuid);
+                saved.sitting = f.staying;
+                shared.current = saved.clone();
+                shared.loaded = Some(saved);
+            }
             return;
         }
         _ => {}
     }
-    if shared.dirty && STATE.set(host, holder, shared.current.clone()).is_ok() {
-        shared.dirty = false;
+    if dirty && STATE.set(host, holder, current.clone()).is_ok() {
+        written(id, &current);
     }
+}
+
+/// Its saves were read (`saved`, none for a new vulture), for the goal to apply; `moved`: an old save's owner was
+/// moved to the friend, and is to be saved again without it. Nothing for a vulture forgotten meanwhile.
+fn loaded(id: u32, saved: Option<Saved>, moved: bool) {
+    let mut map = SHARED.locked();
+    let Some(shared) = map.get_mut(&id) else {
+        return;
+    };
+    shared.dirty |= moved;
+    if let Some(saved) = saved {
+        shared.current = saved.clone();
+        shared.loaded = Some(saved);
+    }
+    shared.read = true;
+}
+
+/// `state` was saved: it is no longer to be saved, unless it changed while it was (a hook's `request`).
+fn written(id: u32, state: &Saved) {
+    if let Some(s) = SHARED.locked().get_mut(&id)
+        && s.current == *state
+    {
+        s.dirty = false;
+    }
+}
+
+/// From the mod's `entity_leave_level`: it is gone, its state dropped.
+pub fn forget(id: u32) {
+    SHARED.locked().remove(&id);
+    BRED.locked().remove(&id);
 }
 
 #[cfg(test)]
@@ -619,6 +649,45 @@ mod tests {
         assert_eq!(growth(0), 1.0);
         assert_eq!(growth(BREED_PAUSE), 1.0, "a breeding pause is grown up");
         assert!((growth(BABY_AGE / 2) - 0.5).abs() < 1e-6);
+    }
+
+    #[test]
+    fn a_save_leaves_a_state_changed_meanwhile_to_be_saved() {
+        let id = 2_000_000;
+        request(id, Change::AddChest);
+        let written_then = saved(id);
+        // A hook's change between the snapshot and the end of the write (the lock released meanwhile).
+        request(id, Change::AddChest);
+        written(id, &written_then);
+        assert!(SHARED.locked()[&id].dirty, "the second chest is still to be saved");
+        written(id, &saved(id));
+        assert!(!SHARED.locked()[&id].dirty);
+        forget(id);
+        assert!(!SHARED.locked().contains_key(&id));
+    }
+
+    #[test]
+    fn saves_read_for_a_forgotten_vulture_bring_it_back_nowhere() {
+        let id = 2_000_010;
+        loaded(id, Some(Saved::default()), true);
+        assert!(!SHARED.locked().contains_key(&id));
+        request(id, Change::ToggleSit);
+        loaded(id, Some(Saved::default()), true);
+        {
+            let map = SHARED.locked();
+            let s = &map[&id];
+            assert!(s.read && s.dirty && s.loaded.is_some());
+        }
+        forget(id);
+    }
+
+    #[test]
+    fn with_changes_the_state_with_no_lock_held() {
+        let id = 2_000_020;
+        // `saved` locks: under the lock, as before, it would wait for itself forever.
+        with(id, |s| s.chests = saved(id).chests + 1);
+        assert_eq!(saved(id).chests, 1);
+        forget(id);
     }
 
     #[test]

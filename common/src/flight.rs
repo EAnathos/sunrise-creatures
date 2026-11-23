@@ -14,6 +14,7 @@ use std::sync::Mutex;
 
 use crate::body::{Behaviour, Body, World};
 use crate::sounds;
+use crate::sync::Locked;
 
 /// The slowest it flies before it stalls, in blocks per tick.
 pub const STALL: f64 = 0.18;
@@ -195,7 +196,7 @@ pub fn wrap(degrees: f32) -> f32 {
 static FLAPPING: Mutex<BTreeMap<u32, bool>> = Mutex::new(BTreeMap::new());
 
 fn set_flapping(id: u32, flapping: bool) {
-    let mut map = FLAPPING.lock().unwrap();
+    let mut map = FLAPPING.locked();
     if flapping {
         map.insert(id, true);
     } else {
@@ -203,8 +204,13 @@ fn set_flapping(id: u32, flapping: bool) {
     }
 }
 
+/// From the library when a creature is gone.
+pub fn forget(id: u32) {
+    FLAPPING.locked().remove(&id);
+}
+
 pub fn flapping(id: u32) -> bool {
-    FLAPPING.lock().unwrap().contains_key(&id)
+    FLAPPING.locked().contains_key(&id)
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

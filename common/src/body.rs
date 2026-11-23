@@ -15,6 +15,7 @@ use std::sync::Mutex;
 use mod_api::{Host, LivingRef, ServerHost};
 
 use crate::colours::Random;
+use crate::sync::Locked;
 use crate::territory::Ground;
 
 /// A position or a motion, in blocks (a tick).
@@ -179,7 +180,9 @@ struct Brain {
     random: Rand,
 }
 
-static BRAINS: Mutex<BTreeMap<u32, Brain>> = Mutex::new(BTreeMap::new());
+/// Each creature's brain, by id. A brain is taken out (`None` in its place) while its behaviours run, so that they run
+/// with no lock held: they may call the game, the library (`prey::quarry`) or `forget`.
+static BRAINS: Mutex<BTreeMap<u32, Option<Brain>>> = Mutex::new(BTreeMap::new());
 
 /// From the mod's `entity_tick_post`, for each of its creatures moved by hand: runs its behaviours (`make` gives them,
 /// in priority order, the first time) and writes back what they changed.
@@ -187,6 +190,11 @@ pub fn tick(host: &mut dyn ServerHost, entity: u32, make: impl FnOnce() -> Vec<B
     let Some(mut body) = read(&*host, entity) else {
         return;
     };
+    // Dead (its death's last ticks, until it leaves the level): its brain, dropped at its death, isn't made again.
+    if !alive(&*host, entity) {
+        forget(entity);
+        return;
+    }
     let before = body.clone();
     {
         let player = nearest_player(host, &body);
@@ -194,41 +202,109 @@ pub fn tick(host: &mut dyn ServerHost, entity: u32, make: impl FnOnce() -> Vec<B
             return;
         };
         world.player = player;
-        let mut brains = BRAINS.lock().unwrap();
-        let brain = brains.entry(entity).or_insert_with(|| Brain {
-            behaviours: make(),
-            running: None,
-            random: Rand::new(entity),
-        });
-        std::mem::swap(&mut body.random, &mut brain.random);
-        let mut chosen = None;
-        for i in 0..brain.behaviours.len() {
-            let b = &mut brain.behaviours[i];
-            if !b.claims() {
-                if b.can_use(&mut body, &world) {
-                    b.tick(&mut body, &world);
-                }
-            } else if chosen.is_none() && b.can_use(&mut body, &world) {
-                chosen = Some(i);
-            }
-        }
-        if brain.running != chosen
-            && let Some(old) = brain.running
-        {
-            brain.behaviours[old].stop(&mut body, &world);
-        }
-        brain.running = chosen;
-        if let Some(i) = chosen {
-            brain.behaviours[i].tick(&mut body, &world);
-        }
-        std::mem::swap(&mut body.random, &mut brain.random);
+        let Some(mut brain) = Taken::take(entity, make) else {
+            return;
+        };
+        think(&mut brain, &mut body, &world);
     }
     write(host, &before, &body);
 }
 
-/// From the mod's `living_death` (or when it is gone): its behaviours are dropped.
+/// Runs a creature's behaviours on `body` for this tick: the passive ones, then the first that claims it.
+fn think(brain: &mut Brain, body: &mut Body, world: &World<'_>) {
+    std::mem::swap(&mut body.random, &mut brain.random);
+    let mut chosen = None;
+    for i in 0..brain.behaviours.len() {
+        let b = &mut brain.behaviours[i];
+        if !b.claims() {
+            if b.can_use(body, world) {
+                b.tick(body, world);
+            }
+        } else if chosen.is_none() && b.can_use(body, world) {
+            chosen = Some(i);
+        }
+    }
+    if brain.running != chosen
+        && let Some(old) = brain.running
+    {
+        brain.behaviours[old].stop(body, world);
+    }
+    brain.running = chosen;
+    if let Some(i) = chosen {
+        brain.behaviours[i].tick(body, world);
+    }
+    std::mem::swap(&mut body.random, &mut brain.random);
+}
+
+/// A creature's brain, out of `BRAINS` while it thinks, put back when dropped: unless the creature was forgotten
+/// meanwhile, or a behaviour panicked (its brain may be half changed: the creature gets new behaviours next tick).
+struct Taken {
+    entity: u32,
+    brain: Option<Brain>,
+}
+
+impl Taken {
+    /// Creature `entity`'s brain, made by `make` the first time; none while it is already out (a behaviour of its own
+    /// ticking it again).
+    fn take(entity: u32, make: impl FnOnce() -> Vec<Box<dyn Behaviour>>) -> Option<Taken> {
+        let known = BRAINS.locked().get_mut(&entity).map(Option::take);
+        let brain = match known {
+            Some(Some(brain)) => brain,
+            Some(None) => return None,
+            // The mod's behaviours are made with no lock held.
+            None => {
+                let brain = Brain {
+                    behaviours: make(),
+                    running: None,
+                    random: Rand::new(entity),
+                };
+                BRAINS.locked().insert(entity, None);
+                brain
+            }
+        };
+        Some(Taken {
+            entity,
+            brain: Some(brain),
+        })
+    }
+}
+
+impl std::ops::Deref for Taken {
+    type Target = Brain;
+    fn deref(&self) -> &Brain {
+        self.brain.as_ref().expect("a brain until dropped")
+    }
+}
+
+impl std::ops::DerefMut for Taken {
+    fn deref_mut(&mut self) -> &mut Brain {
+        self.brain.as_mut().expect("a brain until dropped")
+    }
+}
+
+impl Drop for Taken {
+    fn drop(&mut self) {
+        let mut brains = BRAINS.locked();
+        if std::thread::panicking() {
+            brains.remove(&self.entity);
+        } else if let Some(slot) = brains.get_mut(&self.entity) {
+            *slot = self.brain.take();
+        }
+    }
+}
+
+/// From the mod's `living_death` (or when it is gone): its behaviours are dropped (once they stop running, when it is
+/// forgotten by one of them).
 pub fn forget(entity: u32) {
-    BRAINS.lock().unwrap().remove(&entity);
+    BRAINS.locked().remove(&entity);
+}
+
+/// Whether creature `entity` is alive (one that isn't a living entity always is).
+fn alive(host: &dyn Host, entity: u32) -> bool {
+    host.entity(entity)
+        .and_then(|e| host.living(e))
+        .and_then(|l| l.alive(host))
+        .unwrap_or(true)
 }
 
 /// The creature as it is now.
@@ -350,5 +426,143 @@ fn write(host: &mut dyn ServerHost, before: &Body, after: &Body) {
         if let Some(at) = after.look_at {
             m.look_at(host, at);
         }
+    }
+}
+
+#[cfg(test)]
+pub(crate) mod tests {
+    use mod_api::testing::FakeHost;
+
+    use super::*;
+
+    /// A creature standing still at the origin, for the library's tests.
+    pub(crate) fn body(id: u32) -> Body {
+        Body {
+            id,
+            position: Vec3::default(),
+            velocity: Vec3::default(),
+            yaw: 0.0,
+            body_yaw: 0.0,
+            head_yaw: 0.0,
+            pitch: 0.0,
+            on_ground: true,
+            in_water: false,
+            no_gravity: false,
+            fall_distance: 1.0,
+            age: 0,
+            walk_to: None,
+            stop_walking: false,
+            look_at: None,
+            health: 1.0,
+            max_health: 1.0,
+            random: Rand::new(id),
+        }
+    }
+
+    /// `tick` without the game: creature `id`'s brain thinks once on a body of its own.
+    fn think_once(id: u32, make: impl FnOnce() -> Vec<Box<dyn Behaviour>>) -> Option<Body> {
+        let host = FakeHost::new();
+        let world = World {
+            ground: Ground::new(&host, host.level.level()),
+            raining: false,
+            daylight: true,
+            player: None,
+        };
+        let mut b = body(id);
+        let mut brain = Taken::take(id, make)?;
+        think(&mut brain, &mut b, &world);
+        Some(b)
+    }
+
+    fn out(id: u32) -> Option<bool> {
+        BRAINS.locked().get(&id).map(Option::is_none)
+    }
+
+    /// Reaches the brains while it runs: under the lock, as before, it would wait for itself forever.
+    struct Busy;
+    impl Behaviour for Busy {
+        fn tick(&mut self, m: &mut Body, _: &World<'_>) {
+            assert_eq!(out(m.id), Some(true), "its brain is out while it runs");
+            assert!(Taken::take(m.id, Vec::new).is_none(), "and not taken twice");
+            forget(m.id + 1);
+            m.velocity.y = 1.0;
+        }
+    }
+
+    #[test]
+    fn behaviours_run_with_no_lock_held_and_their_brain_goes_back() {
+        let id = 1_000_000;
+        let b = think_once(id, || vec![Box::new(Busy)]).unwrap();
+        assert_eq!(b.velocity.y, 1.0);
+        assert_eq!(out(id), Some(false), "put back");
+        forget(id);
+    }
+
+    struct Forgets;
+    impl Behaviour for Forgets {
+        fn tick(&mut self, m: &mut Body, _: &World<'_>) {
+            forget(m.id);
+        }
+    }
+
+    #[test]
+    fn a_creature_forgotten_while_it_thinks_is_not_put_back() {
+        let id = 1_000_010;
+        think_once(id, || vec![Box::new(Forgets)]).unwrap();
+        assert_eq!(out(id), None);
+    }
+
+    /// Runs while it can (`left` ticks), counting its stops: a brain's state lives from tick to tick.
+    struct Counted {
+        left: u32,
+        ticks: std::sync::Arc<Mutex<(u32, u32)>>,
+    }
+    impl Behaviour for Counted {
+        fn can_use(&mut self, _: &mut Body, _: &World<'_>) -> bool {
+            self.left > 0
+        }
+        fn tick(&mut self, _: &mut Body, _: &World<'_>) {
+            self.left -= 1;
+            self.ticks.locked().0 += 1;
+        }
+        fn stop(&mut self, _: &mut Body, _: &World<'_>) {
+            self.ticks.locked().1 += 1;
+        }
+    }
+
+    #[test]
+    fn a_brain_keeps_its_behaviours_and_which_one_runs() {
+        let id = 1_000_020;
+        let ticks = std::sync::Arc::new(Mutex::new((0, 0)));
+        let made = std::sync::atomic::AtomicU32::new(0);
+        for _ in 0..4 {
+            think_once(id, || {
+                made.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                vec![Box::new(Counted {
+                    left: 2,
+                    ticks: ticks.clone(),
+                })]
+            })
+            .unwrap();
+        }
+        assert_eq!(made.into_inner(), 1, "made once");
+        assert_eq!(*ticks.locked(), (2, 1), "two ticks, then stopped once");
+        forget(id);
+    }
+
+    struct Panics;
+    impl Behaviour for Panics {
+        fn tick(&mut self, _: &mut Body, _: &World<'_>) {
+            panic!("a behaviour's fault");
+        }
+    }
+
+    #[test]
+    fn a_brain_whose_behaviour_panicked_is_dropped_and_its_lock_stays_usable() {
+        let id = 1_000_030;
+        let caught = std::panic::catch_unwind(|| think_once(id, || vec![Box::new(Panics)]));
+        assert!(caught.is_err());
+        assert!(!BRAINS.is_poisoned(), "the panic held no lock");
+        assert_eq!(out(id), None, "made again next tick");
     }
 }

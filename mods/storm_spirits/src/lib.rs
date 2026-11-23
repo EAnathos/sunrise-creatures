@@ -15,6 +15,7 @@ use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
 
 use creature::bestiary::{Fact, Species};
+use creature::sync::Locked;
 use mod_api::{
     BlockEntityDrawContext, ClientHost, EmissiveEvent, EntityInteractEvent, EntityRenderState, EntityRenderer,
     EntityStruckByLightningEvent, EntityTickPostEvent, Flow, HitHost, Hooks, HostSide, InteractionResult,
@@ -116,7 +117,7 @@ static SHOCKS: Mutex<Vec<(u32, u32)>> = Mutex::new(Vec::new());
 
 /// From a behaviour: `spirit` shocks `target`.
 pub(crate) fn shock(spirit: u32, target: u32) {
-    SHOCKS.lock().unwrap().push((spirit, target));
+    SHOCKS.locked().push((spirit, target));
 }
 
 /// Bolts called down on a target: sparks crackle over its head for `BOLT_WARNING` ticks, then the lightning strikes
@@ -126,7 +127,7 @@ const BOLT_WARNING: i32 = 20;
 
 /// From a behaviour: `spirit` calls a lightning bolt down on `target`.
 pub(crate) fn call_bolt(spirit: u32, target: u32) {
-    let mut bolts = BOLTS.lock().unwrap();
+    let mut bolts = BOLTS.locked();
     if !bolts.iter().any(|b| b.0 == spirit) {
         bolts.push((spirit, target, BOLT_WARNING));
     }
@@ -136,7 +137,7 @@ pub(crate) fn call_bolt(spirit: u32, target: u32) {
 /// gives birth to a spirit, and the spirit is immune to it).
 fn bolts(host: &mut dyn ServerHost, dimension: &str, spirit: u32) {
     let due: Vec<(u32, i32)> = {
-        let mut all = BOLTS.lock().unwrap();
+        let mut all = BOLTS.locked();
         for b in all.iter_mut().filter(|b| b.0 == spirit) {
             b.2 -= 1;
         }
@@ -211,7 +212,7 @@ fn zap(host: &mut dyn ServerHost, dimension: &str, spirit: u32, target: u32, dam
 /// the storm is over.
 fn tick(host: &mut dyn ServerHost, dimension: &str, spirit: u32) {
     let mine: Vec<u32> = {
-        let mut all = SHOCKS.lock().unwrap();
+        let mut all = SHOCKS.locked();
         let (mine, rest): (Vec<_>, Vec<_>) = all.drain(..).partition(|s| s.0 == spirit);
         *all = rest;
         mine.into_iter().map(|s| s.1).collect()
@@ -236,11 +237,11 @@ fn tick(host: &mut dyn ServerHost, dimension: &str, spirit: u32) {
     }
     creature::glow::shine(&*host, dimension, spirit, LIGHT);
     if level.is_thundering(&*host).unwrap_or(false) {
-        FADING.lock().unwrap().remove(&spirit);
+        FADING.locked().remove(&spirit);
         return;
     }
     let left = {
-        let mut fading = FADING.lock().unwrap();
+        let mut fading = FADING.locked();
         let left = fading
             .entry(spirit)
             .or_insert_with(|| FADE.0 + roll(u64::from(spirit)) % (FADE.1 - FADE.0));
@@ -260,14 +261,14 @@ fn tick(host: &mut dyn ServerHost, dimension: &str, spirit: u32) {
 fn forget(spirit: u32) {
     creature::body::forget(spirit);
     creature::glow::dim(spirit);
-    FADING.lock().unwrap().remove(&spirit);
-    SHOCKS.lock().unwrap().retain(|s| s.0 != spirit);
-    BOLTS.lock().unwrap().retain(|b| b.0 != spirit);
+    FADING.locked().remove(&spirit);
+    SHOCKS.locked().retain(|s| s.0 != spirit);
+    BOLTS.locked().retain(|b| b.0 != spirit);
 }
 
 /// From the overworld's `level_tick_post`: the spirits born of last tick's weather strikes.
 fn births(host: &mut dyn ServerHost) {
-    let born: Vec<[f64; 3]> = std::mem::take(&mut *BIRTHS.lock().unwrap());
+    let born: Vec<[f64; 3]> = std::mem::take(&mut *BIRTHS.locked());
     let dimension = "minecraft:overworld";
     for at in born {
         if host.summon(dimension, KIND, at, mod_api::Compound::new()).is_none() {
@@ -382,8 +383,7 @@ impl Hooks for StormSpirits {
         let seed = (p[0] as u64).wrapping_mul(73_856_093) ^ (p[2] as u64).wrapping_mul(19_349_663);
         if event.cause == "weather" && roll(seed).is_multiple_of(BIRTH_CHANCE) {
             BIRTHS
-                .lock()
-                .unwrap()
+                .locked()
                 .push([f64::from(p[0]) + 0.5, f64::from(p[1]) + 1.0, f64::from(p[2]) + 0.5]);
         }
         Flow::Continue

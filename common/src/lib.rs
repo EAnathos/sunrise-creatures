@@ -20,6 +20,7 @@
 //! - `bestiary`: the book's pages, what each player met and found out (SPECS §7).
 //! - `particles`: the vanilla particles the mods send, their keys asked for at registration.
 //! - `items`: the book's Items tab, a page per item of the series, with the recipes of `recipes.rs` (SPECS §7.2).
+//! - `sync`: how every mutex of the series is locked (`Locked::locked`), a poisoned one counted in crash reports.
 pub mod anger;
 pub mod aquatic;
 pub mod bestiary;
@@ -43,6 +44,7 @@ pub mod prey;
 pub mod projectile;
 mod recipes;
 pub mod sounds;
+pub mod sync;
 pub mod territory;
 pub mod touch;
 
@@ -113,6 +115,7 @@ impl Hooks for Creature {
         bestiary::declare(r);
         bestiary::register_item(&GUIDE_PAGE);
         bestiary::register_item(&JAR_PAGE);
+        r.crash_section("locks", std::sync::Arc::new(sync::Report));
     }
 
     /// A blast spares the placed jars.
@@ -153,6 +156,11 @@ impl Hooks for Creature {
         touch::forget(event.entity);
         prey::forget(event.entity);
         aquatic::forget(event.entity);
+        sounds::forget(event.entity);
+        creep::let_go(event.entity);
+        flight::forget(event.entity);
+        // A creature's behaviours, dropped at its death by its mod, and here for one that left otherwise (unloaded).
+        body::forget(event.entity);
     }
 
     /// Small fliers come out near players.
