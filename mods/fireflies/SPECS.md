@@ -44,7 +44,7 @@ Done and tested in game (single player).
 - **Spawning** ✅: swamps, mangroves, rivers, plains, meadows, forests, birch and flower forests. Not in deserts or cold
   biomes.
 - Ambient and harmless, 1 HP, no drop ✅. Flees a sprinting player ✅.
-- Sound ✅: a very faint wing buzz, still to cut from freesound (§0).
+- Sound ✅: a very faint wing buzz, cut from CC0 freesound recordings (§0, `assets/sounds.toml`).
 
 ## 3. Jar and settling ✅
 

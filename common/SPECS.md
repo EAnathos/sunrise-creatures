@@ -97,7 +97,7 @@ stay in the vulture until a second mod needs them, except friends (§6.2) and th
   (docs/ARCHITECTURE.md §4). Order ✅: every spawn egg first, then the library's items, then each mod's other items;
   mods in alphabetical order, each one's items in its own order.
 - Icon ✅: the creature guide book (`creature:guide`, §7).
-- The glass jar is **hidden when no mod uses it** ✅ (neither Butterflies, Worms nor Fireflies installed): not in the tab,
+- The glass jar is **hidden when no mod uses it** ✅ (none of the eight jar mods of §4 installed): not in the tab,
   not craftable. A tab file can't be conditional, so the library's native half takes it out of the tab
   (`build_creative_mode_tab_contents`). With a jar mod, a **jar holding each creature it catches** ✅ follows the empty
   jar in the tab (in its usual look), so a creative player can display them or let them out.
@@ -247,19 +247,27 @@ side, crawl and pause lengths, how far around it creeps with no area, its area o
 and climbs while its target is above: up the block in its way, or, under its target, up any side next to it (a trunk),
 through leaves as an insect goes through foliage; a solid ceiling ends the crawl. While it pauses it claims nothing.
 A creature that doesn't climb (a `climb` of 0) gives up at a wall. `too_tall` says a block is taller than a step (a
-fence, a wall, a gate): the dung beetle's roll and the sporelin's run turn aside at it. Users: **Ladybugs** (between flowers), **Phasmids**
-(over the canopy and up the trunks), **Dung Beetles** (about their pasture, no climbing).
+fence, a wall, a gate): the dung beetle's roll and the sporelin's run turn aside at it.
+
+A **tree climber** (`clings`, the Phasmids) holds on to the side it is on (a trunk, leaves) when it pauses or keeps
+still, its belly to the bark and its middle 0.3 block from it, instead of dropping; under a target more than a block and
+a half above it with nothing to climb beside it, it first goes to the nearest log within 4 blocks. While it clings its
+renderer draws it upright, head up (`creep::clinging`); broken bark lets it fall. Users: **Ladybugs** (between
+flowers), **Phasmids** (over the canopy and up the trunks, clinging), **Dung Beetles** (about their pasture, no
+climbing).
 
 ## 4. Glass jar and territories ✅
 
-Catching small creatures and settling them in a place they won't leave. Users: **Butterflies**, **Worms**, **Fireflies**
-✅, **Fairies** ✅, **Ladybugs** ✅, **Phasmids** ✅ (the tree rule), **Scorpions** ✅ (the sand rule), **Dung Beetles** ✅ (the pasture rule). The jar is the library's ✅ and is **active only if one of them is installed** ✅
-(hidden otherwise, §3.3).
+Catching small creatures and settling them in a place they won't leave. Users, the eight current jar mods: **Butterflies**
+✅, **Worms** ✅, **Fireflies** ✅, **Fairies** ✅, **Ladybugs** ✅, **Phasmids** ✅ (the tree rule), **Scorpions** ✅ (the
+sand rule), **Dung Beetles** ✅ (the pasture rule). The jar is the library's ✅ and is **active only if one of them is
+installed** ✅ (hidden otherwise, §3.3).
 
 ### 4.1 The jar
 
 - Item `creature:glass_jar`. Recipe ✅ conditional (`neoforge:conditions`, `mod_loaded` butterflies **or** worms **or**
-  fireflies **or** fairies): 3 glass in a U + 1 oak slab lid (gives 2 ✅).
+  fireflies **or** fairies **or** ladybugs **or** phasmids **or** dung_beetles **or** scorpions): 3 glass in a U + 1 oak
+  slab lid (gives 2 ✅).
 - **Catch** ✅: right-click a catchable creature with an empty jar → a **filled jar** holding it (its colours, pattern and
   name are kept).
 - **One jar for every creature** ✅: a filled jar is the same `creature:glass_jar`, carrying the creature it holds as
@@ -351,10 +359,11 @@ A book about the series' creatures, given to every player.
   the limit, split on species boundaries, and the client opens on the last chunk (`book.rs`, `send_chunked`). Tested in
   game: `/bestiary unlock all` then the guide opens, and `/bestiary reset` then it opens.
 
-- **Morphs**, planned ✅: today the morphs are the colours and patterns of the library's looks (§5). They become any look
-  a species gives: a colour and pattern, or a **kind with a model of its own** (the Living Flowers' poppy, dandelion
-  and cornflower, the Sporelins' red and brown caps), each shown at the bottom of the page by an icon (a swatch, or the
-  kind's item) and drawn by the species when picked.
+- **Morphs** ✅: the morphs are the looks of the library's colours and patterns (§5), each shown at the bottom of the
+  page by a swatch and drawn by the species when picked. A **kind with a model of its own** is a pattern its species
+  draws with that model: the Sporelins' red and brown caps ✅ (and the Phasmids' stick and leaf kinds, each a texture).
+  Planned with the Living Flowers ✅: a kind shown by its item rather than a swatch (the poppy, the dandelion, the
+  cornflower).
 
 ### 7.1 Tabs ✅
 

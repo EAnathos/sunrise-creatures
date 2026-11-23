@@ -4,3 +4,4 @@ __pycache__/
 .sunrise/
 common/Cargo.lock
 mods/*/Cargo.lock
+CLAUDE.local.md

@@ -13,8 +13,10 @@ your own.
 
 Playable (0.1.0), played in game: both insects in their kinds, coming out on top of leaves, still by day and with a
 player near, crawling over the canopy at night, spotted by a look (the shimmer, the count saved on the player, the
-facts), dropping through the leaves to play dead when hit and climbing back up their tree. The glass jar's catch and the
-tree rule are coded (the jar's catch is the library's, unchanged) but a release on a tree wasn't exercised in game.
+facts), dropping through the leaves to play dead when hit and climbing back up their tree. The glass jar's catch works;
+a release on a trunk was tried: the phasmid dropped off the bark and was drawn lying flat. It now clings to the trunk
+upright (the library's tree climbers, common/SPECS.md §3.16), and an unsettled one on the ground under its tree goes to
+the trunk to climb back to the canopy: to try again in game.
 
 - **The stick insect** (`assets/models/stick_insect.bbmodel`, pictures in docs/models/): a long thin twig of a body
   (head, thorax, abdomen and a forked tip, with darker node bands like a twig's), long antennae, the front legs held
@@ -66,7 +68,9 @@ Each kind matches the trees it lives in, so it is camouflaged where it spawns.
   leaves instead of over the ground: a chance every 10 s for each player, up to 4 within 32 blocks. Wild ones despawn far
   from players.
 - **Moving**: it crawls slowly on leaves and climbs the sides of logs and leaves (the library's small crawlers, with
-  climbing). **By day it stays still**; at dusk and at night it walks about its tree. When it walks it **sways** side to
+  climbing). It **clings** to a trunk it stops on, upright, head up, rather than dropping off (common/SPECS.md §3.16).
+**By day it stays still**, and so does a wild one with a player within 6 blocks who hasn't spotted it; at dusk and at
+night it walks about its tree. When it walks it **sways** side to
   side, as a twig in the wind (real stick insects do). It never comes down to the ground on its own.
 - **Camouflage**, its signature ✅: it looks like its tree, still most of the time. A player
   **spots** one by looking at it (the crosshair on it) from within 6 blocks for a second: a faint shimmer shows it, and
@@ -96,7 +100,21 @@ a jar), "Settled" (settled one on a tree).
 - Eggs, nymphs and breeding, predators (wild parrots eating them), eating leaves (no blocks are touched), other phasmids (the giant spiny stick insect, the
   flying ones), a terrarium block, a phasmid as a pet that follows the player.
 
-## 7. Open questions
+## 7. Testing in game
+
+In a forest or a jungle, in the test instance (`/time set night` to see them move, `/time set day` to see them keep
+still):
+
+- Spawn eggs on top of leaves: still by day, and at night while you stand within 6 blocks without having spotted it;
+  looked at for a second from within 6 blocks, a shimmer and the "Spotted" fact; at night from farther away, it crawls
+  over the canopy, swaying, and climbs leaf steps.
+- Hit one: it drops to the ground on its back, lies 10 to 20 s, then walks to the trunk and climbs it upright, back to
+  the canopy.
+- Catch one in the glass jar, release it on a trunk's side (a tree of at least 10 leaves): it settles ("Settled"),
+  clings there upright by day, and climbs to its tree's leaves at night. Break the log it clings to: it falls.
+- Released on the ground beside a tree at night: it goes to the trunk and climbs.
+
+## 8. Open questions
 
 - ~~Q1: Which creature?~~ Stick insects (French "phasmes"), not a ghost.
 - ~~Q2: Which kinds?~~ A stick insect and a leaf insect, two models (§0).

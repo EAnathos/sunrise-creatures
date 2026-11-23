@@ -27,9 +27,7 @@ Done and tested in game in single player: meeting wild ones, each page's creatur
   bred or tamed; `living_conversion_post` follows a transformation).
 - **The library's side** (common/SPECS.md §7, version 0.1.1): `bestiary::draw_icon`, biomes as `@` and a dimension,
   icon-only facts and facts wrapped onto several lines, Minecraft's creatures listed below a line, the right page
-  scrolled with the wheel.
-
-Next: the library's book tabs (common/SPECS.md §7.1).
+  scrolled with the wheel. Its pages are on the book's Creatures tab (common/SPECS.md §7.1).
 
 ## 1. Technical context
 

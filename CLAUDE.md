@@ -32,17 +32,22 @@ Horizon became Sunrise, and the series now builds for Sunrise only (the last Hor
 module runs on Sunrise (`ported = true` in a module's `module.toml` turns its code on; a module without it is packaged as content
 only). How the port went is in the history (`git show 2c09384:docs/SUNRISE-PORT.md`); what it taught is below.
 
-- Launcher `~/Téléchargements/sunrise-launcher-linux-x86_64.AppImage` (also in the app menu), data
-  `~/.local/share/sunrise` (never modify it), instance `creature-dev`. The launcher's window reads the instance's
-  version when it opens: restart it after an install, or its Play starts the plain Nightly. `sunrise-ctl`'s keys are
-  the keyboard's: this instance binds sneak to E. Agent control: start the game with
-  `sunrise-launcher play --instance creature-dev --world <w> --arg --control`, then `sunrise-ctl` (in
-  `~/.local/share/sunrise/launcher/versions/<version>/`): `command`, `screenshot`, `entities`, `interact-entity`...
-- `creature-dev` and its worlds (`port-test`) are for tests only: killing, destroying or losing anything there is
-  fine (creatures, the player, the inventory). Nothing in them needs restoring after a test.
-- Sources: `../sunrise-src` (sparse checkout of sunrise-org/sunrise: `crates/sunrise-mod-vocab` holds the hook
-  declarations with their docs, `docs/modding/src` the modding book). The pinned SDK: `target/sunrise-sdk/`
-  (fetched by `cargo creature native-check`; `surface.json` lists the whole API).
+- This machine's setup (where the launcher, its data and Sunrise's sources are, the test instance's worlds and key
+  bindings, the Blockbench install) is not here: it goes in `CLAUDE.local.md` (not committed), which Claude Code reads
+  beside this file. Without one, ask rather than guess paths.
+- The launcher's data is never modified by hand. The tools find the launcher by `$SUNRISE_LAUNCHER`, the `PATH` or an
+  AppImage in the download folder, and its data by `$SUNRISE_LAUNCHER_DATA` or the launcher's default
+  (`tools/src/launcher.rs`). The launcher's window reads the instance's version when it opens: restart it after an
+  install, or its Play starts the plain Nightly.
+- The test instance is the tools' default, `creature-dev` (`--instance <name>` for another). It and its worlds are for
+  tests only: killing, destroying or losing anything there is fine (creatures, the player, the inventory). Nothing in
+  them needs restoring after a test.
+- Agent control: start the game with `sunrise-launcher play --instance <instance> --world <w> --arg --control`, then
+  `sunrise-ctl` (in the launcher's data, `launcher/versions/<version>/`): `command`, `screenshot`, `entities`,
+  `interact-entity`... Its keys are the keyboard's, as the instance binds them.
+- Sources: a checkout of sunrise-org/sunrise (`crates/sunrise-mod-vocab` holds the hook declarations with their docs,
+  `docs/modding/src` the modding book). The pinned SDK: `target/sunrise-sdk/` (fetched by
+  `cargo creature native-check`; `surface.json` lists the whole API, `mod_api::testing` the fake host for tests).
 - A module's root is its package: `sunrise-mod.toml` (id, version, `[native]` pins, `[dependencies] creature`),
   `Cargo.toml` (`sunrise-mod-api` by path from `.sunrise/sdk/`), `src/`, `assets/<id>/`, `data/<id>/sunrise/`; beside it
   the repository's own `module.toml`, `SPECS.md`, `sources/` (Blockbench models, `sounds.toml`).
@@ -58,7 +63,7 @@ only). How the port went is in the history (`git show 2c09384:docs/SUNRISE-PORT.
   version and digest): build through the profile, never from a loose folder. The game the instance plays is a
   `native-<rev>-<hash>` build (`sunrise-launcher instance list`).
 - A new Nightly is used once prepared: `sunrise-launcher prepare --version <nightly>` takes the game files from the
-  local Minecraft install (no sign-in needed), then `sunrise-launcher instance version creature-dev <nightly>`.
+  local Minecraft install (no sign-in needed), then `sunrise-launcher instance version <instance> <nightly>`.
 - Tools are Rust (`tools/`, commands `list`, `tab`, `model`, `preview`, `sounds`, `vanilla`, `pack`, `build`, `check`,
   `native-check`, `install`, `release`; alias in `.cargo/config.toml`; the table in `CONTRIBUTING.md`).
 - Publishing: each finished module is a project on Sunrise's registry (`[registry]` in its `module.toml`, its README as
@@ -71,9 +76,12 @@ only). How the port went is in the history (`git show 2c09384:docs/SUNRISE-PORT.
   `cargo creature check`, `cargo creature native-check` (Clippy and tests of the ported crates on the pinned SDK); CI
   (`.github/workflows/ci.yml`) runs them and `cargo creature build`.
 - A native mod's stderr reaches no log: debug by writing to a file.
+- Shared state: every mutex is taken with `creature::sync::Locked` (`.locked()`), never held while calling the game,
+  a callback or another module; per-entity entries are dropped when the entity goes (`docs/CONVENTIONS.md`,
+  "Shared state").
+- `ported` and a module's crate agree (`Cargo.toml` and `src/lib.rs` exactly when ported): `cargo creature check`
+  and `native-check` refuse a disagreement.
 - No em dash in docs or text.
-- The tools find the launcher by `$SUNRISE_LAUNCHER`, the `PATH` or an AppImage in the download folder, and its data by
-  `$SUNRISE_LAUNCHER_DATA` or `~/.local/share/sunrise` (`tools/src/launcher.rs`).
 
 ## Known API constraints
 
@@ -109,8 +117,8 @@ Each one is marked in the code with its issue and listed, with its limits and wh
 
 ## Models
 
-- Blockbench 5.2.2 (Flatpak `net.blockbench.Blockbench`) + jasonjgardner MCP plugin v1.10.1, `blockbench` server in
-  `.mcp.json` (Blockbench must be open). `.bbmodel` files in `mods/<mod>/sources/models/`; `cargo creature model <mod>`
+- Blockbench with jasonjgardner's MCP plugin, the `blockbench` server in `.mcp.json` (Blockbench must be open; the
+  versions this machine uses: `CLAUDE.local.md`). `.bbmodel` files in `mods/<mod>/sources/models/`; `cargo creature model <mod>`
   turns `<mod>.bbmodel` into the mod's `src/model.rs`; `cargo creature preview` redraws every model's
   pictures in `docs/models/`, shown by the READMEs and specs (run it after changing a model; `cargo creature check` fails when either is stale).
   A model the game colours itself (a greyscale texture tinted by a morph: the butterfly) is pictured in the look its

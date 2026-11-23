@@ -57,8 +57,10 @@ on it.
 - A *system* needed by two mods is never a reason for one to require the other: it belongs in the library (§3). Only
   *content* (an item used in a recipe) justifies a mod-to-mod requirement.
 - **Optional** features that switch on with a mod are the library's: e.g. the glass jar (common/SPECS.md §4) is only
-  craftable, and only shown, when Butterflies, Worms or Fireflies is on, through a conditional recipe
-  (`neoforge:conditions` / `mod_loaded`, which Sunrise supports).
+  craftable, and only shown, when one of the eight mods that use it is on (Butterflies, Worms, Fireflies, Fairies,
+  Scorpions, Ladybugs, Phasmids or Dung Beetles): its recipe through a condition (`neoforge:conditions`, `neoforge:or`
+  of `mod_loaded`, which Sunrise supports), the tab and the guide's page because one of them registers a catchable
+  creature (`creature::jar::register`).
 
 How the dependency is expressed:
 
@@ -76,7 +78,7 @@ day a second mod needs it (the move is part of that second mod's work, not a cop
 
 | In the library (`creature`) | In a mod |
 |---|---|
-| Generic systems, configured by data or by Rust parameters: glass jar and territories, the small fliers' flight and spawning, the big fliers' flight (soaring, following a friend), friends, food on the ground, colours and patterns, model drawing, glowing creatures' lights, fighting back, water creatures, touches, hunters, the feather recipes, mob sounds, monsters sparing our creatures, the bestiary; small helpers several mods use (an item stack from its id, a puff of particles, a boat test) | The species: entity types, models, textures, sounds, items, recipes, loot, spawns, AI tuning, balance numbers |
+| Generic systems, configured by data or by Rust parameters: glass jar and territories, the small fliers' flight and spawning, the big fliers' flight (soaring, following a friend), friends, food on the ground, colours and patterns, model drawing, glowing creatures' lights, fighting back, the locks on shared state (`creature::sync`), water creatures, touches, hunters, the feather recipes, mob sounds, monsters sparing our creatures, the bestiary; small helpers several mods use (an item stack from its id, a puff of particles, a boat test) | The species: entity types, models, textures, sounds, items, recipes, loot, spawns, AI tuning, balance numbers |
 | Shared blocks and items (`creature:glass_jar`, `creature:guide`) | The mod's own blocks and items (`cyclops:club`) |
 | The series' creative tab | The list of its items for that tab (`module.toml`) |
 | Shared translations (`creature` lang files) | Its own translations |

@@ -46,6 +46,24 @@ Rules shared by every module of the Sunrise Creatures series ([ARCHITECTURE.md](
 - Before adding a system to a mod, check the library; before writing one that a second mod will need, put it in the
   library (ARCHITECTURE.md §3).
 
+### Shared state
+
+Hooks, behaviours and renderers share per-creature state through `static` mutexes (keyed by entity id: single player).
+
+- Lock with `creature::sync::Locked` (`MAP.locked()`), never `lock().unwrap()`: a mutex poisoned by a panic the game
+  contained (a Part's) is taken as the panic left it, and counted in later crash reports, rather than turning every
+  later tick into a second crash.
+- Hold a lock as briefly as possible. Never call the game (a host, a draw context), a mod's callback (a `fn` or closure
+  stored or passed in) or another module's function while holding one: copy what is needed out, release, call, then
+  lock again to write back (checking the state didn't change meanwhile when that matters). Watch for temporaries:
+  `MAP.locked().insert(id, e.health(host))` holds the lock while `health` runs, and an `if let` or `match` on
+  `MAP.locked()...` holds it through the whole block.
+- Two locks at once only in one order, everywhere.
+- Every per-entity entry is dropped when its entity goes: `living_death` for what only the living use, the
+  `entity_leave_level` hook otherwise (a dying creature still ticks and is drawn until it leaves).
+- A fix to this gets a test that would deadlock or fail without it (the SDK's `mod_api::testing::FakeHost` is there
+  for the tests, `cargo creature native-check`).
+
 ## Formatting, lint and checks
 
 All three run in CI (`.github/workflows/ci.yml`) on every push to `main` and every pull request; run them before
@@ -64,8 +82,10 @@ cargo creature native-check                                                  # C
 - **Clippy** with warnings as errors, on the tools and, with `cargo creature native-check`, on the modules' crates
   against the pinned SDK (with their tests). `cargo creature install` builds them into the game.
 - **`cargo creature check`**: the shared tab is up to date, manifests carry the module's id and one version, every pin
-  is the series' Sunrise revision, mods depend on the library and on what they require, tab items exist, JSON parses,
-  `en_us` and `fr_fr` have the same keys, no em dash in the docs.
+  is the series' Sunrise revision, mods depend on the library and on what they require, each module's `ported`
+  agrees with its crate (ported: a `Cargo.toml` and a `src/lib.rs`; not: neither, so no code is left unbuilt), tab
+  items exist, JSON parses, `en_us` and `fr_fr` have the same keys, no em dash in the docs. `native-check` refuses to
+  run on such a disagreement too.
 - CI then builds every module (`cargo creature build`) and keeps the `.smod` files as an artifact.
 
 ## Assets
