@@ -12,7 +12,6 @@ ported = true
 [registry]
 summary = "A desert vulture you tame with raw chicken, saddle and fly like a plane, with two chests and talons to carry a creature."
 categories = ["mobs", "transportation", "adventure"]
-tags = ["vulture", "flying", "mount", "taming", "birds"]
 icon = "vulture"
 screenshots = [
   "docs/media/readme/vulture.webp",

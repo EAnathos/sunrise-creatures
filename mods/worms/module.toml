@@ -12,6 +12,5 @@ ported = true
 [registry]
 summary = "Earthworms that come up in the rain; settle them in your garden and they help your crops grow."
 categories = ["mobs", "food", "game-mechanics"]
-tags = ["worms", "farming", "crops", "garden"]
 icon = "worm"
 screenshots = ["docs/models/worms-worm-front.png", "docs/models/worms-worm-back.png"]

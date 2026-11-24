@@ -12,7 +12,6 @@ ported = true
 [registry]
 summary = "Shy glowing fairies you befriend with glow berries: they circle your head, lighten your step and leave you fairy dust."
 categories = ["mobs", "magic"]
-tags = ["fairies", "companion", "pets", "magic"]
 icon = "fairy"
 screenshots = [
   "docs/media/readme/fairies.webp",

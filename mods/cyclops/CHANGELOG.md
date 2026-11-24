@@ -1,6 +1,14 @@
 # Changelog
 
-Each version's section is its registry changelog (`cargo creature release`).
+Each version's section says what changed in it (`cargo creature release` needs one before it tags the version).
+
+## 0.1.4
+
+- Released through Sunrise's new registry: built from this repository by the registry's release workflow, attested by
+  GitHub, and reviewed before it is listed.
+- Whether a player saw a flock is forgotten when they leave the game.
+- Its shared state is locked the library's way (`creature::sync`), never held while it calls the game. Needs Sunrise
+  Creatures 0.3.5.
 
 ## 0.1.3
 

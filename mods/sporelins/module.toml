@@ -12,6 +12,5 @@ ported = true
 [registry]
 summary = "Shy mushroom sprites that hide as mushrooms and plant them; befriend one with a mushroom and it tends a patch, makes you stew and glows at night."
 categories = ["mobs"]
-tags = ["sporelin", "mushroom", "companion", "dark-forest", "befriend"]
 icon = "sporelin"
 screenshots = ["docs/media/readme/sporelins.webp", "docs/models/sporelins-sporelin-front.png", "docs/models/sporelins-sporelin_brown-front.png"]

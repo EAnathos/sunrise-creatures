@@ -18,6 +18,5 @@ ported = true
 [registry]
 summary = "Noisy gulls of the coasts that float on the waves, follow your boat and snatch food from your hand; befriend one with fish and it fishes for you."
 categories = ["mobs"]
-tags = ["seagull", "bird", "coast", "ocean", "fishing"]
 icon = "seagull"
 screenshots = ["docs/media/readme/seagulls.webp", "docs/models/seagulls-seagull-front.png", "docs/models/seagulls-seagull-back.png"]

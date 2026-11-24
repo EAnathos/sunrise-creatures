@@ -1,6 +1,14 @@
 # Changelog
 
-Each version's section is its registry changelog (`cargo creature release`).
+Each version's section says what changed in it (`cargo creature release` needs one before it tags the version).
+
+## 0.1.3
+
+- Released through Sunrise's new registry: built from this repository by the registry's release workflow, attested by
+  GitHub, and reviewed before it is listed.
+- Nothing else changed in its code.
+- The code is under PolyForm Noncommercial 1.0.0, the artwork the author's (`LICENSE`, `LICENSE-ART.md` in the
+  package).
 
 ## 0.1.2
 

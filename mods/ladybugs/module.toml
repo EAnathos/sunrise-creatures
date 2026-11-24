@@ -12,6 +12,5 @@ ported = true
 [registry]
 summary = "Ladybugs on the flowers in five kinds; one that lands on you brings luck for as many minutes as it has spots."
 categories = ["mobs"]
-tags = ["ladybug", "insect", "luck", "flowers", "glass-jar"]
 icon = "ladybug"
 screenshots = ["docs/media/readme/ladybugs.webp", "docs/models/ladybugs-ladybug-front.png", "docs/models/ladybugs-ladybug-back.png"]

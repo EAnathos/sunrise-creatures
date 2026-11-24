@@ -12,7 +12,6 @@ ported = true
 [registry]
 summary = "Butterflies by day and moths by night, in many colours and patterns; catch them in a jar."
 categories = ["mobs", "decoration"]
-tags = ["butterflies", "moths", "insects", "ambient"]
 icon = "butterfly"
 screenshots = [
   "docs/media/readme/butterflies.webp",

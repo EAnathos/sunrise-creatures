@@ -1,6 +1,17 @@
 # Changelog
 
-Each version's section is its registry changelog (`cargo creature release`).
+Each version's section says what changed in it (`cargo creature release` needs one before it tags the version).
+
+## 0.1.1
+
+- Released through Sunrise's new registry: built from this repository by the registry's release workflow, attested by
+  GitHub, and reviewed before it is listed.
+- Released on a trunk, or stopped on one, it clings to the bark, drawn upright, head up, instead of dropping off; one
+  on the ground under its tree walks to the trunk and climbs back to the canopy.
+- Its shared state is locked the library's way (`creature::sync`), never held while it calls the game. Needs Sunrise
+  Creatures 0.3.5.
+- The code is under PolyForm Noncommercial 1.0.0, the artwork the author's (`LICENSE`, `LICENSE-ART.md` in the
+  package).
 
 ## 0.1.0
 

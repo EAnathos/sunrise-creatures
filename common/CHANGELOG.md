@@ -1,6 +1,22 @@
 # Changelog
 
-Each version's section is its registry changelog (`cargo creature release`).
+Each version's section says what changed in it (`cargo creature release` needs one before it tags the version).
+
+## 0.3.5
+
+- Released through Sunrise's new registry: built from this repository by the registry's release workflow, attested by
+  GitHub, and reviewed before it is listed.
+- Shared state: every lock taken one way (`creature::sync::Locked`) and none held while calling the game, a mod's
+  callback or another module, so a behaviour can call back into the library (`prey::quarry`, `body::forget`) without a
+  deadlock; a lock left poisoned by a panic the game contained is taken as it is and counted in crash reports, rather
+  than breaking every later tick.
+- Tree climbers (`creep::Creep::climber`): a creature that stops on a trunk holds on there, its belly to the bark
+  (`creep::clinging` for its drawing), and lets go when the bark is broken; under a target well above it, it walks to
+  the nearest trunk first.
+- A dead creature's behaviours stay stopped through its death animation; what the library keeps per creature (its
+  behaviours, queued sounds, wing beats, clinging) is dropped when it leaves the level.
+- The code is under PolyForm Noncommercial 1.0.0, the artwork the author's (`LICENSE`, `LICENSE-ART.md` in the
+  package).
 
 ## 0.3.4
 

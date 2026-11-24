@@ -1,6 +1,16 @@
 # Changelog
 
-Each version's section is its registry changelog (`cargo creature release`).
+Each version's section says what changed in it (`cargo creature release` needs one before it tags the version).
+
+## 0.2.4
+
+- Released through Sunrise's new registry: built from this repository by the registry's release workflow, attested by
+  GitHub, and reviewed before it is listed.
+- Its state is saved without holding its lock while the game is called, and dropped once it leaves the level.
+- Its shared state is locked the library's way (`creature::sync`), never held while it calls the game. Needs Sunrise
+  Creatures 0.3.5.
+- The code is under PolyForm Noncommercial 1.0.0, the artwork the author's (`LICENSE`, `LICENSE-ART.md` in the
+  package).
 
 ## 0.2.3
 
