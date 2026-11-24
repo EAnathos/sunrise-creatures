@@ -1,6 +1,6 @@
 //! Builds modules without installing them: the library always, then the mods asked for and the mods they require (all
 //! the buildable ones by default). Each module is packaged (`pack.rs`: staged in `target/stage/<id>/`, zipped to
-//! `target/<id>.smod`), checked by `cargo sunrise-mod check` and copied to `target/dist/`. The native Rust itself is
+//! `target/<id>.smod`), checked by `cargo sunrise-mod check` in its staged folder and copied to `target/dist/`. The native Rust itself is
 //! compiled by the launcher, in an instance (`install`).
 use crate::install::run_in;
 use crate::modules::{self, Module};
@@ -38,14 +38,24 @@ pub fn chosen(names: &[String]) -> crate::Result<Vec<Module>> {
     Ok(chosen)
 }
 
-/// Packages one module and checks its package as the registry does.
+/// Packages one module and checks its package as the registry's release workflow does: `cargo sunrise-mod check` in
+/// its staged folder (a loose `.smod` can't be checked: the tool checks a released file with its attestation), a mod
+/// on the staged library and the mods it requires (`--with`), staged before it (`chosen`'s order).
 pub fn module(m: &Module) -> crate::Result<crate::pack::Packed> {
     println!("== {} ({})", m.name, m.id);
     let packed = crate::pack::run(m)?;
-    run_in(
-        &crate::root(),
-        "cargo",
-        &["sunrise-mod", "check", &packed.smod.to_string_lossy()],
-    )?;
+    let mut with = Vec::new();
+    if m.native().is_some() && m.id != modules::LIBRARY {
+        with.push(crate::pack::stage_dir(&modules::library()?));
+        for r in &m.requires {
+            with.push(crate::pack::stage_dir(&modules::find(r)?));
+        }
+    }
+    let with: Vec<String> = with.iter().map(|p| p.display().to_string()).collect();
+    let mut args = vec!["sunrise-mod", "check"];
+    for w in &with {
+        args.extend(["--with", w.as_str()]);
+    }
+    run_in(&crate::pack::stage_dir(m), "cargo", &args)?;
     Ok(packed)
 }

@@ -11,8 +11,8 @@
 //! cargo creature check                        # the repository's consistency (tab, manifests, pins, lang, JSON, docs)
 //! cargo creature native-check [sdk]           # compiles the ported crates (clippy, tests) on the pinned Sunrise SDK
 //! cargo creature vanilla [jar]               # Minecraft's own data -> the Vanilla Bestiary's game_data.rs
-//! cargo creature release [module...]         # the published modules (default: all) -> target/release/, registry/
-//! cargo creature pages [module...]           # their registry pages again (text, icon, screenshots), same versions
+//! cargo creature release [module...]         # checks and tags the published modules' new versions (default: all)
+//! cargo creature pages [module...]           # their release files: page.toml, page/, icon.png, the licences
 //! cargo creature install [--instance <name>] [mod...]
 //!                                             # builds the library and the mods (default: all), installs them in the
 //!                                             # instance (default creature-dev), runs the launcher's native build

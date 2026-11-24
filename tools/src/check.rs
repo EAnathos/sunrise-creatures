@@ -12,6 +12,8 @@
 //!   `docs/models/` (`cargo creature preview`).
 //! - Sounds: every sound a module's `sounds.json` names is an `.ogg` of it, and every `.ogg` is named there; every
 //!   subtitle is translated; when the module has a `sources/sounds.toml`, its clips are exactly its `.ogg` files.
+//! - A published module (`[registry]`): its release files as `cargo creature pages` writes them (`release::stale`), its
+//!   `Cargo.lock`, a changelog section for its version, and its release workflow (`sunrise-release-<id>.yml`).
 //! - Recipes: each crafting or cooking recipe has its recipe book advancement (`advancement/recipes/<tab>/<name>.json`,
 //!   rewarding it), or the recipe book never shows it. Brewing recipes have none, as vanilla's.
 //! - The Markdown docs use no em dash.
@@ -172,14 +174,11 @@ fn module(m: &Module, mods: &[Module], revision: &(String, String), errors: &mut
             versions.join(", ")
         ));
     }
-    // A published module: its registry page as the registry checks it, a changelog for its version, its icon.
-    if let Some(registry) = &m.registry {
-        match crate::release::description(m, "main") {
-            Ok(description) => {
-                for p in crate::release::page_problems(registry, &description) {
-                    push(format!("{}: [registry]: {p}", rel(&m.dir.join("module.toml"))));
-                }
-            }
+    // A published module: its release files up to date (its page as the registry checks it, its pictures, icon,
+    // licences, lock), a changelog for its version, and the workflow its release tag runs.
+    if m.registry.is_some() {
+        match crate::release::stale(m) {
+            Ok(problems) => problems.into_iter().for_each(&mut push),
             Err(e) => push(e),
         }
         if let Some(version) = versions.first()
@@ -187,9 +186,20 @@ fn module(m: &Module, mods: &[Module], revision: &(String, String), errors: &mut
         {
             push(e);
         }
-        let icon = crate::root().join("target/check-icon.png");
-        if let Err(e) = crate::icon::make(&m.id, &registry.icon, &icon) {
-            push(format!("{}: [registry] icon: {e}", rel(&m.dir.join("module.toml"))));
+        let workflow = crate::root().join(format!(".github/workflows/sunrise-release-{}.yml", m.id));
+        let path = rel(&m.dir);
+        match std::fs::read_to_string(&workflow) {
+            Ok(text)
+                if text.contains(&format!("tags: ['{}/v*']", m.id)) && text.contains(&format!("path: {path}\n")) => {}
+            Ok(_) => push(format!(
+                "{}: not the release of {path} (tags `{}/v*`)",
+                rel(&workflow),
+                m.id
+            )),
+            Err(_) => push(format!(
+                "{}: missing: `cargo sunrise-mod release setup` in {path} writes it",
+                rel(&workflow)
+            )),
         }
     }
     for r in &m.requires {

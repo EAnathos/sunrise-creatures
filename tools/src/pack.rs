@@ -66,7 +66,7 @@ pub fn stage(module: &Module) -> crate::Result<PathBuf> {
     std::fs::write(out.join("sunrise-mod.toml"), manifest).map_err(|e| e.to_string())?;
     let mut parts = vec!["assets", "data", "README.md", "icon.png"];
     if native {
-        parts.extend(["Cargo.toml", "src"]);
+        parts.extend(["Cargo.toml", "Cargo.lock", "src"]);
     }
     for part in parts {
         let from = module.dir.join(part);

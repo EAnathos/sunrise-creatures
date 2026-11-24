@@ -53,11 +53,8 @@ pub struct Look {
 pub struct Registry {
     /// One line for the lists, at most 160 characters.
     pub summary: String,
-    /// 1 to 3 of a mod's categories (`crate::release::CATEGORIES`).
+    /// 1 to 8 of a mod's categories (`crate::release::CATEGORIES`).
     pub categories: Vec<String>,
-    /// Up to 10 lowercase tags, each at most 24 characters.
-    #[serde(default)]
-    pub tags: Vec<String>,
     /// Its icon: one of its models (its picture in `docs/models/`), or a PNG by its path from the repository's root.
     pub icon: String,
     /// Up to 8 pictures for its page, by their paths from the repository's root (PNG, JPEG, or WebP made a JPEG):

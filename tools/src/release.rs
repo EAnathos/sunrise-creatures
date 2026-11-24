@@ -1,36 +1,34 @@
-//! Prepares the published modules for Sunrise's registry (playsunrise.net/docs/publish-a-mod; the registry is
-//! sunrise-org/sunrise-mods). A module is published when its `module.toml` has a `[registry]` table.
+//! Releases on Sunrise's registry (docs/PUBLISHING.md; the registry is sunrise-org/sunrise-mods). A module is
+//! published when its `module.toml` has a `[registry]` table: it is a project registered there by its package folder.
 //!
-//! For each one, `cargo creature release [module...]`:
-//! - builds and checks its package (`build::module`) and copies it to `target/release/<id>-<version>.smod`, a version
-//!   that is new (a published file never changes: a version already in its entry with another file is refused);
-//! - signs it when the series has a key (`registry/minisign.pub`, the secret key's path in `$SUNRISE_MODS_KEY`), as
-//!   `<file>.minisig` (minisign's format): the key's password is asked once, at the start of the run (`Signer`);
-//! - writes its icon to `registry/icons/<id>.png` (`icon.rs`) and its entry to `registry/mods/<id>.toml`: its page
-//!   (the manifest's name, authors and licence, `[registry]`'s summary, categories and tags, its README as the
-//!   description) and its versions, the new one first with its changelog (its `CHANGELOG.md`'s section for it);
-//! - prints what to do next: the GitHub release that holds the file, then the pull request to sunrise-mods.
+//! A release is a tag, `<id>/v<version>`, pushed to GitHub: the registry's shared workflow (called by
+//! `.github/workflows/sunrise-release-<id>.yml`) builds the package from the tagged folder, as it is in git, attests it
+//! and publishes it as a GitHub release; the registry's bot then opens its pull request on sunrise-mods, which a person
+//! reviews. So the folder holds, committed, what a release needs beside the code (`files`), written by
+//! `cargo creature pages` and checked by `cargo creature check`:
+//! - `page.toml`: `[registry]`'s summary and categories, the README as the description (`description`), its pictures;
+//! - `page/`: the pictures, `[registry]`'s screenshots in their order (`<n>-<name>.png|.jpg`);
+//! - `icon.png`: its icon (`icon.rs`), on its page and in the game's Mods screen;
+//! - `LICENSE` and `LICENSE-ART.md`: the code's licence and the artwork's, copies of the repository's.
 //!
-//! `registry/` mirrors the registry's own layout (`mods/<id>.toml`, `icons/<id>.png`): copy it into a fork of
-//! sunrise-mods.
+//! Its `Cargo.lock` is committed too, as Cargo writes it.
+//!
+//! `cargo creature release [module...]` checks each one as the workflow will (`cargo sunrise-mod check --release`),
+//! tags it, and prints the pushes: one tag at a time (GitHub starts no workflow for more than three tags pushed at
+//! once), the library first.
 use std::path::{Path, PathBuf};
 
-use sha2::{Digest, Sha256};
+use crate::modules::{self, LIBRARY, Module, Registry};
 
-use crate::modules::{self, Module, Registry};
-
-/// The repository the entries name as the source.
+/// The repository, for the page's links.
 pub const SOURCE: &str = "https://github.com/EAnathos/sunrise-creatures";
-/// Its files, for the README's images on a registry page (followed by a revision: a tag).
+/// Its files, for the README's images (followed by a revision: a tag).
 const RAW: &str = "https://raw.githubusercontent.com/EAnathos/sunrise-creatures";
-/// The GitHub logins allowed to publish updates.
-const OWNERS: &[&str] = &["EAnathos"];
-/// The Minecraft version.
-const GAME: &str = "26.3";
 
-/// A mod's categories (Sunrise's `sunrise_mod_package::index::page`).
+/// A mod's categories (sunrise-mods' `registry/categories.toml`, those for a `native-mod`).
 pub const CATEGORIES: &[&str] = &[
     "adventure",
+    "cursed",
     "decoration",
     "economy",
     "equipment",
@@ -50,152 +48,261 @@ pub const CATEGORIES: &[&str] = &[
     "worldgen",
 ];
 
-pub fn run(names: &[String]) -> crate::Result {
-    crate::tab::run()?;
-    let mut chosen = Vec::new();
-    for m in std::iter::once(modules::library()?).chain(modules::mods()?) {
-        if m.registry.is_some() && (names.is_empty() || names.contains(&m.id)) {
-            chosen.push(m);
-        }
-    }
+/// Most pictures a page shows (ours: the registry takes more), and the biggest it takes (bytes).
+const SCREENSHOTS: usize = 8;
+const SCREENSHOT_BYTES: u64 = 5 * 1024 * 1024;
+
+/// The published modules named (all of them for none), the library first.
+fn published(names: &[String]) -> crate::Result<Vec<Module>> {
+    let chosen: Vec<Module> = std::iter::once(modules::library()?)
+        .chain(modules::mods()?)
+        .filter(|m| m.registry.is_some() && (names.is_empty() || names.contains(&m.id)))
+        .collect();
     if chosen.is_empty() {
-        return Err("nothing to release: no module named has a [registry] table".into());
+        return Err("no module named has a [registry] table".into());
     }
-    let out = crate::root().join("target/release");
-    std::fs::create_dir_all(&out).map_err(|e| format!("{}: {e}", out.display()))?;
-    let signer = Signer::unlock()?;
-    let mut released = Vec::new();
-    for m in &chosen {
-        released.push(release(m, &out, signer.as_ref())?);
+    Ok(chosen)
+}
+
+/// `cargo creature pages [module...]`: the published modules' release files (`files`) written in their folders, the
+/// pictures in `page/` that are no longer listed removed.
+pub fn pages(names: &[String]) -> crate::Result {
+    for m in published(names)? {
+        let files = files(&m)?;
+        for (path, bytes) in &files {
+            let to = m.dir.join(path);
+            if let Some(parent) = to.parent() {
+                std::fs::create_dir_all(parent).map_err(|e| format!("{}: {e}", parent.display()))?;
+            }
+            if std::fs::read(&to).ok().as_ref() != Some(bytes) {
+                std::fs::write(&to, bytes).map_err(|e| format!("{}: {e}", to.display()))?;
+            }
+        }
+        for extra in unlisted(&m, &files) {
+            std::fs::remove_file(&extra).map_err(|e| format!("{}: {e}", extra.display()))?;
+        }
+        println!(
+            "{}: page written ({} pictures)",
+            m.id,
+            m.registry.as_ref().map_or(0, |r| r.screenshots.len())
+        );
     }
-    println!("\n{}", next_steps(&released));
     Ok(())
 }
 
-/// One module's file and entry.
-struct Released {
-    id: String,
-    version: String,
-    file: PathBuf,
-    sha256: String,
-    /// Its changelog, for its GitHub release's notes.
-    notes: PathBuf,
+/// What is out of date in published module `m`'s folder (for `cargo creature check`): each release file that differs
+/// from what `pages` writes, each picture no longer listed, and a missing `Cargo.lock`.
+pub fn stale(m: &Module) -> crate::Result<Vec<String>> {
+    let files = files(m)?;
+    let rel = |p: &Path| p.strip_prefix(crate::root()).unwrap_or(p).display().to_string();
+    let mut out: Vec<String> = files
+        .iter()
+        .filter(|(path, bytes)| std::fs::read(m.dir.join(path)).ok().as_ref() != Some(bytes))
+        .map(|(path, _)| format!("{}: out of date, run `cargo creature pages`", rel(&m.dir.join(path))))
+        .collect();
+    out.extend(
+        unlisted(m, &files)
+            .iter()
+            .map(|p| format!("{}: not a listed picture, run `cargo creature pages`", rel(p))),
+    );
+    if m.native().is_some() && !m.dir.join("Cargo.lock").is_file() {
+        out.push(format!(
+            "{}: missing (a native release carries its lock: `cargo generate-lockfile` there)",
+            rel(&m.dir.join("Cargo.lock"))
+        ));
+    }
+    Ok(out)
 }
 
-fn release(m: &Module, out: &Path, signer: Option<&Signer>) -> crate::Result<Released> {
-    let registry = m.registry.as_ref().ok_or("no [registry]")?;
-    let manifest = Manifest::read(m)?;
-    // Its links and images at the version's tag, which never moves (the registry's review asked for it).
-    let tag = format!("{}-{}", m.id, manifest.version);
-    let description = beta(&manifest.version) + &description(m, &tag)?;
+/// The files in `page/` that aren't among `files`.
+fn unlisted(m: &Module, files: &[(PathBuf, Vec<u8>)]) -> Vec<PathBuf> {
+    let Ok(entries) = std::fs::read_dir(m.dir.join("page")) else {
+        return Vec::new();
+    };
+    let mut out: Vec<PathBuf> = entries
+        .filter_map(|e| Some(e.ok()?.path()))
+        .filter(|p| !files.iter().any(|(f, _)| m.dir.join(f) == *p))
+        .collect();
+    out.sort();
+    out
+}
+
+/// Published module `m`'s release files, by their paths in its folder.
+pub fn files(m: &Module) -> crate::Result<Vec<(PathBuf, Vec<u8>)>> {
+    let registry = m.registry.as_ref().ok_or_else(|| format!("{}: no [registry]", m.id))?;
+    let version = version(m)?;
+    let description = beta(&version) + &description(m, &tag(&m.id, &version))?;
     let problems = page_problems(registry, &description);
     if !problems.is_empty() {
-        return Err(format!("{}: {}", m.id, problems.join("; ")));
+        return Err(format!("{}: [registry]: {}", m.id, problems.join("; ")));
     }
-    let changelog = changelog(m, &manifest.version)?;
-    let notes = out.join(format!("{}-{}.md", m.id, manifest.version));
-    std::fs::write(&notes, &changelog).map_err(|e| format!("{}: {e}", notes.display()))?;
-    let packed = crate::build::module(m)?;
-    let name = format!("{}-{}.smod", m.id, manifest.version);
-    let file = out.join(&name);
-    std::fs::copy(&packed.smod, &file).map_err(|e| format!("{}: {e}", packed.smod.display()))?;
-    let bytes = std::fs::read(&file).map_err(|e| format!("{}: {e}", file.display()))?;
-    let sha256 = hex(&Sha256::digest(&bytes));
-    let entry_path = crate::root().join(format!("registry/mods/{}.toml", m.id));
-    let mut versions = Version::read_all(&entry_path)?;
-    if let Some(old) = versions.iter().find(|v| v.version == manifest.version) {
-        if old.sha256 != sha256 {
+    let pictures = pictures(registry)?;
+    let names: Vec<String> = pictures.iter().map(|(n, _)| n.clone()).collect();
+    let mut files = vec![(
+        PathBuf::from("page.toml"),
+        page(registry, &description, &names).into_bytes(),
+    )];
+    files.extend(pictures.into_iter().map(|(n, bytes)| (PathBuf::from(n), bytes)));
+    let icon = crate::root().join(format!("target/icons/{}.png", m.id));
+    crate::icon::make(&m.id, &registry.icon, &icon)?;
+    let read = |p: &Path| std::fs::read(p).map_err(|e| format!("{}: {e}", p.display()));
+    files.push((PathBuf::from("icon.png"), read(&icon)?));
+    for licence in ["LICENSE", "LICENSE-ART.md"] {
+        files.push((PathBuf::from(licence), read(&crate::root().join(licence))?));
+    }
+    Ok(files)
+}
+
+/// The module's version, from its `sunrise-mod.toml`.
+pub fn version(m: &Module) -> crate::Result<String> {
+    let path = m
+        .manifest()
+        .ok_or_else(|| format!("{} has no sunrise-mod.toml", m.id))?;
+    let text = std::fs::read_to_string(&path).map_err(|e| format!("{}: {e}", path.display()))?;
+    let t: toml::Table = toml::from_str(&text).map_err(|e| format!("{}: {e}", path.display()))?;
+    t.get("version")
+        .and_then(|v| v.as_str())
+        .map(String::from)
+        .ok_or_else(|| format!("{}: no version", path.display()))
+}
+
+/// A module's release tag: `<id>/v<version>`, as the shared workflow takes for a package in a subfolder.
+pub fn tag(id: &str, version: &str) -> String {
+    format!("{id}/v{version}")
+}
+
+/// `page.toml`: the summary, the description, the categories and the pictures (in `page/`).
+fn page(r: &Registry, description: &str, pictures: &[String]) -> String {
+    let list: Vec<String> = r.categories.iter().map(|c| basic(c)).collect();
+    let mut out = String::from(
+        "# Written by `cargo creature pages` from module.toml's [registry] and README.md: edit those, not this file.\n",
+    );
+    out.push_str(&format!("summary = {}\n", basic(&r.summary)));
+    out.push_str(&format!("description = {}\n", multiline(description)));
+    out.push_str(&format!("categories = [{}]\n", list.join(", ")));
+    for p in pictures {
+        out.push_str(&format!("\n[[screenshots]]\npath = {}\n", basic(p)));
+    }
+    out
+}
+
+/// The page's pictures, `[registry]`'s screenshots in their order: their paths in the folder (`page/<n>-<name>.png`,
+/// or `.jpg` for a JPEG or a WebP made a JPEG) and their bytes.
+fn pictures(r: &Registry) -> crate::Result<Vec<(String, Vec<u8>)>> {
+    if r.screenshots.is_empty() || r.screenshots.len() > SCREENSHOTS {
+        return Err(format!("1 to {SCREENSHOTS} screenshots"));
+    }
+    let mut out = Vec::new();
+    for (k, path) in r.screenshots.iter().enumerate() {
+        let from = crate::root().join(path);
+        let fail = |e: String| format!("{}: {e}", from.display());
+        let stem = from
+            .file_stem()
+            .map(|s| s.to_string_lossy().into_owned())
+            .unwrap_or_default();
+        let ext = from
+            .extension()
+            .map(|s| s.to_string_lossy().to_lowercase())
+            .unwrap_or_default();
+        let (ext, bytes) = match ext.as_str() {
+            "png" | "jpg" | "jpeg" => (ext.clone(), std::fs::read(&from).map_err(|e| fail(e.to_string()))?),
+            "webp" => {
+                let picture = image::open(&from).map_err(|e| fail(e.to_string()))?.to_rgb8();
+                let mut bytes = std::io::Cursor::new(Vec::new());
+                picture
+                    .write_to(&mut bytes, image::ImageFormat::Jpeg)
+                    .map_err(|e| fail(e.to_string()))?;
+                ("jpg".into(), bytes.into_inner())
+            }
+            _ => return Err(fail("a screenshot is a PNG, a JPEG or a WebP".into())),
+        };
+        if bytes.len() as u64 > SCREENSHOT_BYTES {
+            return Err(fail("over 5 MiB, the registry's most for a picture".into()));
+        }
+        out.push((format!("page/{}-{stem}.{ext}", k + 1), bytes));
+    }
+    Ok(out)
+}
+
+/// `cargo creature release [module...]`: each published module named (all for none) checked as the release workflow
+/// will check it, then tagged; the pushes printed. A version already tagged is skipped (a released version never
+/// changes: raise it).
+pub fn run(names: &[String]) -> crate::Result {
+    let clean = git(&["status", "--porcelain"])?;
+    if !clean.trim().is_empty() {
+        return Err("the checkout has changes: commit them first (a release builds the tagged commit)".into());
+    }
+    let mut tagged = Vec::new();
+    for m in published(names)? {
+        let version = version(&m)?;
+        let tag = tag(&m.id, &version);
+        if !git(&["tag", "--list", &tag])?.trim().is_empty() {
+            println!("{tag}: already tagged, skipped (raise the version to release again)");
+            continue;
+        }
+        changelog(&m, &version)?;
+        let problems = stale(&m)?;
+        if !problems.is_empty() {
+            return Err(problems.join("\n"));
+        }
+        let lock = m.dir.join("Cargo.lock");
+        if m.native().is_some() && git(&["ls-files", "--error-unmatch", &lock.display().to_string()]).is_err() {
             return Err(format!(
-                "{} {} is already published with another file: a published file never changes, raise the version",
-                m.id, manifest.version
+                "{}: not committed (a native release carries it)",
+                lock.display()
             ));
         }
-    } else {
-        let (key, signature) = match signer {
-            Some(s) => (Some(s.key.clone()), Some(s.sign(&file)?)),
-            None => (None, None),
-        };
-        versions.insert(
-            0,
-            Version {
-                version: manifest.version.clone(),
-                published: today(),
-                game: GAME.into(),
-                file: name,
-                sha256: sha256.clone(),
-                signature,
-                changelog,
-            },
+        crate::install::run_in(&m.dir, "cargo", &["sunrise-mod", "check", "--release", &tag])?;
+        git(&["tag", "-a", &tag, "-m", &format!("{} {version}", m.name)])?;
+        println!("{tag}: tagged");
+        tagged.push(tag);
+    }
+    if tagged.is_empty() {
+        println!("Nothing new to release.");
+        return Ok(());
+    }
+    println!("\nPush main first, then each tag on its own (the library's first, the mods' once it is listed):");
+    println!("  git push origin main");
+    for t in &tagged {
+        println!("  git push origin refs/tags/{t}");
+    }
+    if tagged.iter().any(|t| t.starts_with(&format!("{LIBRARY}/"))) && tagged.len() > 1 {
+        println!(
+            "The mods build against the library from the registry: push their tags once its release is merged on \
+             sunrise-mods, or their workflows fail (push a failed one's tag again after deleting it)."
         );
-        crate::icon::make(
-            &m.id,
-            &registry.icon,
-            &crate::root().join(format!("registry/icons/{}.png", m.id)),
-        )?;
-        let shots = screenshots(m, registry)?;
-        let entry = entry(m, &manifest, registry, &description, key.as_deref(), &shots, &versions);
-        if let Some(parent) = entry_path.parent() {
-            std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-        }
-        std::fs::write(&entry_path, entry).map_err(|e| format!("{}: {e}", entry_path.display()))?;
     }
-    println!("{}  {sha256}", file.display());
-    Ok(Released {
-        id: m.id.clone(),
-        version: manifest.version,
-        file,
-        sha256,
-        notes,
-    })
+    Ok(())
 }
 
-/// What the release needs from the module's `sunrise-mod.toml`.
-struct Manifest {
-    name: String,
-    version: String,
-    authors: Vec<String>,
-    license: String,
-}
-
-impl Manifest {
-    fn read(m: &Module) -> crate::Result<Manifest> {
-        let path = m
-            .manifest()
-            .ok_or_else(|| format!("{} has no sunrise-mod.toml", m.id))?;
-        let text = std::fs::read_to_string(&path).map_err(|e| format!("{}: {e}", path.display()))?;
-        let t: toml::Table = toml::from_str(&text).map_err(|e| format!("{}: {e}", path.display()))?;
-        let text_of = |key: &str| {
-            t.get(key)
-                .and_then(|v| v.as_str())
-                .map(String::from)
-                .ok_or_else(|| format!("{}: no {key}", path.display()))
-        };
-        let authors = t
-            .get("authors")
-            .and_then(|v| v.as_array())
-            .map(|a| a.iter().filter_map(|v| v.as_str().map(String::from)).collect())
-            .unwrap_or_default();
-        Ok(Manifest {
-            name: text_of("name")?,
-            version: text_of("version")?,
-            authors,
-            license: text_of("license")?,
-        })
+/// Runs git at the repository's root, its output.
+fn git(args: &[&str]) -> crate::Result<String> {
+    let out = std::process::Command::new("git")
+        .args(args)
+        .current_dir(crate::root())
+        .output()
+        .map_err(|e| format!("git: {e}"))?;
+    if !out.status.success() {
+        return Err(format!(
+            "git {}: {}",
+            args.join(" "),
+            String::from_utf8_lossy(&out.stderr).trim()
+        ));
     }
+    Ok(String::from_utf8_lossy(&out.stdout).into_owned())
 }
 
-/// The module's README as its registry page's description: its title left out (the page shows the name), its links
-/// and images made absolute (to the repository on GitHub, at revision `rev`: the version's tag).
+/// The module's README as its page's description: its title left out (the page shows the name), its image lines too
+/// (the page's pictures are its screenshots), its links made absolute (to the repository on GitHub, at revision `rev`:
+/// the version's tag, which never moves).
 pub fn description(m: &Module, rev: &str) -> crate::Result<String> {
     let path = m.dir.join("README.md");
     let text = std::fs::read_to_string(&path).map_err(|e| format!("{}: {e}", path.display()))?;
     let body: Vec<&str> = text
         .lines()
         .skip_while(|l| l.starts_with("# ") || l.trim().is_empty())
+        .filter(|l| !is_image(l))
         .collect();
-    // The registry's pages show no image in their text (`![](...)` comes out as it is): the pictures are its
-    // screenshots instead (`[registry] screenshots`).
-    let body: Vec<&str> = body.into_iter().filter(|l| !is_image(l)).collect();
     let text = body.join("\n").replace("\n\n\n", "\n\n");
     let dir = m.dir.strip_prefix(crate::root()).unwrap_or(&m.dir).to_path_buf();
     Ok(absolute_links(&text, &dir, rev).trim().to_owned() + "\n")
@@ -220,95 +327,6 @@ fn is_image(line: &str) -> bool {
         rest = after[close + end + 1..].trim_start();
     }
     true
-}
-
-/// Most pictures a page shows.
-const SCREENSHOTS: usize = 8;
-
-/// The module's page pictures, written to `registry/screenshots/<id>/` as `<n>-<name>.png|.jpg` in the order listed
-/// (what was there before is removed): their paths in the registry, for the entry's `screenshots`.
-fn screenshots(m: &Module, registry: &Registry) -> crate::Result<Vec<String>> {
-    let dir = crate::root().join(format!("registry/screenshots/{}", m.id));
-    if dir.exists() {
-        std::fs::remove_dir_all(&dir).map_err(|e| format!("{}: {e}", dir.display()))?;
-    }
-    if registry.screenshots.is_empty() {
-        return Ok(Vec::new());
-    }
-    if registry.screenshots.len() > SCREENSHOTS {
-        return Err(format!("{}: at most {SCREENSHOTS} screenshots", m.id));
-    }
-    std::fs::create_dir_all(&dir).map_err(|e| format!("{}: {e}", dir.display()))?;
-    let mut written = Vec::new();
-    for (k, path) in registry.screenshots.iter().enumerate() {
-        let from = crate::root().join(path);
-        let stem = from
-            .file_stem()
-            .map(|s| s.to_string_lossy().into_owned())
-            .unwrap_or_default();
-        let ext = from
-            .extension()
-            .map(|s| s.to_string_lossy().to_lowercase())
-            .unwrap_or_default();
-        let fail = |e: String| format!("{}: {e}", from.display());
-        match ext.as_str() {
-            "png" | "jpg" => {
-                let name = format!("{}-{stem}.{ext}", k + 1);
-                std::fs::copy(&from, dir.join(&name)).map_err(|e| fail(e.to_string()))?;
-                written.push(name);
-            }
-            "webp" => {
-                let name = format!("{}-{stem}.jpg", k + 1);
-                let picture = image::open(&from).map_err(|e| fail(e.to_string()))?.to_rgb8();
-                picture.save(dir.join(&name)).map_err(|e| fail(e.to_string()))?;
-                written.push(name);
-            }
-            _ => return Err(fail("a screenshot is a PNG, a JPEG or a WebP".into())),
-        }
-    }
-    Ok(written
-        .into_iter()
-        .map(|n| format!("screenshots/{}/{n}", m.id))
-        .collect())
-}
-
-/// `cargo creature pages [module...]`: the published modules' pages in `registry/` (their text from the README, icon
-/// and screenshots) written again, their versions left as they are: a page changes without a new version.
-pub fn pages(names: &[String]) -> crate::Result {
-    for m in std::iter::once(modules::library()?).chain(modules::mods()?) {
-        let Some(registry) = m.registry.as_ref() else {
-            continue;
-        };
-        if !names.is_empty() && !names.contains(&m.id) {
-            continue;
-        }
-        let entry_path = crate::root().join(format!("registry/mods/{}.toml", m.id));
-        let versions = Version::read_all(&entry_path)?;
-        let Some(latest) = versions.first() else {
-            println!("{}: not published yet", m.id);
-            continue;
-        };
-        let text = std::fs::read_to_string(&entry_path).map_err(|e| format!("{}: {e}", entry_path.display()))?;
-        let t: toml::Table = toml::from_str(&text).map_err(|e| format!("{}: {e}", entry_path.display()))?;
-        let key = t.get("key").and_then(|k| k.as_str());
-        let manifest = Manifest::read(&m)?;
-        let tag = format!("{}-{}", m.id, latest.version);
-        let description = beta(&latest.version) + &description(&m, &tag)?;
-        let problems = page_problems(registry, &description);
-        if !problems.is_empty() {
-            return Err(format!("{}: {}", m.id, problems.join("; ")));
-        }
-        crate::icon::make(
-            &m.id,
-            &registry.icon,
-            &crate::root().join(format!("registry/icons/{}.png", m.id)),
-        )?;
-        let shots = screenshots(&m, registry)?;
-        let entry = entry(&m, &manifest, registry, &description, key, &shots, &versions);
-        std::fs::write(&entry_path, entry).map_err(|e| format!("{}: {e}", entry_path.display()))?;
-        println!("{}: page written ({} screenshots)", m.id, registry.screenshots.len());
-    }
-    Ok(())
 }
 
 /// A 0.x version's page opens with this: the series is in beta until 1.0.
@@ -366,20 +384,22 @@ fn normalise(path: &Path) -> String {
     parts.join("/")
 }
 
-/// What the registry would refuse on the page: the summary, categories, tags and the description's length.
+/// What the registry would refuse on the page (`cargo sunrise-mod check --release`'s rules): the summary (25 to 160
+/// characters: ours stays one line for the lists), the description (at least 125), the categories (1 to 8, distinct,
+/// a mod's).
 pub fn page_problems(r: &Registry, description: &str) -> Vec<String> {
     let mut problems = Vec::new();
-    if r.summary.trim().is_empty() || r.summary.chars().count() > 160 {
-        problems.push("the summary must be 1 to 160 characters".into());
+    if !(25..=160).contains(&r.summary.trim().chars().count()) {
+        problems.push("the summary must be 25 to 160 characters".into());
     }
     let length = description.trim().chars().count();
-    if !(50..=10_000).contains(&length) {
+    if length < 125 {
         problems.push(format!(
-            "the description (its README) is {length} characters, not 50 to 10,000"
+            "the description (its README) is {length} characters, not at least 125"
         ));
     }
-    if r.categories.is_empty() || r.categories.len() > 3 {
-        problems.push("1 to 3 categories".into());
+    if r.categories.is_empty() || r.categories.len() > 8 {
+        problems.push("1 to 8 categories".into());
     }
     for (k, c) in r.categories.iter().enumerate() {
         if !CATEGORIES.contains(&c.as_str()) {
@@ -387,17 +407,6 @@ pub fn page_problems(r: &Registry, description: &str) -> Vec<String> {
         }
         if r.categories[..k].contains(c) {
             problems.push(format!("category {c} twice"));
-        }
-    }
-    if r.tags.len() > 10 {
-        problems.push("at most 10 tags".into());
-    }
-    for t in &r.tags {
-        let allowed = |c: char| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-';
-        if t.is_empty() || t.chars().count() > 24 || !t.chars().all(allowed) {
-            problems.push(format!(
-                "tag {t:?}: lowercase letters, digits and '-', 1 to 24 characters"
-            ));
         }
     }
     problems
@@ -420,151 +429,6 @@ pub fn changelog(m: &Module, version: &str) -> crate::Result<String> {
     Ok(section.join("\n").trim().to_owned() + "\n")
 }
 
-/// A published version, as its entry lists it.
-struct Version {
-    version: String,
-    published: String,
-    game: String,
-    file: String,
-    sha256: String,
-    signature: Option<String>,
-    changelog: String,
-}
-
-impl Version {
-    /// The versions an entry already lists, newest first (none for a new project).
-    fn read_all(entry: &Path) -> crate::Result<Vec<Version>> {
-        if !entry.is_file() {
-            return Ok(Vec::new());
-        }
-        let text = std::fs::read_to_string(entry).map_err(|e| format!("{}: {e}", entry.display()))?;
-        let t: toml::Table = toml::from_str(&text).map_err(|e| format!("{}: {e}", entry.display()))?;
-        let field = |v: &toml::Value, k: &str| v.get(k).and_then(|s| s.as_str()).unwrap_or_default().to_owned();
-        Ok(t.get("versions")
-            .and_then(|v| v.as_array())
-            .into_iter()
-            .flatten()
-            .map(|v| Version {
-                version: field(v, "version"),
-                published: field(v, "published"),
-                game: field(v, "game"),
-                file: field(v, "file"),
-                sha256: field(v, "sha256"),
-                signature: v.get("signature").and_then(|s| s.as_str()).map(String::from),
-                changelog: field(v, "changelog"),
-            })
-            .collect())
-    }
-}
-
-/// Signs `file` with the series' minisign key when it has one: its public key (`registry/minisign.pub`) and the
-/// signature's text. None without a public key.
-/// The series' signing key, unlocked once per run: its public key (as `registry/minisign.pub` holds it) and its secret
-/// key, read from `$SUNRISE_MODS_KEY` and decrypted with the password asked once, in the terminal.
-struct Signer {
-    public: minisign::PublicKey,
-    key: String,
-    secret: minisign::SecretKey,
-}
-
-impl Signer {
-    /// None when the series has no public key (`registry/minisign.pub`): its files go unsigned.
-    fn unlock() -> crate::Result<Option<Signer>> {
-        let path = crate::root().join("registry/minisign.pub");
-        if !path.is_file() {
-            return Ok(None);
-        }
-        let text = std::fs::read_to_string(&path).map_err(|e| format!("{}: {e}", path.display()))?;
-        let key = text
-            .lines()
-            .find(|l| !l.starts_with("untrusted comment:") && !l.trim().is_empty())
-            .ok_or("registry/minisign.pub holds no key")?
-            .trim()
-            .to_owned();
-        let public = minisign::PublicKey::from_base64(&key).map_err(|e| format!("registry/minisign.pub: {e}"))?;
-        let secret_path = std::env::var("SUNRISE_MODS_KEY")
-            .map_err(|_| "the series signs its files: set $SUNRISE_MODS_KEY to the minisign secret key's path")?;
-        // No password given: minisign asks for it in the terminal, once for the whole run.
-        let secret = minisign::SecretKey::from_file(&secret_path, None)
-            .map_err(|e| format!("{secret_path}: {e} (a wrong password?)"))?;
-        Ok(Some(Signer { public, key, secret }))
-    }
-
-    /// `file`'s signature (its `.minisig`, written beside it), as the `minisign` command makes it.
-    fn sign(&self, file: &Path) -> crate::Result<String> {
-        let data = std::fs::File::open(file).map_err(|e| format!("{}: {e}", file.display()))?;
-        let name = file
-            .file_name()
-            .map(|n| n.to_string_lossy().into_owned())
-            .unwrap_or_default();
-        let unix = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map_or(0, |d| d.as_secs());
-        let trusted = format!("timestamp:{unix}\tfile:{name}\thashed");
-        let signature = minisign::sign(
-            Some(&self.public),
-            &self.secret,
-            data,
-            Some(&trusted),
-            Some("signature from minisign secret key"),
-        )
-        .map_err(|e| format!("{}: {e}", file.display()))?
-        .into_string();
-        let sig = PathBuf::from(format!("{}.minisig", file.display()));
-        std::fs::write(&sig, &signature).map_err(|e| format!("{}: {e}", sig.display()))?;
-        Ok(signature)
-    }
-}
-
-/// The registry entry (sunrise-mods' `mods/<id>.toml`).
-fn entry(
-    m: &Module,
-    manifest: &Manifest,
-    r: &Registry,
-    description: &str,
-    key: Option<&str>,
-    screenshots: &[String],
-    versions: &[Version],
-) -> String {
-    let list = |items: &[String]| {
-        let quoted: Vec<String> = items.iter().map(|s| basic(s)).collect();
-        format!("[{}]", quoted.join(", "))
-    };
-    let owners: Vec<String> = OWNERS.iter().map(|s| s.to_string()).collect();
-    let mut out = String::new();
-    out.push_str(&format!("id = {}\n", basic(&m.id)));
-    out.push_str("kind = \"native-mod\"\n");
-    out.push_str(&format!("name = {}\n", basic(&manifest.name)));
-    out.push_str(&format!("summary = {}\n", basic(&r.summary)));
-    out.push_str(&format!("description = {}\n", multiline(description)));
-    out.push_str(&format!("authors = {}\n", list(&manifest.authors)));
-    out.push_str(&format!("owners = {}\n", list(&owners)));
-    out.push_str(&format!("license = {}\n", basic(&manifest.license)));
-    out.push_str(&format!("source = {}\n", basic(SOURCE)));
-    out.push_str(&format!("icon = {}\n", basic(&format!("icons/{}.png", m.id))));
-    out.push_str(&format!("categories = {}\n", list(&r.categories)));
-    out.push_str(&format!("tags = {}\n", list(&r.tags)));
-    if !screenshots.is_empty() {
-        out.push_str(&format!("screenshots = {}\n", list(screenshots)));
-    }
-    if let Some(key) = key {
-        out.push_str(&format!("key = {}\n", basic(key)));
-    }
-    for v in versions {
-        out.push_str("\n[[versions]]\n");
-        out.push_str(&format!("version = {}\n", basic(&v.version)));
-        out.push_str(&format!("published = {}\n", basic(&v.published)));
-        out.push_str(&format!("game = {}\n", basic(&v.game)));
-        out.push_str(&format!("file = {}\n", basic(&v.file)));
-        out.push_str(&format!("sha256 = {}\n", basic(&v.sha256)));
-        if let Some(sig) = &v.signature {
-            out.push_str(&format!("signature = {}\n", multiline(sig)));
-        }
-        out.push_str(&format!("changelog = {}\n", multiline(&v.changelog)));
-    }
-    out
-}
-
 /// A one-line TOML string.
 fn basic(s: &str) -> String {
     let escaped: String = s
@@ -585,65 +449,6 @@ fn multiline(s: &str) -> String {
     format!("\"\"\"\n{escaped}\"\"\"")
 }
 
-fn hex(bytes: &[u8]) -> String {
-    bytes.iter().map(|b| format!("{b:02x}")).collect()
-}
-
-/// Today's date, `YYYY-MM-DD` (UTC).
-fn today() -> String {
-    let secs = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .map_or(0, |d| d.as_secs());
-    let (y, m, d) = civil(secs as i64 / 86_400);
-    format!("{y:04}-{m:02}-{d:02}")
-}
-
-/// The calendar date of a day counted from 1970-01-01 (Howard Hinnant's `civil_from_days`).
-fn civil(days: i64) -> (i64, u32, u32) {
-    let z = days + 719_468;
-    let era = z.div_euclid(146_097);
-    let doe = z.rem_euclid(146_097);
-    let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;
-    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
-    let mp = (5 * doy + 2) / 153;
-    let d = (doy - (153 * mp + 2) / 5 + 1) as u32;
-    let m = if mp < 10 { mp + 3 } else { mp - 9 } as u32;
-    (yoe + era * 400 + i64::from(m <= 2), m, d)
-}
-
-/// What to do with the files: one GitHub release per module version, then the registry pull request.
-fn next_steps(released: &[Released]) -> String {
-    let mut out = String::from("Next:\n1. Publish each file as a release of this repository (tag `<id>-<version>`):\n");
-    for r in released {
-        let sig = format!("{}.minisig", r.file.display());
-        let extra = if Path::new(&sig).is_file() {
-            format!(" {sig}")
-        } else {
-            String::new()
-        };
-        out.push_str(&format!(
-            "   gh release create {id}-{v} {file}{extra} --title \"{id} {v}\" --notes-file {notes}\n",
-            id = r.id,
-            v = r.version,
-            file = r.file.display(),
-            notes = r.notes.display(),
-        ));
-    }
-    out.push_str(
-        "2. In a fork of sunrise-org/sunrise-mods, copy registry/mods/<id>.toml and registry/icons/<id>.png, commit with \
-         `git commit -s`, and open a pull request linking each file and its SHA-256:\n",
-    );
-    for r in released {
-        out.push_str(&format!(
-            "   {SOURCE}/releases/download/{id}-{v}/{id}-{v}.smod  sha256 {sha}\n",
-            id = r.id,
-            v = r.version,
-            sha = r.sha256
-        ));
-    }
-    out
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -651,12 +456,12 @@ mod tests {
     #[test]
     fn a_readme_s_relative_links_and_images_become_absolute() {
         let md = "![](../../docs/models/v-front.png) [series](../../README.md), [spec](SPECS.md), [web](https://x.y)";
-        let out = absolute_links(md, Path::new("mods/vulture"), "vulture-0.2.0");
+        let out = absolute_links(md, Path::new("mods/vulture"), "vulture/v0.2.0");
         assert_eq!(
             out,
             format!(
-                "![]({RAW}/vulture-0.2.0/docs/models/v-front.png) [series]({SOURCE}/blob/vulture-0.2.0/README.md), \
-                 [spec]({SOURCE}/blob/vulture-0.2.0/mods/vulture/SPECS.md), [web](https://x.y)"
+                "![]({RAW}/vulture/v0.2.0/docs/models/v-front.png) [series]({SOURCE}/blob/vulture/v0.2.0/README.md), \
+                 [spec]({SOURCE}/blob/vulture/v0.2.0/mods/vulture/SPECS.md), [web](https://x.y)"
             )
         );
     }
@@ -671,13 +476,6 @@ mod tests {
     }
 
     #[test]
-    fn days_are_calendar_dates() {
-        assert_eq!(civil(0), (1970, 1, 1));
-        assert_eq!(civil(20_775), (2026, 11, 18));
-        assert_eq!(civil(11_016), (2000, 2, 29));
-    }
-
-    #[test]
     fn toml_strings_are_escaped() {
         assert_eq!(basic("a \"b\" \\c"), "\"a \\\"b\\\" \\\\c\"");
         assert_eq!(multiline("x \"\"\" y\n"), "\"\"\"\nx \"\"\\\" y\n\"\"\"");
@@ -687,12 +485,27 @@ mod tests {
     fn a_page_is_checked_as_the_registry_does() {
         let r = Registry {
             summary: "A vulture.".into(),
-            categories: vec!["mobs".into(), "bloom".into()],
-            tags: vec!["Vulture".into(), "flying fish".into(), "sea-birds2".into()],
+            categories: vec!["mobs".into(), "bloom".into(), "mobs".into()],
             icon: "vulture".into(),
             screenshots: Vec::new(),
         };
         let problems = page_problems(&r, "short");
         assert_eq!(problems.len(), 4, "{problems:?}");
+    }
+
+    #[test]
+    fn a_page_lists_its_pictures_and_a_tag_names_its_folder_s_package() {
+        let r = Registry {
+            summary: "A vulture you tame, ride and fly.".into(),
+            categories: vec!["mobs".into()],
+            icon: "vulture".into(),
+            screenshots: Vec::new(),
+        };
+        let page = page(&r, "Text.\n", &["page/1-a.png".into()]);
+        let t: toml::Table = toml::from_str(&page).unwrap();
+        assert_eq!(t["summary"].as_str(), Some("A vulture you tame, ride and fly."));
+        assert_eq!(t["description"].as_str(), Some("Text.\n"));
+        assert_eq!(t["screenshots"][0]["path"].as_str(), Some("page/1-a.png"));
+        assert_eq!(tag("vulture", "0.2.4"), "vulture/v0.2.4");
     }
 }
