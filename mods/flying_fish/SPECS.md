@@ -22,7 +22,7 @@ them and fed by a catch, its own sounds, the guide's page with its facts. Played
   swimming, spread to glide), `pelvic_left`, `pelvic_right`, `tail`, `tail_fin`. One model for every kind, a texture
   each (§2): blue wing (navy back, silver belly, pale blue wings), spotted wing (olive back, pale wings with dark
   spots), sunset wing (blue back, orange wings, gold tips, a dark red edge).
-- Seagulls (with the Seagulls): they snatch gliding flying fish, and frighten a shoal. The guide's "Seagull" fact is ❓
+- Seagulls (with the Seagulls): they snatch gliding flying fish, and frighten a shoal. The guide's "Seagull" fact is ✅
   (§4).
 
 ## 1. Technical context
@@ -81,7 +81,7 @@ A shoal is of one kind.
 
 The kinds met as its morphs, and the facts: "Glide" (saw one glide more than 30 blocks), "Shoal" (saw a shoal take off
 together), "Dolphin" (saw a dolphin catch one), "Rod" (caught one with a fishing rod), "Bucket" (caught one in a
-bucket); "Seagull" (saw a seagull snatch one) comes with the Seagulls ❓.
+bucket); "Seagull" (saw a seagull snatch one) comes with the Seagulls ✅.
 
 ## 5. Items ✅
 
