@@ -8,7 +8,7 @@
 //! through foliage; then over the top. It pauses between crawls; while it pauses it doesn't claim, so the creature's
 //! other behaviours (the small fliers' rest and flights) go on.
 //!
-//! A tree climber (`clings`: the phasmids) holds on to the side it is on, its belly to the bark, while it pauses or
+//! A tree climber (`Creep::climber`: the phasmids) holds on to the side it is on, its belly to the bark, while it pauses or
 //! keeps still, rather than dropping; under a target well above it, it first goes to the nearest trunk. Its renderer
 //! draws it upright while it clings (`clinging`).
 use std::collections::BTreeMap;
@@ -37,9 +37,6 @@ pub struct Creeping {
     pub may: fn(&Body, &World<'_>) -> bool,
     /// The sound it now and then makes as it moves (a rustle of leaves), if any: one chance in `RUSTLE_ONE_IN` a tick.
     pub rustle: Option<&'static str>,
-    /// A tree climber: it holds on to a side (a trunk) when it stops there, and goes to a trunk to climb to a target
-    /// well above it.
-    pub clings: bool,
 }
 
 /// How far from the bark a clinging creature's middle is held (blocks): a small creature's half width.
@@ -159,6 +156,8 @@ pub struct Creep {
     climbing: bool,
     /// The trunk it goes to first (a tree climber's, under a target well above it).
     trunk: Option<[f64; 3]>,
+    /// A tree climber (`climber`).
+    clings: bool,
 }
 
 impl std::fmt::Debug for Creep {
@@ -180,6 +179,17 @@ impl Creep {
             area: Vec::new(),
             climbing: false,
             trunk: None,
+            clings: false,
+        }
+    }
+
+    /// Creeping as `how` says, as a tree climber (the phasmids): it holds on to a side (a trunk) when it stops there,
+    /// and goes to a trunk to climb to a target well above it. A constructor rather than a field of `Creeping`, which
+    /// the mods build as a literal: a new field there would break the mods already built against the library.
+    pub fn climber(how: &'static Creeping) -> Self {
+        Self {
+            clings: true,
+            ..Self::new(how)
         }
     }
 
@@ -187,7 +197,7 @@ impl Creep {
     /// are let go to the ground.
     fn halt(&mut self, m: &mut Body, cx: &World<'_>) {
         self.trunk = None;
-        let held = self.how.clings && hold_on(m, cx);
+        let held = self.clings && hold_on(m, cx);
         if self.climbing && !held {
             m.no_gravity = false;
         }
@@ -268,7 +278,7 @@ impl Behaviour for Creep {
             m.position.z.floor() as i32,
         ];
         // A tree climber under a target well above it, with nothing to climb beside it: to the nearest trunk first.
-        if self.how.clings && !self.climbing && t[1] > feet + WELL_ABOVE && side_beside(cx, cell, m.yaw).is_none() {
+        if self.clings && !self.climbing && t[1] > feet + WELL_ABOVE && side_beside(cx, cell, m.yaw).is_none() {
             self.trunk = self.trunk.or_else(|| trunk_near(cx, cell));
         } else {
             self.trunk = None;
@@ -315,7 +325,7 @@ impl Behaviour for Creep {
                 ..m.position
             };
             // A tree climber goes up with its belly to the bark (`hold_on` faces it there).
-            let held = self.how.clings && hold_on(m, cx);
+            let held = self.clings && hold_on(m, cx);
             m.no_gravity = true;
             m.velocity = Vec3 { x: 0.0, y: 0.0, z: 0.0 };
             if held {
@@ -368,7 +378,6 @@ mod tests {
             area: |_, _| Vec::new(),
             may: |_, _| true,
             rustle: None,
-            clings: false,
         };
         let c = Creep::new(&HOW);
         assert!(c.pausing && c.target.is_none());

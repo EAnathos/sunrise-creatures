@@ -189,7 +189,6 @@ static CREEPING: creature::creep::Creeping = creature::creep::Creeping {
     area: pasture,
     may: |m, _| !roll::busy(m.id),
     rustle: None,
-    clings: false,
 };
 
 /// How often a settled one checks its herd is still there (ticks).

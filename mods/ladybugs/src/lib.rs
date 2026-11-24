@@ -227,7 +227,6 @@ static CREEPING: creature::creep::Creeping = creature::creep::Creeping {
         cx.daylight && !cx.raining && !creature::flutter::flying(m.id) && !luck::perched(m.id) && !luck::gathering(m.id)
     },
     rustle: None,
-    clings: false,
 };
 
 /// They come out near players by day in their biomes (the library's spawning): 1 to 3, up to 6 near a player.

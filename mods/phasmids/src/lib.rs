@@ -383,7 +383,6 @@ static CREEPING: creature::creep::Creeping = creature::creep::Creeping {
     area: canopy,
     may: |m, _| !life::busy(m.id),
     rustle: Some(RUSTLE),
-    clings: true,
 };
 
 /// Its sounds (SPECS §2): a faint rustle of leaves as it crawls, a dry click as it drops to play dead (`life`).
@@ -404,7 +403,7 @@ fn tick(host: &mut dyn ServerHost, dimension: &str, kind: &str, id: u32) {
         vec![
             Box::new(life::Watch::default()),
             Box::new(life::PlayDead::default()),
-            Box::new(creature::creep::Creep::new(&CREEPING)),
+            Box::new(creature::creep::Creep::climber(&CREEPING)),
         ]
     });
     for action in life::actions() {
