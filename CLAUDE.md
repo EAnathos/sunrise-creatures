@@ -66,11 +66,13 @@ only). How the port went is in the history (`git show 2c09384:docs/SUNRISE-PORT.
   local Minecraft install (no sign-in needed), then `sunrise-launcher instance version <instance> <nightly>`.
 - Tools are Rust (`tools/`, commands `list`, `tab`, `model`, `preview`, `sounds`, `vanilla`, `pack`, `build`, `check`,
   `native-check`, `install`, `release`; alias in `.cargo/config.toml`; the table in `CONTRIBUTING.md`).
-- Publishing: each finished module is a project on Sunrise's registry (`[registry]` in its `module.toml`, its README as
-  the page, its `CHANGELOG.md`); `cargo creature release` prepares a version (`registry/` mirrors sunrise-mods' entries).
-  The steps: `docs/PUBLISHING.md`. A published file never changes: a change is a new version. Every module is also
-  listed by its source (`sources/<id>.toml`, tracking `main`): Nightly players build `main` itself, so keep it working
-  and pinned to the current Nightly (`docs/PUBLISHING.md`, "Built from source").
+- Publishing: each finished module is a project on Sunrise's registry, registered by its folder (`[registry]` in its
+  `module.toml`, its README as the page, its `CHANGELOG.md`). A release is a tag `<id>/v<version>`: the registry's
+  shared workflow (`.github/workflows/sunrise-release-<id>.yml`, never edited by hand) builds the folder as committed,
+  so its release files (`page.toml`, `page/`, `icon.png`, the licences: `cargo creature pages`) and its `Cargo.lock`
+  are committed. `cargo creature release` checks and tags; tags are pushed one at a time, the library's first and the
+  mods' once it is listed (they build against it from the registry). The steps: `docs/PUBLISHING.md`. A released
+  version never changes: a change is a new version.
 - The README's banner and panels (`docs/media/`) are hand-made images: nothing regenerates them.
 - Before committing: rustfmt (tools and `src/`, `rustfmt.toml`), Clippy `-D warnings` on the tools,
   `cargo creature check`, `cargo creature native-check` (Clippy and tests of the ported crates on the pinned SDK); CI

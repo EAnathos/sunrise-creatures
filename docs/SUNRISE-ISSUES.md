@@ -45,8 +45,12 @@ Found, not filed: check the tracker and the newest Nightly first.
    (`git log <old>..<new>` in the Sunrise sources). `cargo sunrise-mod update --sunrise <commit>` in a module moves its
    pin and lists the API items it uses that changed.
 2. Set the commit in every `sunrise-mod.toml` (`[native]`), CI's `SUNRISE_REV` and CONTRIBUTING's `REV`, and install
-   `cargo-sunrise-mod` and `sunrise-stage` at it (CONTRIBUTING.md); `cargo creature native-check`
+   `sunrise-stage` at it (CONTRIBUTING.md; `cargo sunrise-mod` is the newest signed tool, whatever the pin);
+   `cargo creature native-check`
    fetches the new SDK by itself (it compares `target/sunrise-sdk/sdk.json` with the library's pin).
 3. Install that Nightly and keep the instance on it (`sunrise-launcher install <nightly>`,
    `sunrise-launcher instance version creature-dev <nightly>`), or `cargo creature install` refuses the mods.
 4. `cargo creature check`, `cargo creature install`; drop the workarounds it fixes, update the tables; test in game.
+5. A released package is made for the build it pins (the registry accepts a release only for a build Sunrise
+   published, and offers it for the builds it fits): the modules reach players on the new pin with new versions
+   (docs/PUBLISHING.md).

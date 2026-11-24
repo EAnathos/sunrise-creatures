@@ -116,13 +116,15 @@ The whole series shares **one creative tab**, "Sunrise Creatures", owned by the 
 .cargo/config.toml      `cargo creature <command>` alias
 docs/                   series-wide docs: ARCHITECTURE.md (this file), CONVENTIONS.md, SUNRISE-ISSUES.md,
                         PUBLISHING.md; models/ (the models' pictures, generated)
-registry/               the published modules' registry entries and icons, as sunrise-mods holds them (written by
-                        `cargo creature release`)
+.github/workflows/      CI (ci.yml), and each published module's release workflow (sunrise-release-<id>.yml,
+                        written by `cargo sunrise-mod release setup`: a tag `<id>/v<version>` releases it)
 common/                 the library
   module.toml           repository metadata for the tools (id, name, status, tab icon, its tab items, `ported`,
                         its registry page)
-  CHANGELOG.md          its versions' changes (the registry's changelog)
+  CHANGELOG.md          its versions' changes
   SPECS.md, README.md
+  page.toml, page/,     a published module's release files (its registry page, its pictures, its icon, the
+  icon.png, LICENSE*    licences), written by `cargo creature pages`; Cargo.lock, committed
   sunrise-mod.toml      the package (id, version, [native] pins); with Cargo.toml (crate `mod-creature`, reached as
   Cargo.toml, src/      `creature`), src/, assets/creature/, data/creature/ (blocks, items, tab in data/creature/sunrise/)
   assets/, data/

@@ -32,13 +32,14 @@ the models' pictures (`docs/models/`). Never edit them by hand.
 ## Build and test
 
 You need the [Sunrise launcher](https://playsunrise.net) (signed in, with a test instance, here `creature-dev`; any
-name works with `--instance`), Rust, `cargo sunrise-mod` and `sunrise-stage` at the series' pinned Sunrise revision
-(CI's `SUNRISE_REV`: packaging writes each package's `uses.json` with `sunrise-stage`, and the pinned
-`cargo sunrise-mod` refuses a package without it), and ffmpeg to remake the sounds.
+name works with `--instance`), Rust, the newest signed `cargo sunrise-mod` (the one the registry's release workflow
+runs: Sunrise's [Install the mod tool](https://github.com/sunrise-org/sunrise/blob/main/docs/modding/src/start/install-tool.md),
+"Newest tool from main"; `cargo sunrise-mod self-update` keeps it current), `sunrise-stage` at the series' pinned
+Sunrise revision (CI's `SUNRISE_REV`: packaging writes each package's `uses.json` with it), and ffmpeg to remake the
+sounds.
 
 ```sh
 REV=94256510f74e6843754e0a93fd9e4da7e45b1056   # .github/workflows/ci.yml, SUNRISE_REV
-cargo install --locked --git https://github.com/sunrise-org/sunrise --rev $REV cargo-sunrise-mod
 cargo install --locked --git https://github.com/sunrise-org/sunrise --rev $REV sunrise-mod-api-gen --bin sunrise-stage
 cargo creature install                                   # the library and every mod, in creature-dev
 cargo creature install vulture --instance my-instance    # one mod (with the library and what it requires)
@@ -71,8 +72,8 @@ The modules are **pinned** to one Sunrise build, the same for every module (`[na
 | `cargo creature check` | The repository's consistency: tab, manifests, pins, translations, JSON, generated files, sounds (events, files, subtitles), recipe book advancements, docs |
 | `cargo creature native-check [sdk]` | Clippy and the unit tests on every ported crate against the pinned Sunrise SDK (fetched into `target/sunrise-sdk/`) |
 | `cargo creature install [--instance <name>] [mod...]` | Builds and installs, then runs the instance's native build |
-| `cargo creature pages [module...]` | Writes the published modules' registry pages again (text from the README, icon, screenshots), their versions unchanged: a page changes without a new version ([docs/PUBLISHING.md](docs/PUBLISHING.md)) |
-| `cargo creature release [module...]` | Prepares the published modules' new versions for Sunrise's registry: `target/release/<id>-<version>.smod` and `registry/` ([docs/PUBLISHING.md](docs/PUBLISHING.md)) |
+| `cargo creature pages [module...]` | Writes the published modules' release files in their folders: `page.toml` (from `[registry]` and the README), `page/` (the pictures), `icon.png`, `LICENSE`, `LICENSE-ART.md` ([docs/PUBLISHING.md](docs/PUBLISHING.md)) |
+| `cargo creature release [module...]` | Checks each published module's new version as the registry's release workflow will (`cargo sunrise-mod check --release`), tags it `<id>/v<version>` and prints the pushes ([docs/PUBLISHING.md](docs/PUBLISHING.md)) |
 
 ## Before committing
 
