@@ -2,7 +2,8 @@
 //!
 //! `cargo creature preview` reads each module's `sources/models/*.bbmodel` (box UV, cubes not rotated, as
 //! `cargo creature model` needs them) with its embedded texture, draws it from the front and from the back (three
-//! quarters, a little from above, without perspective) into `docs/models/<mod>-<model>-{front,back}.png`. The models are drawn as built in Blockbench, at rest: the game poses them.
+//! quarters, a little from above, without perspective) into `docs/models/<mod>-<model>-{front,back}.png`. Hidden
+//! Blockbench groups stay hidden in these pictures; visible models are drawn at rest and the game poses them.
 use std::path::Path;
 
 use serde_json::Value;
@@ -134,14 +135,17 @@ fn picture(path: &Path, out: &Path, m: &crate::modules::Module, name: &str) -> c
     let res = |key: &str, size: usize| size as f64 / model["resolution"][key].as_f64().unwrap_or(size as f64);
     let (su, sv) = (res("width", texture.width), res("height", texture.height));
     let mut chains = std::collections::HashMap::new();
+    let mut hidden = std::collections::HashSet::new();
     for node in model["outliner"].as_array().into_iter().flatten() {
         group_chains(&model, node, &mut Vec::new(), &mut chains);
+        hidden_elements(&model, node, true, &mut hidden);
     }
     let quads: Vec<Quad> = model["elements"]
         .as_array()
         .into_iter()
         .flatten()
         .filter(|e| e["type"].as_str().unwrap_or("cube") == "cube" && e["export"].as_bool() != Some(false))
+        .filter(|e| e["uuid"].as_str().is_none_or(|id| !hidden.contains(id)))
         .flat_map(|e| {
             let chain = e["uuid"]
                 .as_str()
@@ -192,6 +196,26 @@ fn group_chains(
         group_chains(model, child, chain, out);
     }
     chain.pop();
+}
+
+/// Element UUIDs beneath a hidden Blockbench group. Missing visibility defaults to visible, as in Blockbench.
+fn hidden_elements(model: &Value, node: &Value, visible: bool, out: &mut std::collections::HashSet<String>) {
+    if let Some(id) = node.as_str() {
+        if !visible {
+            out.insert(id.to_owned());
+        }
+        return;
+    }
+    let id = node["uuid"].as_str().unwrap_or("");
+    let group = model["groups"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .find(|g| g["uuid"].as_str() == Some(id));
+    let visible = visible && group.is_none_or(|g| g["visibility"].as_bool().unwrap_or(true));
+    for child in node["children"].as_array().into_iter().flatten() {
+        hidden_elements(model, child, visible, out);
+    }
 }
 
 /// A point turned by its groups, the innermost first; each turns about its pivot as Blockbench does (X, then Y,
