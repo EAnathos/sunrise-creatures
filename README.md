@@ -85,6 +85,8 @@ the "Sunrise Creatures" creative tab, where all the series' items are.
 - [Magma Golem](mods/magma_golem/README.md): a six-block giant of living magma asleep in the Nether, a mini-boss to
   cool with snow.
 - [Toucan](mods/toucan/README.md): a tropical bird with a colourful bill, tamed with melon slices.
+- [Elephant](mods/elephant/README.md): a two-rider savanna elephant with variable stats, breeding and growing young;
+  a dyeable saddle blanket, a double chest on each flank and fear of mice from a future optional mod.
 
 </details>
 
