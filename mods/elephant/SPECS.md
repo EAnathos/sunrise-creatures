@@ -10,7 +10,7 @@ future mod; Elephant will not require that mod.
 
 ## 0. Status
 
-Planned: the approved specification and adult model; no mod implementation yet.
+Planned: the approved specification and adult, baby and juvenile models; no mod implementation yet.
 
 - **The adult model** (`sources/models/elephant.bbmodel`; [front](../../docs/models/elephant-elephant-front.png) and
   [back](../../docs/models/elephant-elephant-back.png) previews): a broad grey elephant with ears attached at the
@@ -19,10 +19,17 @@ Planned: the approved specification and adult model; no mod implementation yet.
   Its torso is extended, and its skin has pixel folds.
 - **Texture**: the 64 × 64 pixel-art texture has a grey-brown palette and crease markings; the final art pass is
   approved.
-- **Young models**: baby and juvenile models are planned, but will not be modelled until explicitly approved.
-- The model opens bare: saddle blanket and double-chest groups are hidden until equipped.
+- **Baby model** (`sources/models/baby.bbmodel`; [front](../../docs/models/elephant-baby-front.png) and
+  [back](../../docs/models/elephant-baby-back.png) previews): compact and round, with a larger head, proportionally
+  broad ears, shorter legs and trunk, and no tusks. Used from birth through 10 minutes.
+- **Juvenile model** (`sources/models/juvenile.bbmodel`; [front](../../docs/models/elephant-juvenile-front.png) and
+  [back](../../docs/models/elephant-juvenile-back.png) previews): an intermediate size and build, with a longer trunk
+  and legs and its first small tusks. Used from 10 to 20 minutes.
+- All three models share the elephant's 64 × 64 texture. The baby and juvenile models have no visible saddle blanket or
+  chests; only adults can be ridden or equipped.
+- [Growth-stage comparison](../../docs/models/elephant-growth.png).
 
-Next: implement Elephant. Model the young stages after approval.
+Next: implement Elephant.
 
 ## 1. Technical context
 
@@ -31,7 +38,8 @@ Next: implement Elephant. Model the young stages after approval.
 - **Mouse support** ✅: a separate future mod will provide mice. Elephant's mouse response is optional and must work
   without a hard dependency on that mod.
 - **Languages**: source text in English; in-game text in English and French.
-- **Model**: Blockbench free-format cube model, converted with `cargo creature model elephant`.
+- **Models**: Blockbench free-format cube models, converted with `cargo creature model elephant` for the adult and
+  `cargo creature model elephant baby` / `cargo creature model elephant juvenile` for the young stages.
 - Uses from the library: model drawing and sounds, hitbox sizing, ownership and the creature guide's page. Elephant owns
   its saddle, coloured blanket, chests, storage and two rider seats.
 
@@ -79,7 +87,8 @@ Next: implement Elephant. Model the young stages after approval.
   young elephant hay bales speeds up growth. Parents have a 5-minute breeding cooldown. Babies inherit their parents'
   stats as described in §2. Only adults can be ridden, following the Vulture's system ([vulture/SPECS.md](../vulture/SPECS.md)
   §2 and §8).
-- A baby model and a juvenile model are required. Wait for explicit approval before creating either one.
+- The baby and juvenile models are visual stages only; their age transitions, stats and gameplay are specified above
+  and remain to be implemented.
 
 ## 5. Drops and additional mechanics
 
@@ -120,7 +129,8 @@ After implementation, test in a new survival world with the series library and E
 - Check that an elephant charges attackers of itself or its riders within 8 blocks, dealing 4 damage and moderate
   knockback without pursuing, with a 3-second cooldown between charges; check that a hay bale restores 10 HP to a tamed
   adult. Also check that it flees when a mouse is nearby.
-- Check the model from the front, sides and back, especially the trunk's taper, tusks, ears, feet and tail.
+- Check baby, juvenile and adult models from the front, sides and back: the baby has no tusks; small tusks appear in
+  the juvenile stage. Also compare the head, trunk, ears, feet and tail as the elephant grows.
 - Verify that a wild and an unsaddled elephant have no equipment. Saddle it, recolour the blanket, then ride as owner and
   non-owner; only the owner should steer.
 - Fit a double chest on each side; check both inventories save, reopen and drop correctly, including on death.
