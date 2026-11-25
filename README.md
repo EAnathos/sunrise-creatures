@@ -87,6 +87,8 @@ the "Sunrise Creatures" creative tab, where all the series' items are.
 - [Toucan](mods/toucan/README.md): a tropical bird with a colourful bill, tamed with melon slices.
 - [Elephant](mods/elephant/README.md): a two-rider savanna elephant with variable stats, breeding and growing young;
   a dyeable saddle blanket, a double chest on each flank and fear of mice from a future optional mod.
+- [Mice](mods/mice/README.md): small, peaceful field mice with no capture, taming, feeding or breeding in v1; cats hunt
+  them, and they drop mouse meat.
 
 </details>
 
