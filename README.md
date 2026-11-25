@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/media/banner.webp" alt="Sunrise Creatures at sunrise, its title in block letters over a valley with a waterfall: the vulture on a ledge, a fairy, a butterfly and a ladybug among the flowers, a glowing jellyfish and a flying fish leaping from the river, a seagull overhead, the cyclops with his club and his sheep, glowing mushrooms and a scorpion on the sand" width="100%">
+  <img src="docs/media/banner.webp" alt="Sunrise Creatures in cream lettering beside a geometric amber sunrise over a quiet, stepped landscape" width="100%">
 </p>
 
 <p align="center">

@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="750" viewBox="0 0 2000 750">
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1">
+      <stop offset="0" stop-color="#192e30"/>
+      <stop offset="1" stop-color="#29423d"/>
+    </linearGradient>
+    <linearGradient id="sun" x2="0" y2="1">
+      <stop offset="0" stop-color="#f0bf73"/>
+      <stop offset="1" stop-color="#d88758"/>
+    </linearGradient>
+    <linearGradient id="water" x2="0" y2="1">
+      <stop offset="0" stop-color="#29433e"/>
+      <stop offset="1" stop-color="#203638"/>
+    </linearGradient>
+    <radialGradient id="dawnGlow">
+      <stop offset="0" stop-color="#e4a45a" stop-opacity=".20"/>
+      <stop offset=".48" stop-color="#e4a45a" stop-opacity=".07"/>
+      <stop offset="1" stop-color="#e4a45a" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="sunClip">
+      <circle cx="1540" cy="414" r="170"/>
+    </clipPath>
+  </defs>
+
+  <!-- Restrained, deep-green sky -->
+  <rect width="2000" height="750" fill="url(#sky)"/>
+  <circle cx="1540" cy="414" r="430" fill="url(#dawnGlow)"/>
+  <path d="M0 548H2000" stroke="#b6a77a" stroke-opacity=".13" stroke-width="2"/>
+  <path d="M0 578H2000" stroke="#b6a77a" stroke-opacity=".08" stroke-width="1"/>
+
+  <!-- Quiet sunrise mark -->
+  <g transform="translate(1540 414)">
+    <circle r="170" fill="url(#sun)"/>
+    <path d="M-235 0H235M-210-88L-178-72M-150-174L-128-145M0-238V-205M150-174L128-145M210-88L178-72"
+      fill="none" stroke="#f0bf73" stroke-opacity=".52" stroke-width="4" stroke-linecap="square"/>
+    <g clip-path="url(#sunClip)" stroke="#fff0ce" stroke-opacity=".24" stroke-width="3">
+      <path d="M-190 26H190M-165 50H165M-135 74H135M-98 98H98"/>
+    </g>
+  </g>
+
+  <!-- Distant, stepped landforms -->
+  <path d="M0 584h230v-24h95v-20h74v28h110v-32h75v-22h70v31h130v-19h90v30h101v-26h82v21h145v-29h90v35h118v-18h100v31h105v-23h90v37h95v-29h100v65H0z"
+    fill="#345047"/>
+  <path d="M0 635h136v-24h105v16h92v-34h94v22h112v-18h124v30h106v-25h87v18h110v-25h108v29h102v-17h121v27h100v-23h100v24h107v-21h90v47H0z"
+    fill="#293f3a"/>
+
+  <!-- River and its quiet reflections -->
+  <path d="M0 681h2000v69H0z" fill="url(#water)"/>
+  <g fill="none" stroke="#dca96a" stroke-opacity=".38" stroke-width="3">
+    <path d="M1360 691h130M1502 691h94M1420 707h210M1335 723h110M1535 723h155"/>
+  </g>
+  <g fill="#e0aa67" fill-opacity=".72">
+    <rect x="1490" y="685" width="10" height="5"/>
+    <rect x="1648" y="700" width="8" height="5"/>
+    <rect x="1284" y="716" width="9" height="5"/>
+    <rect x="1742" y="731" width="12" height="5"/>
+  </g>
+
+  <!-- Tiny, deliberate creature details: a gliding bird and a butterfly -->
+  <path d="M1320 257c26-29 50-31 76-5 21-15 45-14 67 7-29-11-48-5-65 15-19-21-42-24-78-17z"
+    fill="#e6cfaa" fill-opacity=".9"/>
+  <g transform="translate(1830 478)" fill="none" stroke="#e7c28a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M0-16v40M0-7C-5-27-29-35-34-17c-4 14 13 22 34 21M0-7C5-27 29-35 34-17c4 14-13 22-34 21M0 2C-7 8-20 17-23 28M0 2C7 8 20 17 23 28"/>
+  </g>
+  <g fill="#f0bf73">
+    <rect x="1232" y="368" width="7" height="7"/>
+    <rect x="1761" y="330" width="6" height="6"/>
+    <rect x="1878" y="390" width="8" height="8"/>
+    <rect x="1178" y="442" width="5" height="5"/>
+  </g>
+
+  <!-- Wordmark: exact title, no slogan or decorative lettering -->
+  <g fill="#f4ecd9" font-family="DejaVu Sans, Arial, sans-serif">
+    <text x="198" y="350" font-size="104" font-weight="700" letter-spacing="1.5">Sunrise</text>
+    <text x="198" y="460" font-size="104" font-weight="500" letter-spacing="1.5">Creatures</text>
+  </g>
+  <path d="M201 499h148" stroke="#e0a15f" stroke-width="5" stroke-linecap="square"/>
+  <path d="M365 499h59" stroke="#e0a15f" stroke-opacity=".4" stroke-width="2"/>
+
+  <!-- A slim frame gives the banner a finished edge without crowding it -->
+  <rect x="20" y="20" width="1960" height="710" rx="4" fill="none" stroke="#eadfc9" stroke-opacity=".14" stroke-width="2"/>
+</svg>
