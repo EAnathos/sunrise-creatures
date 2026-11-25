@@ -11,9 +11,10 @@ canopy, with a large colourful bill. Tame one with melon slices.
 
 Planned: the spec and model, no code yet.
 
-- **The model** (`sources/models/toucan.bbmodel`; [three-quarter](concept-preview.png) and [side](concept-side.png)
-  previews): the approved 48-cube design has a dark body, pale chest, colourful bill, layered wings and a raised,
-  pale-tipped tail. Its 64 × 64 texture is a flat-colour blockout; every face maps at one texel per model unit.
+- **The model** (`sources/models/toucan.bbmodel`; [front](../../docs/models/toucan-toucan-front.png) and
+  [back](../../docs/models/toucan-toucan-back.png) previews): the approved 48-cube design has a dark body, pale chest,
+  colourful bill, layered wings and a raised, pale-tipped tail. Its 64 × 64 texture is a flat-colour blockout; every
+  face maps at one texel per model unit.
 
 Next: finish the pixel texture, then the code, on Sunrise.
 
@@ -30,7 +31,7 @@ Next: finish the pixel texture, then the code, on Sunrise.
 - **Size** ✅: hitbox 0.8 blocks wide and 1.2 blocks tall. At 16 model units per block, the visible model is about
   1.06 blocks wide, 1.19 tall and 2.5 long, including its bill and fan tail.
 - **Appearance** ✅: one natural colour variant for v1; a blue-black body and layered wings, an ivory chest, a gold and
-  red throat, turquoise eye markings, and a long yellow bill with an orange base and bright tip.
+  red throat, turquoise eye markings, and a long yellow bill with an orange base and black tip.
 - **Spawning** ✅: rare in jungle, sparse jungle and bamboo jungle, alone or in pairs, preferably above ground among
   leaves.
 - **Behaviour** ✅: peaceful; hops on branches, makes short flights between nearby trees, lands on leaves and flees

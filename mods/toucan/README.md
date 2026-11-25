@@ -1,6 +1,6 @@
 # Toucan
 
-![](concept-preview.png)
+![](../../docs/models/toucan-toucan-back.png)
 
 A mod of the [Sunrise Creatures](../../README.md) series, **planned**: a tropical bird with a dark body and an oversized
 colourful bill that hops and flies through the jungle canopy. Tame one with melon slices. **Requires**
