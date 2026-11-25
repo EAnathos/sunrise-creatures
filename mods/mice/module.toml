@@ -1,0 +1,5 @@
+# Mice's description for the repository's tools (docs/ARCHITECTURE.md); not shipped in the mod.
+id = "mice"
+name = "Mice"
+status = "planned"
+creative = []
