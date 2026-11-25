@@ -84,6 +84,7 @@ the "Sunrise Creatures" creative tab, where all the series' items are.
   guard you.
 - [Magma Golem](mods/magma_golem/README.md): a six-block giant of living magma asleep in the Nether, a mini-boss to
   cool with snow.
+- [Toucan](mods/toucan/README.md): a tropical bird with a colourful bill, tamed with melon slices.
 
 </details>
 

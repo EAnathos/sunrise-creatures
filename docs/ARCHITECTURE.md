@@ -27,6 +27,7 @@ on it.
 | Ladybugs | `mods/ladybugs/` | `ladybugs` | playable | [mods/ladybugs/SPECS.md](../mods/ladybugs/SPECS.md) |
 | Scorpions | `mods/scorpions/` | `scorpions` | playable | [mods/scorpions/SPECS.md](../mods/scorpions/SPECS.md) |
 | Vanilla Bestiary | `mods/vanilla_bestiary/` | `vanilla_bestiary` | playable | [mods/vanilla_bestiary/SPECS.md](../mods/vanilla_bestiary/SPECS.md) |
+| Toucan | `mods/toucan/` | `toucan` | planned | [mods/toucan/SPECS.md](../mods/toucan/SPECS.md) |
 
 `cargo creature list` prints the same table from the modules' `module.toml`.
 

@@ -1,0 +1,5 @@
+# Toucan's description for the repository's tools (docs/ARCHITECTURE.md); not shipped in the mod.
+id = "toucan"
+name = "Toucan"
+status = "planned"
+creative = []
