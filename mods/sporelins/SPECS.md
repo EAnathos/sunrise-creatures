@@ -16,6 +16,8 @@ friend and coming to them when far (onto the ground by them, never in the air), 
 of its colour planted around it), the stew once a day (a second bowl the same day refused, a reload included: the day is
 saved on it), the glow of a friend's cap at night, the mushroom it drops.
 
+The Nausea effect specified in §2 is not implemented yet; the current spore puff is harmless.
+
 - **Two models**, one per look (`sources/models/`, pictures in docs/models/), with the same groups so the same code
   poses both:
   - the red cap (`sporelin.bbmodel`): about two thirds of a block tall, a rounded red cap with white spots over beige
@@ -49,8 +51,9 @@ saved on it), the glow of a friend's cap at night, the mushroom it drops.
 - **Shy** ✅: a player who comes within 6 blocks (not sneaking) makes it **hide**: it sits down and pulls its cap over
   its stem, and passes for a mushroom until the player is 10 blocks away or stands still a few seconds. A sneaking
   player can come close.
-- **A spore puff when startled** ✅: hit, or a player sprinting at it, it bursts a small cloud of spores (particles,
-  a soft "pff") and runs off. Harmless.
+- **A spore puff when startled** ✅: when hit or when a player sprints at it within 4 blocks, it bursts a small cloud
+  of spores (particles, a soft "pff") and runs off. The player who startled it gets Nausea for 3 seconds (starting
+  value).
 - **Plants mushrooms** ✅: about once every 5 minutes, it plants a mushroom of its cap's colour on a dark block next to
   it where a mushroom can grow, never more than 4 within 5 blocks of it.
 - Monsters leave it alone (library §3.4).
@@ -86,7 +89,7 @@ mushroom), "Patch" (a mushroom it planted), "Stew" (a bowl of stew it gave).
 
 ## 7. Open questions
 
-- ~~Q1: Shy?~~ Yes: it hides as a mushroom, and its spore puff is harmless (§2).
+- ~~Q1: Shy?~~ It hides as a mushroom; its spore puff gives its chaser Nausea for 3 seconds (§2).
 - ~~Q2: Befriending?~~ With a mushroom of its colour, one chance in 3 (§3).
 - ~~Q3: What a befriended one does?~~ Tends a mushroom patch, gives a mushroom stew once a day, glows softly at night (§3).
 - ~~Q4: Its drop?~~ A mushroom of its cap's colour (§4).
