@@ -27,7 +27,6 @@ Planned: the approved specification and adult, baby and juvenile models; no mod 
   and legs and its first small tusks. Used from 10 to 20 minutes.
 - All three models share the elephant's 64 × 64 texture. The baby and juvenile models have no visible saddle blanket or
   chests; only adults can be ridden or equipped.
-- [Growth-stage comparison](../../docs/models/elephant-growth.png).
 
 Next: implement Elephant.
 
