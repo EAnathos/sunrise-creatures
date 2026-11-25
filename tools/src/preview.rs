@@ -145,7 +145,7 @@ fn picture(path: &Path, out: &Path, m: &crate::modules::Module, name: &str) -> c
         .into_iter()
         .flatten()
         .filter(|e| e["type"].as_str().unwrap_or("cube") == "cube" && e["export"].as_bool() != Some(false))
-        .filter(|e| e["uuid"].as_str().map_or(true, |id| !hidden.contains(id)))
+        .filter(|e| e["uuid"].as_str().is_none_or(|id| !hidden.contains(id)))
         .flat_map(|e| {
             let chain = e["uuid"]
                 .as_str()
@@ -212,7 +212,7 @@ fn hidden_elements(model: &Value, node: &Value, visible: bool, out: &mut std::co
         .into_iter()
         .flatten()
         .find(|g| g["uuid"].as_str() == Some(id));
-    let visible = visible && group.map_or(true, |g| g["visibility"].as_bool().unwrap_or(true));
+    let visible = visible && group.is_none_or(|g| g["visibility"].as_bool().unwrap_or(true));
     for child in node["children"].as_array().into_iter().flatten() {
         hidden_elements(model, child, visible, out);
     }
