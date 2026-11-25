@@ -9,7 +9,7 @@ canopy, with a large colourful bill. Tame one with melon slices.
 
 ## 0. Status
 
-Planned: the spec and model, no code yet.
+Planned: the spec and model, no mod implementation yet.
 
 - **The model** (`sources/models/toucan.bbmodel`; [front](../../docs/models/toucan-toucan-front.png) and
   [back](../../docs/models/toucan-toucan-back.png) previews): the approved 48-cube design has a dark body, pale chest,
