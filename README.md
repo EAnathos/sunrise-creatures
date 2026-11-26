@@ -92,6 +92,8 @@ the "Sunrise Creatures" creative tab, where all the series' items are.
   a dyeable saddle blanket, a double chest on each flank and fear of mice from a future optional mod.
 - [Mice](mods/mice/README.md): small, peaceful field mice with no capture, taming, feeding or breeding in v1; cats hunt
   them, and they drop mouse meat.
+- [Blackbirds](mods/blackbirds/README.md): Eurasian blackbirds of woods, meadows and gardens that hop on the grass,
+  sing at dawn and dusk, and peck berries and earthworms.
 
 </details>
 

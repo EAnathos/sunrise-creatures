@@ -1,0 +1,5 @@
+# Blackbirds' description for the repository's tools (docs/ARCHITECTURE.md); not shipped in the mod.
+id = "blackbirds"
+name = "Blackbirds"
+status = "planned"
+creative = []

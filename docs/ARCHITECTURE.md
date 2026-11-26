@@ -30,6 +30,7 @@ on it.
 | Toucan | `mods/toucan/` | `toucan` | planned | [mods/toucan/SPECS.md](../mods/toucan/SPECS.md) |
 | Elephant | `mods/elephant/` | `elephant` | planned | [mods/elephant/SPECS.md](../mods/elephant/SPECS.md) |
 | Mice | `mods/mice/` | `mice` | planned | [mods/mice/SPECS.md](../mods/mice/SPECS.md) |
+| Blackbirds | `mods/blackbirds/` | `blackbirds` | planned | [mods/blackbirds/SPECS.md](../mods/blackbirds/SPECS.md) |
 
 `cargo creature list` prints the same table from the modules' `module.toml`.
 
