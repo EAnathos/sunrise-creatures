@@ -363,11 +363,6 @@ pub fn tick(host: &mut dyn ServerHost, dimension: &str, entity: u32, kind: &str)
     }
 }
 
-/// From the library's `entity_leave_level`: an entity gone is no longer counted.
-pub fn forget(entity: u32) {
-    TICKS.locked().remove(&entity);
-}
-
 /// The players within `MEET` blocks of `at` in `dimension`, for a mod's facts seen happen (a creeper exploding).
 pub fn players_near(host: &dyn ServerHost, dimension: &str, at: [f64; 3]) -> Vec<u128> {
     host.players()

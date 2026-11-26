@@ -33,8 +33,8 @@ use creature::sync::Locked;
 use creature::territory::{self, Rule};
 use mod_api::{
     BlockEntityDrawContext, ClientHost, EmissiveEvent, EntityInteractEvent, EntityPart, EntityRenderState,
-    EntityRenderer, EntityTickPostEvent, Flow, HitHost, Hooks, HostSide, InteractionResult, LivingDeathEvent,
-    LivingIncomingDamageEvent, RegisterEntityRenderersEvent, Registrar, RegistrationContext, ServerHost, SoundSource,
+    EntityRenderer, EntityTickPostEvent, Flow, HitHost, Hooks, HostSide, InteractionResult, LivingIncomingDamageEvent,
+    RegisterEntityRenderersEvent, Registrar, RegistrationContext, ServerHost, SoundSource,
 };
 
 pub const SCORPION: &str = "scorpions:scorpion";
@@ -378,19 +378,8 @@ impl Hooks for Scorpions {
             creature::colours::tick(host, id, &SCHEME);
             creature::sounds::play_queued(host, id, SoundSource::Hostile);
             territory::tick(host, id);
-            if creature::mob::despawn_far(host, event.dimension, id, territory::settled(id)) {
-                forget(id);
-            }
+            creature::mob::despawn_far(host, event.dimension, id, territory::settled(id));
         });
-    }
-
-    fn living_death(&self, _: &mut dyn ServerHost, event: &mut LivingDeathEvent<'_>) -> Flow {
-        if event.kind == SCORPION {
-            forget(event.entity);
-        } else if event.kind == dagger::THROWN {
-            dagger::forget(event.entity);
-        }
-        Flow::Continue
     }
 
     /// The cave kind's full-bright glow: the glow texture laid over the cave one (only cave scorpions draw it).
@@ -424,13 +413,6 @@ const CRAWL_CFG: creature::crawl::Cfg = creature::crawl::Cfg {
     busy: Some(busy),
     ..creature::crawl::Cfg::DEFAULT
 };
-
-/// Forget a gone scorpion in every static that holds it.
-fn forget(entity: u32) {
-    territory::forget(entity);
-    creature::body::forget(entity);
-    MOODS.locked().remove(&entity);
-}
 
 #[cfg(test)]
 mod tests {

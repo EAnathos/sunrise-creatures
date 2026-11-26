@@ -21,9 +21,8 @@ use creature::model::{WHITE, draw_layer, multiply};
 use creature::state::EntityMap;
 use luck::Action;
 use mod_api::{
-    BlockEntityDrawContext, EntityInteractEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, Hooks,
-    HostSide, InteractionResult, LivingDeathEvent, RegisterEntityRenderersEvent, Registrar, RegistrationContext,
-    ServerHost,
+    BlockEntityDrawContext, EntityInteractEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Hooks,
+    HostSide, InteractionResult, RegisterEntityRenderersEvent, Registrar, RegistrationContext, ServerHost,
 };
 
 pub const KIND: &str = "ladybugs:ladybug";
@@ -337,7 +336,6 @@ fn night(host: &dyn ServerHost, level: mod_api::LevelRef) -> bool {
 fn tick(host: &mut dyn ServerHost, dimension: &str, id: u32) {
     creature::colours::tick(host, id, &SCHEME);
     if creature::prey::tick(host, dimension, id, KIND) {
-        forget(id);
         return;
     }
     creature::flutter::tick_post(host, dimension, KIND, id, || {
@@ -536,12 +534,6 @@ fn act(host: &mut dyn ServerHost, action: Action) {
     }
 }
 
-fn forget(id: u32) {
-    RIDDEN.locked().remove(&id);
-    creature::flutter::gone(id);
-    luck::forget(id);
-}
-
 /// How it holds itself this frame: in flight its elytra lift up and out and its hind wings spread and buzz; resting,
 /// all folded.
 fn pose(name: &str, age: f32, flying: bool) -> [f32; 3] {
@@ -634,13 +626,6 @@ impl Hooks for Ladybugs {
                 tick(host, event.dimension, event.entity);
             }
         });
-    }
-
-    fn living_death(&self, _: &mut dyn ServerHost, event: &mut LivingDeathEvent<'_>) -> Flow {
-        if event.kind == KIND {
-            forget(event.entity);
-        }
-        Flow::Continue
     }
 }
 

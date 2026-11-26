@@ -19,9 +19,9 @@ use creature::bestiary::{Fact, Species};
 use creature::jar::Catchable;
 use creature::territory::{self, Ground};
 use mod_api::{
-    BlockEntityDrawContext, EntityInteractEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, Hooks,
-    Host, HostSide, InteractionResult, ItemPart, LevelRef, LivingDeathEvent, RegisterEntityRenderersEvent, Registrar,
-    RegistrationContext, ServerHost, SoundSource, UseOnEvent,
+    BlockEntityDrawContext, EntityInteractEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Hooks, Host,
+    HostSide, InteractionResult, ItemPart, LevelRef, RegisterEntityRenderersEvent, Registrar, RegistrationContext,
+    ServerHost, SoundSource, UseOnEvent,
 };
 use roll::{Action, Ball};
 
@@ -214,7 +214,6 @@ fn tick(host: &mut dyn ServerHost, dimension: &str, id: u32) {
         ]
     });
     if creature::prey::tick(host, dimension, id, KIND) {
-        forget(id);
         return;
     }
     for action in roll::actions() {
@@ -288,11 +287,6 @@ fn act(host: &mut dyn ServerHost, dimension: &str, action: Action) {
             }
         }
     }
-}
-
-fn forget(id: u32) {
-    creature::flutter::gone(id);
-    roll::forget(id);
 }
 
 /// Taking its ball (SPECS §2.1): a right-click with an empty hand on a beetle with a ball gives the player who clicked
@@ -489,13 +483,6 @@ impl Hooks for DungBeetles {
                 tick(host, event.dimension, event.entity);
             }
         });
-    }
-
-    fn living_death(&self, _: &mut dyn ServerHost, event: &mut LivingDeathEvent<'_>) -> Flow {
-        if event.kind == KIND {
-            forget(event.entity);
-        }
-        Flow::Continue
     }
 }
 

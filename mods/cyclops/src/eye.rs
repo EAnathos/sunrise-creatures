@@ -142,13 +142,6 @@ pub fn dazed(entity: u32) -> Option<f32> {
         .filter(|s| *s < STUN as f32 / 20.0)
 }
 
-pub fn forget(entity: u32) {
-    FACING.locked().remove(&entity);
-    STRUCK.locked().remove(&entity);
-    CRY.locked().remove(&entity);
-    DAZED.locked().remove(&entity);
-}
-
 /// Dazed: it stands still and does nothing, whatever it was doing.
 #[derive(Debug, Default)]
 pub struct Stunned {

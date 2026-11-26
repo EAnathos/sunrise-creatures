@@ -309,7 +309,7 @@ fn sting(host: &mut dyn ServerHost, id: u32, target: u32) {
 /// and despawning far from players.
 fn tick(host: &mut dyn ServerHost, dimension: &str, id: u32) {
     if creature::prey::tick(host, dimension, id, KIND) {
-        forget(id);
+        creature::glow::dim(id);
         return;
     }
     let wet = creature::aquatic::tick(host, id, KIND);
@@ -337,7 +337,7 @@ fn tick(host: &mut dyn ServerHost, dimension: &str, id: u32) {
         facts(host, dimension, id, at, glows);
     }
     if creature::mob::despawn_far(host, dimension, id, false) {
-        forget(id);
+        creature::glow::dim(id);
     }
 }
 
@@ -384,14 +384,6 @@ fn drops(host: &mut dyn ServerHost, id: u32) {
     if let Some(stack) = creature::hand::stack(&*host, item, count as u32) {
         creature::hand::drop_stack(host, level, at, stack);
     }
-}
-
-fn forget(id: u32) {
-    creature::body::forget(id);
-    creature::aquatic::forget(id);
-    creature::glow::dim(id);
-    swim::forget(id);
-    AT.locked().remove(&id);
 }
 
 /// How it holds itself this frame: its tentacles and arms swaying, flared out while it pulses.
@@ -488,7 +480,7 @@ impl Hooks for Jellyfish {
     fn living_death(&self, host: &mut dyn ServerHost, event: &mut LivingDeathEvent<'_>) -> Flow {
         if event.kind == KIND {
             drops(host, event.entity);
-            forget(event.entity);
+            creature::glow::dim(event.entity);
         }
         Flow::Continue
     }

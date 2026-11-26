@@ -37,9 +37,9 @@ use creature::territory::Ground;
 use mod_api::{
     AnvilUpdateEvent, BlockEntityDrawContext, ClientHost, Compound, EntityInteractEvent, EntityJoinLevelEvent,
     EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, GoalSpec, Heightmap, HitHost, Hooks, Host, HostSide,
-    InteractionResult, ItemPart, LevelRef, LevelTickPostEvent, LivingDeathEvent, LivingIncomingDamageEvent,
-    LivingRenderState, MobFilter, PlayerLoggedOutEvent, RegisterEntityRenderersEvent, Registrar, RegistrationContext,
-    ServerHost, SoundSource, Text, TooltipEvent,
+    InteractionResult, ItemPart, LevelRef, LevelTickPostEvent, LivingIncomingDamageEvent, LivingRenderState, MobFilter,
+    PlayerLoggedOutEvent, RegisterEntityRenderersEvent, Registrar, RegistrationContext, ServerHost, SoundSource, Text,
+    TooltipEvent,
 };
 
 pub const CYCLOPS: &str = "cyclops:cyclops";
@@ -398,23 +398,5 @@ impl Hooks for Cyclops {
     /// A player gone: whether they saw a flock is asked again when they come back (the fact is learnt once anyway).
     fn player_logged_out(&self, _: &mut dyn ServerHost, event: &mut PlayerLoggedOutEvent<'_>) {
         flock::NOTED.locked().remove(&event.player);
-    }
-
-    fn living_death(&self, _: &mut dyn ServerHost, event: &mut LivingDeathEvent<'_>) -> Flow {
-        if event.kind == CYCLOPS {
-            CYCLOPS_AT.locked().remove(&event.entity);
-            RAISED.locked().remove(&event.entity);
-            LIFTED.locked().remove(&event.entity);
-            smash::forget(event.entity);
-            ANGERED.locked().remove(&event.entity);
-            eye::forget(event.entity);
-            creature::body::forget(event.entity);
-        } else if event.kind == boulder::BOULDER {
-            boulder::forget(event.entity);
-        } else if event.kind == "minecraft:sheep" {
-            FLOCK.locked().remove(&event.entity);
-            SHEPHERD.locked().remove(&event.entity);
-        }
-        Flow::Continue
     }
 }

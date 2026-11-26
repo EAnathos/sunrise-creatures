@@ -713,10 +713,6 @@ impl Hooks for Vulture {
         if event.kind == KIND {
             screen::died(host, event.entity);
             talons::release(event.entity);
-            ride::forget(event.entity);
-            creature::friend::forget(event.entity);
-            creature::body::forget(event.entity);
-            FLYING.locked().remove(&event.entity);
         }
         Flow::Continue
     }

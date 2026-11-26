@@ -152,11 +152,6 @@ pub fn tick(host: &mut dyn ServerHost, entity: u32) {
     }
 }
 
-/// From the mod's `living_death` (or when it is caught in a jar).
-pub fn forget(entity: u32) {
-    FRIENDS.locked().remove(&entity);
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

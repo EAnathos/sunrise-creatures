@@ -516,14 +516,6 @@ fn interact(host: &mut dyn ServerHost, id: u32, player: PlayerRef, hand: mod_api
     }
 }
 
-fn forget(id: u32) {
-    creature::flutter::gone(id);
-    creature::friend::forget(id);
-    creature::glow::dim(id);
-    life::forget(id);
-    GLOWING.locked().remove(&id);
-}
-
 /// How it holds itself this frame: walking, it waddles (its body rocks, its legs step, its arms swing); hiding, it
 /// sits down with its cap pulled over its stem; shaking its cap, its head turns side to side.
 fn pose(name: &str, walk: f32, speed: f32, shake: Option<f32>) -> [f32; 3] {
@@ -640,7 +632,7 @@ impl Hooks for Sporelins {
         {
             creature::hand::drop_stack(host, level, [at[0], at[1] + 0.3, at[2]], stack);
         }
-        forget(id);
+        creature::glow::dim(id);
         Flow::Continue
     }
 }

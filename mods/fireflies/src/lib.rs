@@ -217,7 +217,6 @@ impl Hooks for Fireflies {
 
     fn living_death(&self, _: &mut dyn ServerHost, event: &mut LivingDeathEvent<'_>) -> Flow {
         if event.kind == FIREFLY {
-            creature::flutter::gone(event.entity);
             creature::glow::dim(event.entity);
         }
         Flow::Continue

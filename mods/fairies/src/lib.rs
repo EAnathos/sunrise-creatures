@@ -462,9 +462,6 @@ impl Hooks for Fairies {
         {
             sparkles(host, level, [at[0], at[1] + 0.4, at[2]], 20);
         }
-        creature::flutter::gone(event.entity);
-        creature::friend::forget(event.entity);
-        companion::forget(event.entity);
         creature::glow::dim(event.entity);
         TICKS.locked().remove(&event.entity);
         FRIEND_IDS.locked().remove(&event.entity);

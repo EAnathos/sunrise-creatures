@@ -44,10 +44,6 @@ pub fn active(fairy: u32) -> bool {
     ACTIVE.locked().contains(&fairy)
 }
 
-pub fn forget(fairy: u32) {
-    ACTIVE.locked().remove(&fairy);
-}
-
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum Mode {
     Follow,

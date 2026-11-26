@@ -96,10 +96,6 @@ pub fn of(id: u32) -> Option<Rider> {
     RIDERS.locked().get(&id).copied()
 }
 
-pub fn forget(id: u32) {
-    RIDERS.locked().remove(&id);
-}
-
 /// How far below its feet ground still counts as landed, in blocks.
 const LANDED: f64 = 0.5;
 

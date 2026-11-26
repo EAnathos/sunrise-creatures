@@ -44,12 +44,6 @@ pub(crate) fn dead(id: u32) -> bool {
     DEAD.locked().contains(&id)
 }
 
-pub(crate) fn forget(id: u32) {
-    BUSY.locked().remove(&id);
-    DEAD.locked().remove(&id);
-    SPOTTED.locked().remove(&id);
-}
-
 fn set(set: &'static EntitySet, id: u32, on: bool) {
     let mut all = set.locked();
     if on {

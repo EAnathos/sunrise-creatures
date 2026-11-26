@@ -107,12 +107,6 @@ pub fn tick(host: &mut dyn ServerHost, entity: u32) {
         );
     }
     e.discard(host);
-    projectile::forget(entity);
-}
-
-/// From the mod's `living_death` (or a removal): forgets it.
-pub fn forget(entity: u32) {
-    projectile::forget(entity);
 }
 
 /// Draws a boulder: tumbling end over end along its flight.

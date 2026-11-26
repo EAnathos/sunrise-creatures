@@ -64,12 +64,6 @@ pub(crate) fn set_cluster(id: u32, at: Option<[f64; 3]>) {
     };
 }
 
-pub(crate) fn forget(id: u32) {
-    PERCHED.locked().remove(&id);
-    LANDED.locked().remove(&id);
-    CLUSTER.locked().remove(&id);
-}
-
 /// Landing on a player (SPECS §4): one chance in this many ticks while one stands still near it (one in 20 a minute),
 /// how near and how long they must have stood (ticks), how long it stays (ticks).
 const LAND_ONE_IN: i32 = 24_000;
@@ -199,7 +193,7 @@ mod tests {
         set_perched(4, true);
         set_cluster(4, Some([1.0, 2.0, 3.0]));
         assert!(perched(4));
-        forget(4);
+        creature::state::forget(4);
         assert!(!perched(4));
         assert!(CLUSTER.locked().get(&4).is_none());
     }

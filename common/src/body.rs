@@ -179,7 +179,8 @@ struct Brain {
 }
 
 /// Each creature's brain, by id. A brain is taken out (`None` in its place) while its behaviours run, so that they run
-/// with no lock held: they may call the game, the library (`prey::quarry`) or `forget`.
+/// with no lock held: they may call the game, the library (`prey::quarry`), or see their creature forgotten
+/// (`crate::state::forget`, when it leaves the level).
 static BRAINS: EntityMap<Option<Brain>> = EntityMap::new();
 
 /// From the mod's `entity_tick_post`, for each of its creatures moved by hand: runs its behaviours (`make` gives them,
@@ -291,9 +292,9 @@ impl Drop for Taken {
     }
 }
 
-/// From the mod's `living_death` (or when it is gone): its behaviours are dropped (once they stop running, when it is
-/// forgotten by one of them).
-pub fn forget(entity: u32) {
+/// A dead creature's behaviours are dropped (`tick`); what it left is dropped with it when it leaves the level
+/// (`crate::state`), and a brain forgotten while it thinks isn't put back (`Taken`).
+fn forget(entity: u32) {
     BRAINS.locked().remove(&entity);
 }
 

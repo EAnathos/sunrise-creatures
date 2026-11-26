@@ -170,12 +170,6 @@ pub fn water_over(cx: &crate::body::World<'_>, at: [f64; 3], up: i32) -> f64 {
     water as f64 - at[1].fract()
 }
 
-/// From the mod, when one is gone.
-pub fn forget(entity: u32) {
-    DRY.locked().remove(&entity);
-    AT.locked().remove(&entity);
-}
-
 /// Whether `stack` on `kind` is a catch: a water bucket on a water creature.
 pub(crate) fn catches(host: &dyn Host, event: &EntityInteractEvent<'_>) -> bool {
     event.stack.is_some_and(|s| hand::is(host, s, "minecraft:water_bucket")) && of(event.kind).is_some()
@@ -202,9 +196,6 @@ pub(crate) fn catch(host: &mut dyn ServerHost, event: &EntityInteractEvent<'_>) 
     if !host.entity(id).is_some_and(|e| e.discard(host)) {
         return false;
     }
-    colours::forget(id);
-    crate::body::forget(id);
-    forget(id);
     crate::bestiary::learn(host, player.uuid(), aquatic.kind, BUCKET_FACT);
     // A water bucket doesn't stack: the one in hand becomes the full one.
     hand::set_held(host, player, event.hand, Some(bucket));

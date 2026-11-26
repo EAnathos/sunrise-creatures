@@ -499,11 +499,6 @@ fn act(host: &mut dyn ServerHost, dimension: &str, action: Action) {
     }
 }
 
-fn forget(id: u32) {
-    creature::flutter::gone(id);
-    life::forget(id);
-}
-
 /// How it holds itself this frame: walking, it sways side to side as a twig in the wind (SPECS §3) and its legs step;
 /// playing dead, it lies on its back with its legs folded.
 fn pose(name: &str, age: f32, walk: f32, speed: f32, dead: bool) -> [f32; 3] {
@@ -615,7 +610,7 @@ impl Hooks for Phasmids {
 
     fn living_death(&self, _: &mut dyn ServerHost, event: &mut LivingDeathEvent<'_>) -> Flow {
         if ours(event.kind) {
-            forget(event.entity);
+            creature::creep::let_go(event.entity);
         }
         Flow::Continue
     }

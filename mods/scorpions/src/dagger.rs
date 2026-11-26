@@ -185,7 +185,6 @@ pub fn tick(host: &mut dyn ServerHost, id: u32) {
         End::Hit => {
             bounce(host, id, at, level);
             e.discard(host);
-            forget(id);
         }
         // It landed: it stays stuck there, held still.
         End::Landed => {
@@ -289,15 +288,6 @@ fn stuck(host: &mut dyn ServerHost, id: u32) {
         }
         e.discard(host);
     }
-    forget(id);
-}
-
-/// From the mod's `living_death` (or a removal).
-pub fn forget(id: u32) {
-    FLYING.locked().remove(&id);
-    SPENT.locked().remove(&id);
-    STUCK.locked().remove(&id);
-    projectile::forget(id);
 }
 
 /// Draws a thrown dagger: the dagger itself, point first along where it flies; stuck, as it landed, its point sunk in.

@@ -227,11 +227,6 @@ fn set_flapping(id: u32, flapping: bool) {
     }
 }
 
-/// From the library when a creature is gone.
-pub fn forget(id: u32) {
-    FLAPPING.locked().remove(&id);
-}
-
 pub fn flapping(id: u32) -> bool {
     FLAPPING.locked().contains_key(&id)
 }

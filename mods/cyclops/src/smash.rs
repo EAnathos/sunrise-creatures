@@ -66,11 +66,6 @@ pub fn tick(host: &mut dyn ServerHost, level: LevelRef, cyclops: u32) {
     }
 }
 
-/// From its death: a blow it had no tick left to make is dropped.
-pub fn forget(cyclops: u32) {
-    BLOWS.locked().remove(&cyclops);
-}
-
 /// Whether `name` is a block a blow breaks.
 fn breakable(name: &str) -> bool {
     !KEPT_EXACTLY.contains(&name) && !KEPT.iter().any(|kept| name.contains(kept))

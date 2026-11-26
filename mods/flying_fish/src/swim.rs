@@ -82,12 +82,9 @@ pub(crate) fn took_off() -> Vec<[f64; 3]> {
     std::mem::take(&mut *TOOK_OFF.locked())
 }
 
+/// A fish gone: its glides waiting for their fact are dropped (what is kept by its id goes with it, `creature::state`).
 pub(crate) fn forget(id: u32) {
-    FISH.locked().remove(&id);
-    PANIC.locked().remove(&id);
-    GLIDING.locked().remove(&id);
     GLIDED.locked().retain(|g| *g != id);
-    BUMPED.locked().remove(&id);
 }
 
 /// A threat at `from` frightens the fish at `at` and its shoal: each takes off within half a second, away from it.

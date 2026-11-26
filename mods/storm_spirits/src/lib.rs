@@ -263,11 +263,10 @@ fn tick(host: &mut dyn ServerHost, dimension: &str, spirit: u32) {
     }
 }
 
-/// Forget a gone spirit in every static that holds it.
+/// A spirit gone: its light out, its shocks and bolts waiting for the tick dropped (what is kept by its id goes with
+/// it, `creature::state`).
 fn forget(spirit: u32) {
-    creature::body::forget(spirit);
     creature::glow::dim(spirit);
-    FADING.locked().remove(&spirit);
     SHOCKS.locked().retain(|s| s.0 != spirit);
     BOLTS.locked().retain(|b| b.0 != spirit);
 }

@@ -104,13 +104,6 @@ pub(crate) fn lucky_spots(player: u128) -> Vec<[f64; 3]> {
         .collect()
 }
 
-pub(crate) fn forget(id: u32) {
-    AROUND.locked().remove(&id);
-    DIVING.locked().remove(&id);
-    CARRIED.locked().remove(&id);
-    LUCKY.locked().remove(&id);
-}
-
 /// The behaviours, in priority order.
 pub(crate) fn behaviours() -> Vec<Box<dyn Behaviour>> {
     vec![
@@ -832,7 +825,7 @@ mod tests {
         LUCKY.locked().insert(5, ([1.0, 2.0, 3.0], 77));
         assert_eq!(lucky_spots(77), vec![[1.0, 2.0, 3.0]]);
         assert!(lucky_spots(78).is_empty());
-        forget(5);
+        creature::state::forget(5);
         assert!(lucky_spots(77).is_empty());
     }
 }

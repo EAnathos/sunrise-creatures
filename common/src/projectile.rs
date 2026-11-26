@@ -134,15 +134,6 @@ pub fn hits(host: &dyn Host, level: LevelRef, at: [f64; 3], kind: &str, thrower:
         .collect()
 }
 
-/// From the mod's `living_death` or once it removed the projectile.
-pub fn forget(id: u32) {
-    LAUNCHES.locked().remove(&id);
-    VELOCITIES.locked().remove(&id);
-    ENDED.locked().remove(&id);
-    REACHED.locked().remove(&id);
-    crate::body::forget(id);
-}
-
 /// A projectile's flight: its own velocity and gravity every tick, until it hits its target or lands.
 #[derive(Debug, Default)]
 pub struct Flight {

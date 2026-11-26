@@ -184,11 +184,6 @@ pub fn tick(host: &mut dyn ServerHost, entity: u32) {
     }
 }
 
-/// From the mod's `living_death`.
-pub fn forget(entity: u32) {
-    ANCHORS.locked().remove(&entity);
-}
-
 /// Where creature `entity` is settled (its anchor), if it is.
 pub fn anchor(entity: u32) -> Option<[i32; 3]> {
     ANCHORS.locked().get(&entity).and_then(|k| k.anchor)

@@ -208,11 +208,6 @@ pub fn restore(host: &mut dyn ServerHost, entity: u32, look: &Compound) {
     }
 }
 
-/// From the mod's `living_death` (or when it is gone): forgets its look.
-pub fn forget(entity: u32) {
-    LOOKS.locked().remove(&entity);
-}
-
 fn from_saved(scheme: &Scheme, s: &Saved) -> Option<Look> {
     Some(Look {
         base: scheme.colours.iter().position(|c| c.id == s.base)?,

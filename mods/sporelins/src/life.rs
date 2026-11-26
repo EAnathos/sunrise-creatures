@@ -94,12 +94,6 @@ pub(crate) fn tick_shake(id: u32) {
     }
 }
 
-pub(crate) fn forget(id: u32) {
-    HIDING.locked().remove(&id);
-    STAYS_AT.locked().remove(&id);
-    SHAKING.locked().remove(&id);
-}
-
 const SHAKE: i32 = 30;
 
 /// Its friend, if the nearest player is its friend and not told to stay: where they are.
@@ -409,7 +403,7 @@ mod tests {
         set_hiding(5, true);
         shake(5);
         assert!(hiding(5) && stays_at(5).is_some() && shaking(5).is_some());
-        forget(5);
+        creature::state::forget(5);
         assert!(!hiding(5) && stays_at(5).is_none() && shaking(5).is_none());
     }
 }

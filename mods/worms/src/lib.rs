@@ -22,9 +22,8 @@ use creature::sync::Locked;
 use creature::territory::{self, Rule};
 use mod_api::{
     BlockEntityDrawContext, EntityInteractEvent, EntityPart, EntityRenderState, EntityRenderer, EntityTickPostEvent,
-    Flow, GoalContext, GoalRegistrar, Hooks, HostSide, InteractionResult, LevelTickPostEvent, LivingDeathEvent,
-    ParticleKey, ParticleOptions, RegisterEntityRenderersEvent, Registrar, RegistrationContext, ServerHost,
-    SoundSource, SpawnReason,
+    GoalContext, GoalRegistrar, Hooks, HostSide, InteractionResult, LevelTickPostEvent, ParticleKey, ParticleOptions,
+    RegisterEntityRenderersEvent, Registrar, RegistrationContext, ServerHost, SoundSource, SpawnReason,
 };
 
 pub const WORM: &str = "worms:worm";
@@ -348,13 +347,6 @@ impl EntityRenderer for Draw {
     }
 }
 
-/// A worm forgotten (dead, despawned).
-fn forget(entity: u32) {
-    territory::forget(entity);
-    TICKS.locked().remove(&entity);
-    WORMS_AT.locked().remove(&entity);
-}
-
 #[derive(Default)]
 struct Worms;
 
@@ -393,7 +385,6 @@ impl Hooks for Worms {
             creature::sounds::play_queued(host, event.entity, SoundSource::Neutral);
             // A chicken near goes for it, and eats it once there.
             if creature::prey::tick(host, event.dimension, event.entity, WORM) {
-                forget(event.entity);
                 return;
             }
             territory::tick(host, event.entity);
@@ -401,17 +392,8 @@ impl Hooks for Worms {
             if let Some(at) = host.entity(event.entity).and_then(|e| e.position(host)) {
                 WORMS_AT.locked().insert(event.entity, at);
             }
-            if creature::mob::despawn_far(host, event.dimension, event.entity, territory::settled(event.entity)) {
-                forget(event.entity);
-            }
+            creature::mob::despawn_far(host, event.dimension, event.entity, territory::settled(event.entity));
         });
-    }
-
-    fn living_death(&self, _: &mut dyn ServerHost, event: &mut LivingDeathEvent<'_>) -> Flow {
-        if event.kind == WORM {
-            forget(event.entity);
-        }
-        Flow::Continue
     }
 }
 

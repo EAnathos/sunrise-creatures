@@ -19,9 +19,8 @@ use creature::jar::Catchable;
 use std::sync::Arc;
 
 use mod_api::{
-    BlockEntityDrawContext, EntityInteractEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, Hooks,
-    HostSide, InteractionResult, LivingDeathEvent, RegisterEntityRenderersEvent, Registrar, RegistrationContext,
-    ServerHost,
+    BlockEntityDrawContext, EntityInteractEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Hooks,
+    HostSide, InteractionResult, RegisterEntityRenderersEvent, Registrar, RegistrationContext,
 };
 
 pub const BUTTERFLY: &str = "butterflies:butterfly";
@@ -465,13 +464,6 @@ impl Hooks for Butterflies {
                 });
             }
         });
-    }
-
-    fn living_death(&self, _: &mut dyn ServerHost, event: &mut LivingDeathEvent<'_>) -> Flow {
-        if ours(event.kind) {
-            creature::flutter::gone(event.entity);
-        }
-        Flow::Continue
     }
 }
 

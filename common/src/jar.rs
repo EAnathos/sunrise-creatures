@@ -306,9 +306,6 @@ pub fn catch(host: &mut dyn ServerHost, event: &EntityInteractEvent<'_>) -> bool
     if !host.entity(id).is_some_and(|e| e.discard(host)) {
         return false;
     }
-    colours::forget(id);
-    crate::friend::forget(id);
-    crate::body::forget(id);
     // The bestiary: they now know a jar catches it.
     crate::bestiary::learn(host, player.uuid(), c.kind, JAR_FACT);
     // The only jar in hand becomes the filled one; from a stack, one is taken (not in creative, as a bucket) and the

@@ -2,13 +2,17 @@
 
 Each version's section says what changed in it (`cargo creature release` needs one before it tags the version).
 
-## 0.3.6
+## 0.4.0
 
 - What the series keeps about each creature lives in `creature::state` (`EntityMap`, `EntitySet`), which the library
   empties of an entity when it leaves the level: no module keeps anything about a creature that is gone.
 - Each settings struct the mods build (`Creeping`, `Soaring`, `Light`, `Species`, `Spawning`...) has a `DEFAULT`, for
   their literals to end with `..Type::DEFAULT`: a field added later no longer breaks the mods built before it.
 - The licences are in the README (its last section) rather than as copies of `LICENSE` and `LICENSE-ART.md`.
+- Breaking: the cleanup functions `creature::state` made redundant are gone (`body::forget`, `bestiary::forget`,
+  `aquatic::forget`, `colours::forget`, `flight::forget`, `friend::forget`, `projectile::forget`,
+  `territory::forget`, `flutter::forget`, `flutter::gone`): a mod leaves a gone creature to the library. A dying
+  creature keeps its look through its death animation.
 
 ## 0.3.5
 

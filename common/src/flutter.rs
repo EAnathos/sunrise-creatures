@@ -309,10 +309,6 @@ pub fn flying(id: u32) -> bool {
     FLYING.locked().get(&id).copied().unwrap_or(false)
 }
 
-pub fn forget(id: u32) {
-    FLYING.locked().remove(&id);
-}
-
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 enum Mode {
     #[default]
@@ -597,20 +593,7 @@ pub fn tick_post(
     if let Some(at) = host.entity(entity).and_then(|e| e.position(host)) {
         AT.locked().insert(entity, at);
     }
-    // A settled or befriended one stays.
+    // A settled or befriended one stays; one despawned leaves nothing behind (`crate::state`).
     let kept = territory::settled(entity) || crate::friend::of(entity).is_some();
-    if crate::mob::despawn_far(host, dimension, entity, kept) {
-        gone(entity);
-    }
-}
-
-/// From the mod's `living_death` (and when one despawns): what the library kept about it is dropped.
-pub fn gone(entity: u32) {
-    crate::body::forget(entity);
-    crate::creep::let_go(entity);
-    crate::colours::forget(entity);
-    territory::forget(entity);
-    forget(entity);
-    KINDS.locked().remove(&entity);
-    AT.locked().remove(&entity);
+    crate::mob::despawn_far(host, dimension, entity, kept);
 }

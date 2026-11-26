@@ -116,8 +116,9 @@ stay in the vulture until a second mod needs them, except friends (§6.2) and th
 
 The flight of butterflies, moths, fireflies and fairies: short erratic flights and landing (on flowers), resting, out
 by day, by night or at any hour but in the rain. A mod gives a `Kind` (its `Hours`, speed, height, flight and rest lengths, drawn to light, landing on
-flowers, an optional take-off sound played at each take-off) and calls `register` (size, muted, the flight goal), `tick_post` (territory, despawning far from players)
-and `gone`; `steer` flies one toward a point (a fairy following its friend).
+flowers, an optional take-off sound played at each take-off) and calls `register` (size, muted, the flight goal) and
+`tick_post` (territory, despawning far from players); what the library keeps of one is dropped when it leaves the
+level (`creature::state`). `steer` flies one toward a point (a fairy following its friend).
 
 **Spawning** ✅ (`spawns`): the game's natural spawning adds creatures only every 400 ticks, under a cap the farm animals
 fill, so small fliers would only appear with new chunks and be gone once their players left. A mod registers a

@@ -6,7 +6,7 @@ Each version's section says what changed in it (`cargo creature release` needs o
 
 - What it keeps about each creature lives in the library's `creature::state`, emptied when the creature leaves the
   level; its settings of the library's systems end with `..Type::DEFAULT`, so a later library doesn't break it. Needs
-  Sunrise Creatures 0.3.6.
+  Sunrise Creatures 0.4.0.
 - The licences are in the README (its last section) rather than as copies of `LICENSE` and `LICENSE-ART.md`.
 
 ## 0.1.2

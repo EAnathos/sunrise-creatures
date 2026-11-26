@@ -31,10 +31,6 @@ pub(crate) fn pulse(id: u32) -> f32 {
         .map_or(0.0, |&left| left as f32 / PULSE_TICKS as f32)
 }
 
-pub(crate) fn forget(id: u32) {
-    PULSING.locked().remove(&id);
-}
-
 /// The water over its bell (blocks), up to `LOOK_UP`.
 fn depth(m: &Body, cx: &World<'_>) -> f64 {
     let bell = [m.position.x, m.position.y + 0.9, m.position.z];

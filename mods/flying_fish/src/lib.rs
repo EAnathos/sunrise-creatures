@@ -260,7 +260,7 @@ fn threat(kind: &str) -> bool {
 /// boats frightening it, the facts seen, and despawning far from players.
 fn tick(host: &mut dyn ServerHost, dimension: &str, id: u32) {
     if creature::prey::tick(host, dimension, id, KIND) {
-        forget(id);
+        swim::forget(id);
         return;
     }
     creature::aquatic::tick(host, id, KIND);
@@ -294,7 +294,7 @@ fn tick(host: &mut dyn ServerHost, dimension: &str, id: u32) {
         facts(host, dimension, id, at);
     }
     if creature::mob::despawn_far(host, dimension, id, false) {
-        forget(id);
+        swim::forget(id);
     }
 }
 
@@ -369,12 +369,6 @@ fn facts(host: &mut dyn ServerHost, dimension: &str, id: u32, at: [f64; 3]) {
     }
 }
 
-fn forget(id: u32) {
-    creature::body::forget(id);
-    creature::aquatic::forget(id);
-    swim::forget(id);
-}
-
 /// A beached flying fish picked up by hand (SPECS §3): it is gone, a raw flying fish in the player's hands.
 fn pick_up(host: &mut dyn ServerHost, id: u32) -> bool {
     let Some(e) = host.entity(id) else {
@@ -393,8 +387,7 @@ fn pick_up(host: &mut dyn ServerHost, id: u32) -> bool {
     if !e.discard(host) {
         return false;
     }
-    creature::colours::forget(id);
-    forget(id);
+    swim::forget(id);
     creature::hand::give(host, player, fish);
     level.play_sound(
         host,
@@ -508,7 +501,7 @@ impl Hooks for FlyingFish {
 
     fn living_death(&self, _: &mut dyn ServerHost, event: &mut LivingDeathEvent<'_>) -> Flow {
         if event.kind == KIND {
-            forget(event.entity);
+            swim::forget(event.entity);
         }
         Flow::Continue
     }

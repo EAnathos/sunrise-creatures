@@ -66,12 +66,6 @@ pub(crate) fn take(id: u32) -> bool {
     true
 }
 
-pub(crate) fn forget(id: u32) {
-    BALL.locked().remove(&id);
-    BUSY.locked().remove(&id);
-    TAKEN.locked().remove(&id);
-}
-
 /// The herd (SPECS §2): how far it sees grazing animals and how often it looks (ticks), how near one it keeps
 /// (blocks).
 const HERD_RANGE: f64 = 16.0;
@@ -439,8 +433,8 @@ mod tests {
         assert!(!take(7));
         set_ball(8, Some(Ball::Burying(0.5)));
         assert!(!take(8));
-        forget(7);
-        forget(8);
+        creature::state::forget(7);
+        creature::state::forget(8);
     }
 
     #[test]
