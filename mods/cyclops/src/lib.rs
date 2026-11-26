@@ -6,6 +6,9 @@
 //! reach a boulder hurled over its head (`Smash`, `boulder.rs`). Its eye is its weak spot (`eye.rs`). It appears rarely
 //! at a cave mouth near a player (`spawn`), with a flock of sheep that follow it (`flock`). It drops its eye when a player kills it, and
 //! sometimes its club; the eye makes a shepherd's crook, which herds farm animals (`crook.rs`).
+// The library's settings are built with `..Type::DEFAULT` even when every field is given: a field the library adds
+// later then takes its default (docs/CONVENTIONS.md, "Library structs").
+#![allow(clippy::needless_update)]
 mod boulder;
 mod crook;
 mod draw;
@@ -91,6 +94,7 @@ static BESTIARY: Species = Species {
     draw: book_view,
     draw_scale: BOOK_SCALE,
     draw_lift: 0.0,
+    ..Species::DEFAULT
 };
 
 /// Its drawing in a placed jar: standing, its whole height in the view.
@@ -124,6 +128,7 @@ static EYE_PAGE: creature::items::ItemPage = creature::items::ItemPage {
     dropped_by: &["cyclops:cyclops"],
     given_by: &[],
     uses: &[],
+    ..creature::items::ItemPage::DEFAULT
 };
 static CLUB_PAGE: creature::items::ItemPage = creature::items::ItemPage {
     item: "cyclops:club",
@@ -133,6 +138,7 @@ static CLUB_PAGE: creature::items::ItemPage = creature::items::ItemPage {
         icon: "cyclops:club",
         key: "bestiary.cyclops.item.club.use",
     }],
+    ..creature::items::ItemPage::DEFAULT
 };
 static CROOK_PAGE: creature::items::ItemPage = creature::items::ItemPage {
     item: "cyclops:shepherds_crook",
@@ -142,6 +148,7 @@ static CROOK_PAGE: creature::items::ItemPage = creature::items::ItemPage {
         icon: "minecraft:sheep_spawn_egg",
         key: "bestiary.cyclops.item.shepherds_crook.use",
     }],
+    ..creature::items::ItemPage::DEFAULT
 };
 
 /// Its spawn egg says "Disabled in Peaceful" in red there, as a vanilla monster's (the game only knows vanilla's

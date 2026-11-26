@@ -22,6 +22,18 @@ pub struct Light {
     pub shown: fn(u32) -> bool,
 }
 
+impl Light {
+    /// Its neutral values, for a mod's literal to end with (`..Light::DEFAULT`): a field the library adds later then
+    /// takes its default, and the mods built before go on building.
+    pub const DEFAULT: Light = Light {
+        rgb: 0xFFFFFF,
+        radius: 0.0,
+        intensity: 0.0,
+        lift: 0.0,
+        shown: |_| true,
+    };
+}
+
 /// The game's budget, for all mods.
 const LIGHTS: usize = 8;
 /// How far from the player the game draws one.

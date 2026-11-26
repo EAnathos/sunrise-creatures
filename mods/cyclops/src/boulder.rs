@@ -54,6 +54,7 @@ pub fn launch(host: &mut dyn ServerHost, dimension: &str) {
             gravity: GRAVITY,
             life: LIFE,
             target: Some((t.target, REACH)),
+            ..Launch::DEFAULT
         };
         projectile::launch(host, dimension, BOULDER, t.from, launch);
     }

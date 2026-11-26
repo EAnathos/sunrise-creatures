@@ -14,6 +14,7 @@
 //!   subtitle is translated; when the module has a `sources/sounds.toml`, its clips are exactly its `.ogg` files.
 //! - A published module (`[registry]`): its release files as `cargo creature pages` writes them (`release::stale`), its
 //!   `Cargo.lock`, a changelog section for its version, and its release workflow (`sunrise-release-<id>.yml`).
+//! - A mod's literals of the library's settings structs end with `..<Type>::DEFAULT` (`literals.rs`).
 //! - Recipes: each crafting or cooking recipe has its recipe book advancement (`advancement/recipes/<tab>/<name>.json`,
 //!   rewarding it), or the recipe book never shows it. Brewing recipes have none, as vanilla's.
 //! - The Markdown docs use no em dash.
@@ -60,6 +61,20 @@ pub fn run() -> crate::Result {
         models(m, &mut errors);
         sounds(m, &mut errors);
         recipes(m, &mut errors);
+    }
+    let defaulted = crate::literals::defaulted(&library.dir);
+    for m in &mods {
+        let mut files = Vec::new();
+        crate::literals::rust_files(&m.dir.join("src"), &mut files);
+        for f in files {
+            let text = std::fs::read_to_string(&f).unwrap_or_default();
+            for (line, t) in crate::literals::missing(&text, &defaulted) {
+                errors.push(format!(
+                    "{}:{line}: a {t} without `..{t}::DEFAULT` (docs/CONVENTIONS.md, \"Library structs\")",
+                    rel(&f)
+                ));
+            }
+        }
     }
     let ids: Vec<String> = mods.iter().map(|m| m.id.clone()).collect();
     if let Err(e) = modules::with_requirements(&ids) {

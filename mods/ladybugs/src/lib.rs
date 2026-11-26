@@ -6,6 +6,9 @@
 //! flies short hops between flowers and rests on them (the library's small fliers, `flutter`), gathers at night
 //! (`luck::Cluster`), and lands on a player who stands still, giving them luck for as many minutes as it has spots
 //! (`luck::Perch`, seated by `act`). Caught in the glass jar, it settles on a flower patch; chickens peck it up.
+// The library's settings are built with `..Type::DEFAULT` even when every field is given: a field the library adds
+// later then takes its default (docs/CONVENTIONS.md, "Library structs").
+#![allow(clippy::needless_update)]
 mod luck;
 mod model_ladybug;
 
@@ -212,6 +215,7 @@ static FLIGHT: creature::flutter::Kind = creature::flutter::Kind {
     drawn_to_light: false,
     lands_on_flowers: true,
     takeoff: Some("ladybugs:entity.ladybug.takeoff"),
+    ..creature::flutter::Kind::DEFAULT
 };
 
 /// Its crawl (the library's creeping, SPECS §3): slow, a little way around where it rests, up a flower or a step; by day
@@ -227,6 +231,7 @@ static CREEPING: creature::creep::Creeping = creature::creep::Creeping {
         cx.daylight && !cx.raining && !creature::flutter::flying(m.id) && !luck::perched(m.id) && !luck::gathering(m.id)
     },
     rustle: None,
+    ..creature::creep::Creeping::DEFAULT
 };
 
 /// They come out near players by day in their biomes (the library's spawning): 1 to 3, up to 6 near a player.
@@ -237,6 +242,7 @@ static SPAWNING: creature::flutter::Spawning = creature::flutter::Spawning {
     group: (1, 3),
     cap: 6,
     chance: 2,
+    ..creature::flutter::Spawning::DEFAULT
 };
 
 /// Caught in the library's glass jar (common/SPECS.md §4.1), it settles on a flower patch.
@@ -245,6 +251,7 @@ static IN_JAR: Catchable = Catchable {
     model: "ladybugs:ladybug_jar",
     settles: Some(creature::territory::Rule::FlowerPatch),
     glows: false,
+    ..Catchable::DEFAULT
 };
 
 const LUCK_FACT: &str = "luck";
@@ -259,8 +266,10 @@ static PREY: creature::prey::Prey = creature::prey::Prey {
         kind: "minecraft:chicken",
         range: 6.0,
         speed: 1.0,
+        ..creature::prey::Hunter::DEFAULT
     }],
     fact: Some(CHICKEN_FACT),
+    ..creature::prey::Prey::DEFAULT
 };
 
 /// Its page (SPECS §6): the biomes met in, its kinds as morphs, its facts.
@@ -309,6 +318,7 @@ static BESTIARY: Species = Species {
     },
     draw_scale: 2.5,
     draw_lift: 0.0,
+    ..Species::DEFAULT
 };
 
 /// How often the night's clusters are looked for (ticks), how far a ladybug sees its cluster (blocks), how many make a

@@ -46,6 +46,20 @@ Rules shared by every module of the Sunrise Creatures series ([ARCHITECTURE.md](
 - Before adding a system to a mod, check the library; before writing one that a second mod will need, put it in the
   library (ARCHITECTURE.md §3).
 
+### Library structs
+
+A mod configures the library's systems with its structs (`Creeping`, `Soaring`, `Light`, `Species`, `Spawning`...),
+mostly as `static` literals. A field the library adds to one would break every mod already built against it (a
+published mod builds against the newest library its `^0.x` allows), so:
+
+- each settings struct of the library has `pub const DEFAULT` (its neutral values), and a new field gets a default
+  there;
+- a mod's literal of one ends with `..Type::DEFAULT`, even when it gives every field (each mod allows
+  `clippy::needless_update` for it); `cargo creature check` lists a literal without it (`tools/src/literals.rs`, which
+  reads the types from the library's `DEFAULT`s);
+- the small records that won't grow (a `Colour`, a `Pattern`, a `Fact`, a `Size`, a `Look`, a `Variety`, a `Scheme`,
+  the generated models' `Part` and `Cube`) have none.
+
 ### Shared state
 
 Hooks, behaviours and renderers share per-creature state through `static` mutexes (keyed by entity id: single player).

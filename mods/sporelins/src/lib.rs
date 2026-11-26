@@ -7,6 +7,9 @@
 //! spores when startled, plants mushrooms (`life`). Given a mushroom of its colour it may befriend the player (the
 //! library's friends): it follows them or stays and tends a mushroom patch, fills a bowl with stew once a day and its
 //! cap's spots glow at night. Killed, it drops a mushroom of its colour.
+// The library's settings are built with `..Type::DEFAULT` even when every field is given: a field the library adds
+// later then takes its default (docs/CONVENTIONS.md, "Library structs").
+#![allow(clippy::needless_update)]
 mod life;
 mod model_sporelin;
 mod model_sporelin_brown;
@@ -106,6 +109,7 @@ static HOURS: creature::flutter::Kind = creature::flutter::Kind {
     drawn_to_light: false,
     lands_on_flowers: false,
     takeoff: None,
+    ..creature::flutter::Kind::DEFAULT
 };
 
 /// 1 to 3 together, up to 3 within 48 blocks of a player (SPECS §2).
@@ -116,6 +120,7 @@ static SPAWNING: creature::flutter::Spawning = creature::flutter::Spawning {
     group: (1, 3),
     cap: 3,
     chance: 4,
+    ..creature::flutter::Spawning::DEFAULT
 };
 
 /// The ground mushrooms grow on, and where it comes out.
@@ -190,6 +195,7 @@ static BESTIARY: Species = Species {
     },
     draw_scale: 1.0,
     draw_lift: 0.0,
+    ..Species::DEFAULT
 };
 
 fn model(look: usize) -> &'static creature::model::Part {
@@ -254,6 +260,7 @@ fn tick(host: &mut dyn ServerHost, dimension: &str, id: u32) {
             intensity: 0.35,
             lift: 0.5,
             shown: |_| true,
+            ..creature::glow::Light::DEFAULT
         };
         creature::glow::shine(host, dimension, id, light);
     } else if GLOWING.locked().remove(&id).is_some() {

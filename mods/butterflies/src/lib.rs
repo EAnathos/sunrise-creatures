@@ -7,6 +7,9 @@
 //! (`SCHEME`). The moth has one look, painted in its texture (SPECS §2.1). On the ground a butterfly opens and closes
 //! its wings slowly. They fly by day (butterflies) or by night (moths) and land on flowers (the library's `flutter`); released
 //! from a glass jar on a flower they settle around it (the library's territory). Butterfly dust drops from them.
+// The library's settings are built with `..Type::DEFAULT` even when every field is given: a field the library adds
+// later then takes its default (docs/CONVENTIONS.md, "Library structs").
+#![allow(clippy::needless_update)]
 mod model_butterfly;
 mod model_moth;
 mod throw;
@@ -183,6 +186,7 @@ static BUTTERFLY_FLIGHT: creature::flutter::Kind = creature::flutter::Kind {
     drawn_to_light: false,
     lands_on_flowers: true,
     takeoff: Some("butterflies:entity.butterfly.flutter"),
+    ..creature::flutter::Kind::DEFAULT
 };
 static MOTH_FLIGHT: creature::flutter::Kind = creature::flutter::Kind {
     hours: creature::flutter::Hours::Night,
@@ -205,12 +209,14 @@ static IN_JAR: [Catchable; 2] = [
         model: "butterflies:butterfly_jar",
         settles: Some(creature::territory::Rule::FlowerPatch),
         glows: false,
+        ..Catchable::DEFAULT
     },
     Catchable {
         kind: MOTH,
         model: "butterflies:moth_jar",
         settles: Some(creature::territory::Rule::FlowerPatch),
         glows: false,
+        ..Catchable::DEFAULT
     },
 ];
 
@@ -268,6 +274,7 @@ static BESTIARY: [creature::bestiary::Species; 2] = [
         draw: butterfly_view,
         draw_scale: BOOK_SCALE,
         draw_lift: 0.1,
+        ..creature::bestiary::Species::DEFAULT
     },
     creature::bestiary::Species {
         id: MOTH,
@@ -280,6 +287,7 @@ static BESTIARY: [creature::bestiary::Species; 2] = [
         draw: moth_view,
         draw_scale: BOOK_SCALE,
         draw_lift: 0.1,
+        ..creature::bestiary::Species::DEFAULT
     },
 ];
 
@@ -314,6 +322,7 @@ static SPAWNING: [creature::flutter::Spawning; 2] = [
         group: (1, 3),
         cap: 18,
         chance: 1,
+        ..creature::flutter::Spawning::DEFAULT
     },
     creature::flutter::Spawning {
         kind: MOTH,
@@ -322,6 +331,7 @@ static SPAWNING: [creature::flutter::Spawning; 2] = [
         group: (1, 3),
         cap: 5,
         chance: 3,
+        ..creature::flutter::Spawning::DEFAULT
     },
 ];
 
@@ -334,6 +344,7 @@ static DUST_PAGE: creature::items::ItemPage = creature::items::ItemPage {
         icon: "butterflies:butterfly_dust",
         key: "bestiary.butterflies.item.dust.throw",
     }],
+    ..creature::items::ItemPage::DEFAULT
 };
 static CONFETTI_PAGE: creature::items::ItemPage = creature::items::ItemPage {
     item: "butterflies:confetti",
@@ -343,6 +354,7 @@ static CONFETTI_PAGE: creature::items::ItemPage = creature::items::ItemPage {
         icon: "butterflies:confetti",
         key: "bestiary.butterflies.item.confetti.pop",
     }],
+    ..creature::items::ItemPage::DEFAULT
 };
 
 #[derive(Default)]

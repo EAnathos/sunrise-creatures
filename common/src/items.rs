@@ -60,6 +60,17 @@ pub struct ItemPage {
     pub uses: &'static [Use],
 }
 
+impl ItemPage {
+    /// Its neutral values, for a mod's literal to end with (`..ItemPage::DEFAULT`): a field the library adds later then
+    /// takes its default, and the mods built before go on building.
+    pub const DEFAULT: ItemPage = ItemPage {
+        item: "",
+        dropped_by: &[],
+        given_by: &[],
+        uses: &[],
+    };
+}
+
 static PAGES: Mutex<Vec<&'static ItemPage>> = Mutex::new(Vec::new());
 
 /// From a module's `register`: its item gets a page.

@@ -25,6 +25,7 @@ mod check;
 mod icon;
 mod install;
 mod launcher;
+mod literals;
 mod model;
 mod modules;
 mod native_check;

@@ -8,6 +8,9 @@
 //! and are spotted by a player who looks at them a moment (`life::Watch`, counted on the player). Hit, they drop and
 //! play dead, then climb back up (`life::PlayDead`). Caught in the glass jar, they settle on a tree (the library's tree
 //! rule).
+// The library's settings are built with `..Type::DEFAULT` even when every field is given: a field the library adds
+// later then takes its default (docs/CONVENTIONS.md, "Library structs").
+#![allow(clippy::needless_update)]
 mod life;
 mod model_leaf_insect;
 mod model_stick_insect;
@@ -208,6 +211,7 @@ static HOURS: creature::flutter::Kind = creature::flutter::Kind {
     drawn_to_light: false,
     lands_on_flowers: false,
     takeoff: None,
+    ..creature::flutter::Kind::DEFAULT
 };
 
 /// On top of leaves in their biomes (SPECS §3): 1 or 2 together, up to 4 within 32 blocks of a player.
@@ -219,6 +223,7 @@ static SPAWNING: [creature::flutter::Spawning; 2] = [
         group: (1, 2),
         cap: 4,
         chance: 3,
+        ..creature::flutter::Spawning::DEFAULT
     },
     creature::flutter::Spawning {
         kind: LEAF,
@@ -227,6 +232,7 @@ static SPAWNING: [creature::flutter::Spawning; 2] = [
         group: (1, 2),
         cap: 4,
         chance: 3,
+        ..creature::flutter::Spawning::DEFAULT
     },
 ];
 
@@ -237,12 +243,14 @@ static IN_JAR: [Catchable; 2] = [
         model: "phasmids:stick_insect_jar",
         settles: Some(territory::Rule::Tree),
         glows: false,
+        ..Catchable::DEFAULT
     },
     Catchable {
         kind: LEAF,
         model: "phasmids:leaf_insect_jar",
         settles: Some(territory::Rule::Tree),
         glows: false,
+        ..Catchable::DEFAULT
     },
 ];
 
@@ -322,6 +330,7 @@ static BESTIARY: [Species; 2] = [
         },
         draw_scale: 1.2,
         draw_lift: 0.0,
+        ..Species::DEFAULT
     },
     Species {
         id: LEAF,
@@ -338,6 +347,7 @@ static BESTIARY: [Species; 2] = [
         },
         draw_scale: 1.4,
         draw_lift: 0.0,
+        ..Species::DEFAULT
     },
 ];
 
@@ -383,6 +393,7 @@ static CREEPING: creature::creep::Creeping = creature::creep::Creeping {
     area: canopy,
     may: |m, _| !life::busy(m.id),
     rustle: Some(RUSTLE),
+    ..creature::creep::Creeping::DEFAULT
 };
 
 /// Its sounds (SPECS §2): a faint rustle of leaves as it crawls, a dry click as it drops to play dead (`life`).

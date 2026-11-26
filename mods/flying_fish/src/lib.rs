@@ -7,6 +7,9 @@
 //! `aquatic` (never drowning, beached out of water, caught in a water bucket, spawning in shoals), swims and glides by
 //! hand (`swim.rs`), and is hunted by dolphins (the library's `prey`). A beached one is picked up as a raw flying fish.
 //! Its drops are its loot table's.
+// The library's settings are built with `..Type::DEFAULT` even when every field is given: a field the library adds
+// later then takes its default (docs/CONVENTIONS.md, "Library structs").
+#![allow(clippy::needless_update)]
 mod model;
 mod swim;
 
@@ -108,6 +111,7 @@ static AQUATIC: Aquatic = Aquatic {
     bucket: BUCKET,
     dries: 600,
     flop: Some(FLOP),
+    ..Aquatic::DEFAULT
 };
 
 /// Its sounds (`sources/sounds.toml`, cut from CC0 freesound recordings): its splash out of and into the water, the buzz
@@ -127,6 +131,7 @@ static SPAWNING: Spawning = Spawning {
     cap: 12,
     chance: 3,
     depth: (0.5, 2.5),
+    ..Spawning::DEFAULT
 };
 
 const GLIDE_FACT: &str = "glide";
@@ -141,8 +146,10 @@ static PREY: creature::prey::Prey = creature::prey::Prey {
         kind: "minecraft:dolphin",
         range: 12.0,
         speed: 1.5,
+        ..creature::prey::Hunter::DEFAULT
     }],
     fact: Some(DOLPHIN_FACT),
+    ..creature::prey::Prey::DEFAULT
 };
 
 /// A dolphin that caught one is fed, as by a player (SPECS §3): it leads the players near to treasure.
@@ -193,6 +200,7 @@ static BESTIARY: Species = Species {
     draw: |_, _| {},
     draw_scale: 1.0,
     draw_lift: 0.0,
+    ..Species::DEFAULT
 };
 
 /// Its items in the guide's Items tab (common/SPECS.md §7.2).
@@ -214,6 +222,7 @@ static RAW_PAGE: creature::items::ItemPage = creature::items::ItemPage {
             key: "bestiary.flying_fish.item.raw_flying_fish.fished",
         },
     ],
+    ..creature::items::ItemPage::DEFAULT
 };
 static COOKED_PAGE: creature::items::ItemPage = creature::items::ItemPage {
     item: COOKED,
@@ -223,6 +232,7 @@ static COOKED_PAGE: creature::items::ItemPage = creature::items::ItemPage {
         icon: "minecraft:cooked_cod",
         key: "bestiary.flying_fish.item.cooked_flying_fish.use",
     }],
+    ..creature::items::ItemPage::DEFAULT
 };
 static BUCKET_PAGE: creature::items::ItemPage = creature::items::ItemPage {
     item: BUCKET,
@@ -232,6 +242,7 @@ static BUCKET_PAGE: creature::items::ItemPage = creature::items::ItemPage {
         icon: "minecraft:water_bucket",
         key: "bestiary.flying_fish.item.flying_fish_bucket.use",
     }],
+    ..creature::items::ItemPage::DEFAULT
 };
 
 /// How often it looks out for dolphins and boats (ticks), and how near they frighten it (blocks).

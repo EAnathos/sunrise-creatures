@@ -8,6 +8,9 @@
 //! `NOT_WILD` (from `finalize_spawn`'s spawn reason, `entity_breed`, `entity_tame`). The facts are found out through the game's hooks: love mode (breeding), taming, an item used on it
 //! (milk), shears or a brush (wool), a bucket, what it drops on its own (an egg), what it drops when a player kills it,
 //! and one thing it does (a creeper exploding, an enderman taking a block, a zombie turning into a drowned).
+// The library's settings are built with `..Type::DEFAULT` even when every field is given: a field the library adds
+// later then takes its default (docs/CONVENTIONS.md, "Library structs").
+#![allow(clippy::needless_update)]
 mod creatures;
 mod game_data;
 
@@ -122,6 +125,7 @@ fn species(c: &'static Creature) -> Species {
         draw: no_drawing,
         draw_scale: 1.0,
         draw_lift: 0.0,
+        ..Species::DEFAULT
     }
 }
 

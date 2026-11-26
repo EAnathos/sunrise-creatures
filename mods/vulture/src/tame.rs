@@ -126,6 +126,7 @@ pub static FOLLOWING: Following = Following {
     above: 5.0,
     may: may_follow,
     lands_on_water: false,
+    ..Following::DEFAULT
 };
 
 /// How close two vultures in love must come to breed, in blocks.

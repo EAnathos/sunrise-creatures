@@ -7,6 +7,9 @@
 //! It flies by hand (`flight.rs`, the library's `body`): short jerky dashes, or at whoever hit it, to zap them (the
 //! library's `anger`). Lightning and fire don't hurt it; what touches it is zapped. Its sparks call lightning
 //! (`spark.rs`).
+// The library's settings are built with `..Type::DEFAULT` even when every field is given: a field the library adds
+// later then takes its default (docs/CONVENTIONS.md, "Library structs").
+#![allow(clippy::needless_update)]
 mod flight;
 mod model_storm_spirit;
 mod spark;
@@ -86,6 +89,7 @@ static BESTIARY: Species = Species {
     draw: |_, _| {},
     draw_scale: 1.0,
     draw_lift: 0.0,
+    ..Species::DEFAULT
 };
 
 /// Its item in the guide's Items tab (common/SPECS.md §7.2).
@@ -97,6 +101,7 @@ static SPARK_PAGE: creature::items::ItemPage = creature::items::ItemPage {
         icon: "minecraft:lightning_rod",
         key: "bestiary.storm_spirits.item.spark.use",
     }],
+    ..creature::items::ItemPage::DEFAULT
 };
 
 /// The pale blue light around it (seen only, it lights nothing in the world).
@@ -106,6 +111,7 @@ static LIGHT: creature::glow::Light = creature::glow::Light {
     intensity: 0.9,
     lift: 1.0,
     shown: |_| true,
+    ..creature::glow::Light::DEFAULT
 };
 
 /// Weather strikes that give birth to a spirit, summoned on the next level tick (`level_tick_post`).

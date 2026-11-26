@@ -33,6 +33,17 @@ pub struct Aquatic {
     pub flop: Option<&'static str>,
 }
 
+impl Aquatic {
+    /// Its neutral values, for a mod's literal to end with (`..Aquatic::DEFAULT`): a field the library adds later then
+    /// takes its default, and the mods built before go on building.
+    pub const DEFAULT: Aquatic = Aquatic {
+        kind: "",
+        bucket: "",
+        dries: 0,
+        flop: None,
+    };
+}
+
 /// Where and how a water creature spawns: in groups of `group`, `depth` blocks under the surface, up to `cap` near a
 /// player, one try in `chance` every `SPAWN_EVERY` ticks. A kind with looks (`scheme`) spawns in groups of one look,
 /// rolled for the group's biome (a bloom of one kind of jellyfish).
@@ -44,6 +55,20 @@ pub struct Spawning {
     pub cap: usize,
     pub chance: u64,
     pub depth: (f64, f64),
+}
+
+impl Spawning {
+    /// Its neutral values, for a mod's literal to end with (`..Spawning::DEFAULT`): a field the library adds later then
+    /// takes its default, and the mods built before go on building.
+    pub const DEFAULT: Spawning = Spawning {
+        kind: "",
+        scheme: None,
+        biomes: &[],
+        group: (1, 1),
+        cap: 0,
+        chance: 1,
+        depth: (0.0, 0.0),
+    };
 }
 
 /// The fact learnt by catching one in a bucket.

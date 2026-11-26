@@ -6,6 +6,9 @@
 //! follows boats and catches gliding flying fish (the library's prey, when the Flying Fish are installed). Fed a raw
 //! fish it may become a player's friend (the library's `friend`): it follows them, dives for fish for them and circles
 //! over a lucky fishing spot. Its behaviours are in `coast.rs`; what they can't do themselves, the tick does (`act`).
+// The library's settings are built with `..Type::DEFAULT` even when every field is given: a field the library adds
+// later then takes its default (docs/CONVENTIONS.md, "Library structs").
+#![allow(clippy::needless_update)]
 mod coast;
 mod model_seagull;
 
@@ -53,6 +56,7 @@ pub(crate) static WINGS: Wings = Wings {
     flap: FLAP,
     takeoff: TAKEOFF,
     pace: |_| 1.0,
+    ..Wings::DEFAULT
 };
 
 /// Its soaring along the coast (SPECS §2): lower and shorter than the vulture's, by day (at night it rests on the
@@ -65,6 +69,7 @@ pub(crate) static SOARING: Soaring = Soaring {
     idle: |m, cx| creature::friend::of(m.id).is_none() && (cx.daylight || !(m.on_ground || m.in_water)),
     perch: |name| !name.ends_with("leaves") && name != "minecraft:lava",
     lands_on_water: true,
+    ..Soaring::DEFAULT
 };
 
 /// How fast its circle drifts along the coast (blocks a tick): it roams.
@@ -84,6 +89,7 @@ static HUNTER: creature::prey::Hunter = creature::prey::Hunter {
     kind: KIND,
     range: 16.0,
     speed: 1.0,
+    ..creature::prey::Hunter::DEFAULT
 };
 
 /// Its page (SPECS §4): the biomes met in, its facts shown as they are learnt.
@@ -125,6 +131,7 @@ static BESTIARY: Species = Species {
     draw: |_, _| {},
     draw_scale: 1.0,
     draw_lift: 0.0,
+    ..Species::DEFAULT
 };
 
 /// Its items in the guide's Items tab (common/SPECS.md §7.2).
@@ -136,6 +143,7 @@ static FEATHER_PAGE: creature::items::ItemPage = creature::items::ItemPage {
         icon: "minecraft:arrow",
         key: "bestiary.seagulls.item.feather.use",
     }],
+    ..creature::items::ItemPage::DEFAULT
 };
 static RAW_PAGE: creature::items::ItemPage = creature::items::ItemPage {
     item: RAW,
@@ -145,6 +153,7 @@ static RAW_PAGE: creature::items::ItemPage = creature::items::ItemPage {
         icon: "minecraft:chicken",
         key: "bestiary.seagulls.item.raw_seagull.use",
     }],
+    ..creature::items::ItemPage::DEFAULT
 };
 static COOKED_PAGE: creature::items::ItemPage = creature::items::ItemPage {
     item: COOKED,
@@ -154,6 +163,7 @@ static COOKED_PAGE: creature::items::ItemPage = creature::items::ItemPage {
         icon: "minecraft:cooked_chicken",
         key: "bestiary.seagulls.item.cooked_seagull.use",
     }],
+    ..creature::items::ItemPage::DEFAULT
 };
 
 /// One fish in this many befriends it (SPECS §3).

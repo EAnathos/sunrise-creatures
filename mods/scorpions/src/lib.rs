@@ -15,6 +15,9 @@
 //!
 //! Its posture and its fight run from the server tick (the library's `body`) and queue their strikes (`strike`), dealt
 //! with their poison by the mod's `entity_tick_post`.
+// The library's settings are built with `..Type::DEFAULT` even when every field is given: a field the library adds
+// later then takes its default (docs/CONVENTIONS.md, "Library structs").
+#![allow(clippy::needless_update)]
 mod dagger;
 mod fight;
 mod model_scorpion;
@@ -146,6 +149,7 @@ static IN_JAR: Catchable = Catchable {
     model: "scorpions:scorpion_jar",
     settles: Some(Rule::Sand),
     glows: false,
+    ..Catchable::DEFAULT
 };
 
 /// Its sounds (`sources/sounds.toml`, to cut with `cargo creature sounds` once the clips are downloaded): a dry hiss as
@@ -190,6 +194,7 @@ static BESTIARY: Species = Species {
     draw: book_view,
     draw_scale: BOOK_SCALE,
     draw_lift: 0.0,
+    ..Species::DEFAULT
 };
 
 /// Bestiary facts learnt from the scorpion's own behaviour (the jar's two are the library's).
@@ -417,6 +422,7 @@ const CRAWL_CFG: creature::crawl::Cfg = creature::crawl::Cfg {
     settled_area: territory::check_sand,
     on_pause: None,
     busy: Some(busy),
+    ..creature::crawl::Cfg::DEFAULT
 };
 
 /// Forget a gone scorpion in every static that holds it.

@@ -18,6 +18,7 @@ pub static SOARING: Soaring = Soaring {
     idle,
     perch: |name| !name.ends_with("leaves") && !matches!(name, "minecraft:water" | "minecraft:lava"),
     lands_on_water: false,
+    ..Soaring::DEFAULT
 };
 
 /// Only a wild vulture soars on its own; a tamed one follows its owner (`tame.rs`).
@@ -106,6 +107,7 @@ impl Behaviour for DiveAttack {
                 brake: false,
                 boost: false,
                 ridden: false,
+                ..Controls::DEFAULT
             }
         } else if flat > DIVE_FROM {
             // Closing in, above it.
@@ -117,6 +119,7 @@ impl Behaviour for DiveAttack {
                 brake: false,
                 boost: m.on_ground,
                 ridden: false,
+                ..Controls::DEFAULT
             }
         } else {
             // The dive, at the spot over its head (never below it: it would touch down).
@@ -129,6 +132,7 @@ impl Behaviour for DiveAttack {
                 brake: false,
                 boost: m.on_ground,
                 ridden: false,
+                ..Controls::DEFAULT
             }
         };
         self.flight.tick(m, &controls, &WINGS);

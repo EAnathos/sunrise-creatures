@@ -6,6 +6,9 @@
 //! beached out of water, caught in a water bucket, spawning in blooms) and swims by hand (`swim.rs`). What touches it is
 //! stung, as its kind stings (the library's `touch`), unless they sit in a boat or wear a turtle shell. The glow jelly
 //! glows: full-bright (`emissive`) with a soft cyan light around it (the library's `glow`).
+// The library's settings are built with `..Type::DEFAULT` even when every field is given: a field the library adds
+// later then takes its default (docs/CONVENTIONS.md, "Library structs").
+#![allow(clippy::needless_update)]
 mod model;
 mod swim;
 
@@ -129,6 +132,7 @@ static AQUATIC: Aquatic = Aquatic {
     bucket: BUCKET,
     dries: 1200,
     flop: Some(FLOP),
+    ..Aquatic::DEFAULT
 };
 
 /// Its sounds (`sources/sounds.toml`, cut from CC0 freesound recordings): the pulse of its swim (`swim.rs`), its flop on
@@ -146,6 +150,7 @@ static SPAWNING: Spawning = Spawning {
     cap: 10,
     chance: 3,
     depth: (2.0, 6.0),
+    ..Spawning::DEFAULT
 };
 
 const BLOOM_FACT: &str = "bloom";
@@ -160,8 +165,10 @@ static PREY: creature::prey::Prey = creature::prey::Prey {
         kind: "minecraft:turtle",
         range: 8.0,
         speed: 1.5,
+        ..creature::prey::Hunter::DEFAULT
     }],
     fact: Some(TURTLE_FACT),
+    ..creature::prey::Prey::DEFAULT
 };
 
 /// Its page (SPECS §4): met as its kinds (morphs), its facts shown as they are learnt.
@@ -203,6 +210,7 @@ static BESTIARY: Species = Species {
     draw: |_, _| {},
     draw_scale: 1.0,
     draw_lift: 0.0,
+    ..Species::DEFAULT
 };
 
 /// Its items in the guide's Items tab (common/SPECS.md §7.2).
@@ -214,6 +222,7 @@ static JELLY_PAGE: creature::items::ItemPage = creature::items::ItemPage {
         icon: "minecraft:slime_ball",
         key: "bestiary.jellyfish.item.jelly.use",
     }],
+    ..creature::items::ItemPage::DEFAULT
 };
 static GLOW_JELLY_PAGE: creature::items::ItemPage = creature::items::ItemPage {
     item: GLOW_JELLY,
@@ -223,6 +232,7 @@ static GLOW_JELLY_PAGE: creature::items::ItemPage = creature::items::ItemPage {
         icon: "minecraft:glow_ink_sac",
         key: "bestiary.jellyfish.item.glow_jelly.use",
     }],
+    ..creature::items::ItemPage::DEFAULT
 };
 static BUCKET_PAGE: creature::items::ItemPage = creature::items::ItemPage {
     item: BUCKET,
@@ -232,6 +242,7 @@ static BUCKET_PAGE: creature::items::ItemPage = creature::items::ItemPage {
         icon: "minecraft:water_bucket",
         key: "bestiary.jellyfish.item.jellyfish_bucket.use",
     }],
+    ..creature::items::ItemPage::DEFAULT
 };
 
 /// The glow jelly's light: soft cyan, seen only.
@@ -241,6 +252,7 @@ static LIGHT: creature::glow::Light = creature::glow::Light {
     intensity: 0.8,
     lift: 0.5,
     shown: |_| true,
+    ..creature::glow::Light::DEFAULT
 };
 
 /// What touches it is stung at most once a second (SPECS §3), within this reach of its bell (blocks).

@@ -27,6 +27,17 @@ pub struct Launch {
     pub target: Option<(u32, f64)>,
 }
 
+impl Launch {
+    /// Its neutral values, for a mod's literal to end with (`..Launch::DEFAULT`): a field the library adds later then
+    /// takes its default, and the mods built before go on building.
+    pub const DEFAULT: Launch = Launch {
+        velocity: [0.0; 3],
+        gravity: 0.0,
+        life: 0,
+        target: None,
+    };
+}
+
 /// How a projectile's flight ended.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum End {

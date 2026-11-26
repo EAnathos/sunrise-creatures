@@ -73,6 +73,23 @@ pub struct Species {
     pub draw_lift: f32,
 }
 
+impl Species {
+    /// Its neutral values, for a mod's literal to end with (`..Species::DEFAULT`): a field the library adds later then
+    /// takes its default, and the mods built before go on building.
+    pub const DEFAULT: Species = Species {
+        id: "",
+        biomes: &[],
+        wild: |_| true,
+        facts: &[],
+        icon: "",
+        scheme: None,
+        rarity: Rarity::Common,
+        draw: |_, _| {},
+        draw_scale: 1.0,
+        draw_lift: 0.0,
+    };
+}
+
 /// How rare a species is, as its page shows it (in vanilla's rarity colours, darkened for the paper).
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Rarity {

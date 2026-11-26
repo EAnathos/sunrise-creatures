@@ -159,6 +159,7 @@ fn fly_to(flight: &mut Flight, m: &mut Body, at: [f64; 3]) {
         brake: across < 4.0 && flight.speed > WINGS.cruise,
         boost: m.on_ground || m.in_water,
         ridden: false,
+        ..Controls::DEFAULT
     };
     flight.tick(m, &controls, &WINGS);
 }
@@ -342,6 +343,7 @@ impl Behaviour for Carry {
             brake: false,
             boost: m.on_ground || m.in_water,
             ridden: false,
+            ..Controls::DEFAULT
         };
         self.flight.tick(m, &controls, &WINGS);
     }
@@ -467,6 +469,7 @@ impl Behaviour for Dive {
                     brake: false,
                     boost: false,
                     ridden: false,
+                    ..Controls::DEFAULT
                 };
                 self.flight.tick(m, &controls, &WINGS);
                 m.velocity.y = m.velocity.y.min(-0.6);
@@ -673,6 +676,7 @@ pub(crate) static FOLLOWING: Following = Following {
     above: 4.0,
     may: |m, _| creature::friend::of(m.id).is_some_and(|f| !f.staying),
     lands_on_water: true,
+    ..Following::DEFAULT
 };
 
 /// Told to stay: it stays where it is.

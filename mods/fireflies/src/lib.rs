@@ -5,6 +5,9 @@
 //! (`model_firefly.rs`, from `sources/models/firefly.bbmodel`): its lantern pulses on its own rhythm (`lit`), lit with
 //! a texture whose lantern is full-bright (`emissive`) and a soft light around it (the library's `glow`). Caught
 //! in the library's glass jar, released on a flower it settles there; a jar of fireflies on display gives light.
+// The library's settings are built with `..Type::DEFAULT` even when every field is given: a field the library adds
+// later then takes its default (docs/CONVENTIONS.md, "Library structs").
+#![allow(clippy::needless_update)]
 mod model_firefly;
 
 use std::sync::Arc;
@@ -43,6 +46,7 @@ static FLIGHT: creature::flutter::Kind = creature::flutter::Kind {
     drawn_to_light: false,
     lands_on_flowers: false,
     takeoff: Some("fireflies:entity.firefly.buzz"),
+    ..creature::flutter::Kind::DEFAULT
 };
 
 /// Caught in the library's glass jar, settling on a flower, glowing in a jar on display (SPECS §3).
@@ -51,6 +55,7 @@ static IN_JAR: Catchable = Catchable {
     model: "fireflies:firefly_jar",
     settles: Some(creature::territory::Rule::FlowerPatch),
     glows: true,
+    ..Catchable::DEFAULT
 };
 
 /// Its page in the bestiary: met wild in the biomes it spawns in; caught in a jar, settling on a flower.
@@ -85,6 +90,7 @@ static BESTIARY: Species = Species {
     draw: book_view,
     draw_scale: BOOK_SCALE,
     draw_lift: 0.1,
+    ..Species::DEFAULT
 };
 
 /// Its drawing in a placed jar: lit, its wings folded, about a block across.
@@ -117,6 +123,7 @@ static LIGHT: creature::glow::Light = creature::glow::Light {
     intensity: 0.8,
     lift: 0.1,
     shown: lit,
+    ..creature::glow::Light::DEFAULT
 };
 
 /// They come out near players at night, in small groups (the library's spawning: SPECS §2).
@@ -127,6 +134,7 @@ static SPAWNING: creature::flutter::Spawning = creature::flutter::Spawning {
     group: (3, 6),
     cap: 12,
     chance: 3,
+    ..creature::flutter::Spawning::DEFAULT
 };
 
 #[derive(Default)]

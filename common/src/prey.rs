@@ -22,11 +22,31 @@ pub struct Hunter {
     pub speed: f64,
 }
 
+impl Hunter {
+    /// Its neutral values, for a mod's literal to end with (`..Hunter::DEFAULT`): a field the library adds later then
+    /// takes its default, and the mods built before go on building.
+    pub const DEFAULT: Hunter = Hunter {
+        kind: "",
+        range: 0.0,
+        speed: 1.0,
+    };
+}
+
 /// A prey kind, its hunters, and the fact learnt by the players who see one eaten.
 pub struct Prey {
     pub kind: &'static str,
     pub hunters: &'static [Hunter],
     pub fact: Option<&'static str>,
+}
+
+impl Prey {
+    /// Its neutral values, for a mod's literal to end with (`..Prey::DEFAULT`): a field the library adds later then
+    /// takes its default, and the mods built before go on building.
+    pub const DEFAULT: Prey = Prey {
+        kind: "",
+        hunters: &[],
+        fact: None,
+    };
 }
 
 /// What a mod does to the hunter of its prey after a catch (`when_caught`), given the hunter's id.

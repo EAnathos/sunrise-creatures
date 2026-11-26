@@ -50,6 +50,19 @@ pub struct Controls {
     pub ridden: bool,
 }
 
+impl Controls {
+    /// Its neutral values, for a mod's literal to end with (`..Controls::DEFAULT`): a field the library adds later then
+    /// takes its default, and the mods built before go on building.
+    pub const DEFAULT: Controls = Controls {
+        yaw: 0.0,
+        pitch: 0.0,
+        flap: false,
+        brake: false,
+        boost: false,
+        ridden: false,
+    };
+}
+
 /// What a rider's flight multiplies its cruising and diving speeds by.
 const RIDDEN_SPEED: f64 = 2.0;
 
@@ -61,6 +74,18 @@ pub struct Wings {
     pub flap: &'static str,
     pub takeoff: &'static str,
     pub pace: fn(u32) -> f64,
+}
+
+impl Wings {
+    /// Its neutral values, for a mod's literal to end with (`..Wings::DEFAULT`): a field the library adds later then
+    /// takes its default, and the mods built before go on building.
+    pub const DEFAULT: Wings = Wings {
+        cruise: 0.0,
+        dive: 0.0,
+        flap: "",
+        takeoff: "",
+        pace: |_| 1.0,
+    };
 }
 
 /// Hovering: the share of the distance to its spot it wants to cover a tick, its fastest, and how quickly its velocity
@@ -230,6 +255,20 @@ pub struct Soaring {
     pub idle: fn(&Body, &World<'_>) -> bool,
     pub perch: fn(&str) -> bool,
     pub lands_on_water: bool,
+}
+
+impl Soaring {
+    /// Its neutral values, for a mod's literal to end with (`..Soaring::DEFAULT`): a field the library adds later then
+    /// takes its default, and the mods built before go on building.
+    pub const DEFAULT: Soaring = Soaring {
+        take_off: 0,
+        height: (0.0, 0),
+        radius: (0.0, 0),
+        circle_for: (0, 0),
+        idle: |_, _| true,
+        perch: |_| false,
+        lands_on_water: false,
+    };
 }
 
 /// Soaring (`Soaring` says how): it takes off now and then, climbs, circles for a while, then picks the highest
@@ -548,6 +587,19 @@ pub struct Following {
     pub above: f64,
     pub may: fn(&Body, &World<'_>) -> bool,
     pub lands_on_water: bool,
+}
+
+impl Following {
+    /// Its neutral values, for a mod's literal to end with (`..Following::DEFAULT`): a field the library adds later then
+    /// takes its default, and the mods built before go on building.
+    pub const DEFAULT: Following = Following {
+        follow: 0.0,
+        land: 0.0,
+        teleport: 0.0,
+        above: 0.0,
+        may: |_, _| true,
+        lands_on_water: false,
+    };
 }
 
 /// Following its friend in flight, as `Following` says (the vulture's owner, the seagull's friend).

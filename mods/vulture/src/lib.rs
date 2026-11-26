@@ -18,6 +18,9 @@
 //!   its renderer (`Draw`).
 //!
 //! It depends on the series' library, Sunrise Creatures (`creature`, common/SPECS.md).
+// The library's settings are built with `..Type::DEFAULT` even when every field is given: a field the library adds
+// later then takes its default (docs/CONVENTIONS.md, "Library structs").
+#![allow(clippy::needless_update)]
 mod interaction;
 mod model;
 mod model_baby;
@@ -53,6 +56,7 @@ pub static WINGS: Wings = Wings {
     flap: sounds::FLAP,
     takeoff: sounds::TAKEOFF,
     pace: state::pace,
+    ..Wings::DEFAULT
 };
 /// Its hitbox and eye height, in blocks (SPECS §4); its rider sits on its harness (its entity type's
 /// `passenger_attachments`).
@@ -96,6 +100,7 @@ static BESTIARY: creature::bestiary::Species = creature::bestiary::Species {
     draw: book_view,
     draw_scale: BOOK_SCALE,
     draw_lift: 0.0,
+    ..creature::bestiary::Species::DEFAULT
 };
 
 /// The vulture in a placed jar: its model as built (wings spread), without harness or chests, scaled to about
@@ -125,6 +130,7 @@ static FEATHER_PAGE: creature::items::ItemPage = creature::items::ItemPage {
         icon: "minecraft:feather",
         key: "bestiary.vulture.item.feather.use",
     }],
+    ..creature::items::ItemPage::DEFAULT
 };
 static RAW_PAGE: creature::items::ItemPage = creature::items::ItemPage {
     item: "vulture:raw_vulture",
@@ -134,6 +140,7 @@ static RAW_PAGE: creature::items::ItemPage = creature::items::ItemPage {
         icon: "vulture:raw_vulture",
         key: "bestiary.vulture.item.raw_vulture.use",
     }],
+    ..creature::items::ItemPage::DEFAULT
 };
 static COOKED_PAGE: creature::items::ItemPage = creature::items::ItemPage {
     item: "vulture:cooked_vulture",
@@ -146,6 +153,7 @@ static COOKED_PAGE: creature::items::ItemPage = creature::items::ItemPage {
         icon: "vulture:cooked_vulture",
         key: "bestiary.vulture.item.cooked_vulture.use",
     }],
+    ..creature::items::ItemPage::DEFAULT
 };
 
 #[derive(Default)]
@@ -221,6 +229,7 @@ impl Behaviour for Fly {
             brake: r.forward < 0.0,
             boost: r.jumping,
             ridden: true,
+            ..Controls::DEFAULT
         };
         self.flight.tick(m, &controls, &WINGS);
         if talons::take_press(r.player) {

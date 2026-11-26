@@ -6,6 +6,9 @@
 //! blocks, it settles there (the library's garden rule) and crawls only on that farmland; every `GROW_EVERY` ticks it
 //! makes one crop of its garden grow a stage, with green sparkles on it, at most `MAX_WORMS` worms counting per garden
 //! (SPECS §4). While it rains, worms come up near players (`rain`). Wild ones despawn far from players.
+// The library's settings are built with `..Type::DEFAULT` even when every field is given: a field the library adds
+// later then takes its default (docs/CONVENTIONS.md, "Library structs").
+#![allow(clippy::needless_update)]
 mod model_worm;
 
 use std::sync::Mutex;
@@ -41,6 +44,7 @@ static IN_JAR: Catchable = Catchable {
     model: "worms:worm_jar",
     settles: Some(Rule::Garden),
     glows: false,
+    ..Catchable::DEFAULT
 };
 
 const CHICKEN_FACT: &str = "chicken";
@@ -52,8 +56,10 @@ static PREY: creature::prey::Prey = creature::prey::Prey {
         kind: "minecraft:chicken",
         range: 6.0,
         speed: 1.0,
+        ..creature::prey::Hunter::DEFAULT
     }],
     fact: Some(CHICKEN_FACT),
+    ..creature::prey::Prey::DEFAULT
 };
 
 static BESTIARY: Species = Species {
@@ -83,6 +89,7 @@ static BESTIARY: Species = Species {
     draw: jar_view,
     draw_scale: JAR_SCALE,
     draw_lift: 0.05,
+    ..Species::DEFAULT
 };
 
 /// Drawn in a placed jar: curled a little, about a block across.
@@ -136,6 +143,7 @@ const CRAWL_CFG: creature::crawl::Cfg = creature::crawl::Cfg {
     settled_area: territory::check_garden,
     on_pause: Some(dig),
     busy: None,
+    ..creature::crawl::Cfg::DEFAULT
 };
 
 /// At a pause, one time in `DIG_CHANCE` it noses into the earth with a soft rustle.

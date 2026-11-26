@@ -57,6 +57,17 @@ pub struct Catchable {
     pub glows: bool,
 }
 
+impl Catchable {
+    /// Its neutral values, for a mod's literal to end with (`..Catchable::DEFAULT`): a field the library adds later then
+    /// takes its default, and the mods built before go on building.
+    pub const DEFAULT: Catchable = Catchable {
+        kind: "",
+        model: "",
+        settles: None,
+        glows: false,
+    };
+}
+
 static CATCHABLE: Mutex<Vec<&'static Catchable>> = Mutex::new(Vec::new());
 
 /// From a mod's `register`: its creatures can be caught.

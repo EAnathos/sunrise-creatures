@@ -37,6 +37,21 @@ pub struct Creeping {
     pub rustle: Option<&'static str>,
 }
 
+impl Creeping {
+    /// Its neutral values, for a mod's literal to end with (`..Creeping::DEFAULT`): a field the library adds later then
+    /// takes its default, and the mods built before go on building.
+    pub const DEFAULT: Creeping = Creeping {
+        speed: 0.0,
+        climb: 0.0,
+        crawl: (0, 0),
+        pause: (0, 0),
+        wander: 0.0,
+        area: |_, _| Vec::new(),
+        may: |_, _| true,
+        rustle: None,
+    };
+}
+
 /// How far from the bark a clinging creature's middle is held (blocks): a small creature's half width.
 const CLING_GAP: f64 = 0.3;
 /// How far it looks for a trunk to climb (blocks across), and how far above it a target sends it there (blocks).

@@ -7,6 +7,9 @@
 //! where it is told (right-click). Its friend has Speed I while it follows within reach, gets a pinch of fairy dust
 //! once a day, and a soft violet light goes with it. Caught in the library's glass jar (only by its friend, once
 //! befriended), it stays befriended; on display, a fairy lamp. Drawn full-bright, its wings beating.
+// The library's settings are built with `..Type::DEFAULT` even when every field is given: a field the library adds
+// later then takes its default (docs/CONVENTIONS.md, "Library structs").
+#![allow(clippy::needless_update)]
 mod companion;
 mod model_fairy;
 
@@ -53,6 +56,7 @@ static FLIGHT: creature::flutter::Kind = creature::flutter::Kind {
     drawn_to_light: false,
     lands_on_flowers: true,
     takeoff: Some(FLUTTER),
+    ..creature::flutter::Kind::DEFAULT
 };
 
 /// Caught in the library's glass jar, by a sneaking player or its friend; settling on a flower; a fairy lamp on display
@@ -62,6 +66,7 @@ static IN_JAR: Catchable = Catchable {
     model: "fairies:fairy_jar",
     settles: Some(creature::territory::Rule::FlowerPatch),
     glows: true,
+    ..Catchable::DEFAULT
 };
 
 /// The bestiary's facts (SPECS §4).
@@ -94,6 +99,7 @@ static BESTIARY: Species = Species {
     draw: book_view,
     draw_scale: BOOK_SCALE,
     draw_lift: 0.0,
+    ..Species::DEFAULT
 };
 
 /// Its drawing in a placed jar: hovering, its wings open, about a block tall.
@@ -118,6 +124,7 @@ static LIGHT: creature::glow::Light = creature::glow::Light {
     intensity: 0.7,
     lift: 0.4,
     shown: |_| true,
+    ..creature::glow::Light::DEFAULT
 };
 const FOLLOWING_RADIUS: f32 = 8.0;
 
@@ -150,6 +157,7 @@ static SPAWNING: creature::flutter::Spawning = creature::flutter::Spawning {
     group: (2, 4),
     cap: 4,
     chance: 12,
+    ..creature::flutter::Spawning::DEFAULT
 };
 
 /// Its item in the guide's Items tab (common/SPECS.md §7.2).
@@ -164,6 +172,7 @@ static DUST_PAGE: creature::items::ItemPage = creature::items::ItemPage {
         icon: "minecraft:potion",
         key: "bestiary.fairies.item.fairy_dust.brew",
     }],
+    ..creature::items::ItemPage::DEFAULT
 };
 
 #[derive(Default)]

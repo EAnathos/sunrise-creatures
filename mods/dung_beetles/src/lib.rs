@@ -7,6 +7,9 @@
 //! rest of the time (the library's creeping). Chickens peck it up (the library's prey). Caught in the glass jar, it
 //! settles in a pasture (the library's pasture rule). A buried ball, or a dung ball a player took from a beetle and
 //! uses on the ground, turns that block greener (`fertilize`).
+// The library's settings are built with `..Type::DEFAULT` even when every field is given: a field the library adds
+// later then takes its default (docs/CONVENTIONS.md, "Library structs").
+#![allow(clippy::needless_update)]
 mod model_dung_beetle;
 mod roll;
 
@@ -56,6 +59,7 @@ static HOURS: creature::flutter::Kind = creature::flutter::Kind {
     drawn_to_light: false,
     lands_on_flowers: false,
     takeoff: None,
+    ..creature::flutter::Kind::DEFAULT
 };
 
 /// On grass, coarse dirt or dirt, or sand next to grass (the edge of a desert), 1 to 3 together, up to 4 within 48
@@ -67,6 +71,7 @@ static SPAWNING: creature::flutter::Spawning = creature::flutter::Spawning {
     group: (1, 3),
     cap: 4,
     chance: 3,
+    ..creature::flutter::Spawning::DEFAULT
 };
 
 fn spawns_on(ground: Ground<'_>, p: [i32; 3]) -> bool {
@@ -85,6 +90,7 @@ static IN_JAR: Catchable = Catchable {
     model: "dung_beetles:dung_beetle_jar",
     settles: Some(territory::Rule::Pasture),
     glows: false,
+    ..Catchable::DEFAULT
 };
 
 const BALL_FACT: &str = "ball";
@@ -99,8 +105,10 @@ static PREY: creature::prey::Prey = creature::prey::Prey {
         kind: "minecraft:chicken",
         range: 6.0,
         speed: 1.0,
+        ..creature::prey::Hunter::DEFAULT
     }],
     fact: Some(CHICKEN_FACT),
+    ..creature::prey::Prey::DEFAULT
 };
 
 /// Its page (SPECS §6): the biomes met in, its facts.
@@ -155,6 +163,7 @@ static BESTIARY: Species = Species {
     },
     draw_scale: 1.0,
     draw_lift: 0.0,
+    ..Species::DEFAULT
 };
 
 /// Where it crawls about between its balls (SPECS §2): around where it is, or for a settled one over its pasture's
@@ -189,6 +198,7 @@ static CREEPING: creature::creep::Creeping = creature::creep::Creeping {
     area: pasture,
     may: |m, _| !roll::busy(m.id),
     rustle: None,
+    ..creature::creep::Creeping::DEFAULT
 };
 
 /// How often a settled one checks its herd is still there (ticks).

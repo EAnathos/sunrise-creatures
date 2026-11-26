@@ -41,6 +41,21 @@ pub struct Cfg {
     pub busy: Option<fn(u32) -> bool>,
 }
 
+impl Cfg {
+    /// Its neutral values, for a mod's literal to end with (`..Cfg::DEFAULT`): a field the library adds later then
+    /// takes its default, and the mods built before go on building.
+    pub const DEFAULT: Cfg = Cfg {
+        speed: 0.0,
+        crawl: (0, 0),
+        pause: (0, 0),
+        wander: 0.0,
+        check_every: 20,
+        settled_area: |_, _| Vec::new(),
+        on_pause: None,
+        busy: None,
+    };
+}
+
 /// How often a crawl asks the engine for its path again (ticks): another goal's path, or a block in the way, may have
 /// dropped it.
 const REPATH: i32 = 40;

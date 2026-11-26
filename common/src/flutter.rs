@@ -64,6 +64,22 @@ pub struct Kind {
     pub takeoff: Option<&'static str>,
 }
 
+impl Kind {
+    /// Its neutral values, for a mod's literal to end with (`..Kind::DEFAULT`): a field the library adds later then
+    /// takes its default, and the mods built before go on building.
+    pub const DEFAULT: Kind = Kind {
+        hours: Hours::Always,
+        speed: 0.0,
+        height: (0.0, 0.0),
+        flight: (0, 0),
+        rest: (0, 0),
+        wander: 0.0,
+        drawn_to_light: false,
+        lands_on_flowers: false,
+        takeoff: None,
+    };
+}
+
 /// How loud the wings are at take-off.
 const TAKEOFF_VOLUME: f32 = 0.5;
 
@@ -115,6 +131,19 @@ pub struct Spawning {
     pub group: (u32, u32),
     pub cap: usize,
     pub chance: u64,
+}
+
+impl Spawning {
+    /// Its neutral values, for a mod's literal to end with (`..Spawning::DEFAULT`): a field the library adds later then
+    /// takes its default, and the mods built before go on building.
+    pub const DEFAULT: Spawning = Spawning {
+        kind: "",
+        flight: &Kind::DEFAULT,
+        biomes: &[],
+        group: (1, 1),
+        cap: 0,
+        chance: 1,
+    };
 }
 
 /// How often a try is made (ticks), how near a player the cap counts (blocks), and how far from them a group comes out.

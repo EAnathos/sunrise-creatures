@@ -116,6 +116,7 @@ fn throw(host: &mut dyn ServerHost, player: u128, hand: Hand, stack: &ItemStack)
         gravity: GRAVITY,
         life: LIFE,
         target: None,
+        ..Launch::DEFAULT
     };
     let dimension = level.dimension().id(&*host).unwrap_or_default();
     let Some(id) = projectile::launch(host, &dimension, THROWN, from, launch) else {
@@ -205,6 +206,7 @@ fn bounce(host: &mut dyn ServerHost, id: u32, at: [f64; 3], level: mod_api::Leve
         gravity: GRAVITY,
         life: LIFE,
         target: None,
+        ..Launch::DEFAULT
     };
     let dimension = level.dimension().id(&*host).unwrap_or_default();
     let Some(new) = projectile::launch(host, &dimension, THROWN, at, launch) else {
