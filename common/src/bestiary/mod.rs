@@ -71,6 +71,10 @@ pub struct Species {
     /// jar's own shrinking).
     pub draw_scale: f32,
     pub draw_lift: f32,
+    /// How its icon is drawn as a species not met yet, when the GUI can't draw its texture as a shadow (Minecraft's
+    /// spawn eggs, outside the GUI's atlas): an item model of the mod's drawing its icon in black (`DrawContext::
+    /// item_model`), which the book greys. None for an egg of the series, drawn as a shadow from its texture.
+    pub shadow: Option<&'static str>,
 }
 
 impl Species {
@@ -87,6 +91,7 @@ impl Species {
         draw: |_, _| {},
         draw_scale: 1.0,
         draw_lift: 0.0,
+        shadow: None,
     };
 }
 

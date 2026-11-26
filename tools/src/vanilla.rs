@@ -18,7 +18,12 @@ const OUT: &str = "mods/vanilla_bestiary/src/game_data.rs";
 
 /// The jar the launcher prepared, when none is given.
 fn default_jar() -> crate::Result<PathBuf> {
-    Ok(crate::launcher::data_dir()?.join(format!("minecraft/versions/{VERSION}/{VERSION}.jar")))
+    let data = crate::launcher::data_dir()?;
+    // Where the launcher keeps it now, or kept it before.
+    let jar = |dir: &str| data.join(format!("{dir}/versions/{VERSION}/{VERSION}.jar"));
+    Ok(Some(jar("launcher/minecraft"))
+        .filter(|j| j.is_file())
+        .unwrap_or_else(|| jar("minecraft")))
 }
 
 pub fn run(jar: Option<&str>) -> crate::Result {
@@ -48,7 +53,47 @@ pub fn run(jar: Option<&str>) -> crate::Result {
     let out = crate::root().join(OUT);
     std::fs::write(&out, rust).map_err(|e| format!("{}: {e}", out.display()))?;
     println!("{}", out.display());
+    shadows(&files)
+}
+
+/// Where the eggs' shadows go: one item definition per spawn egg.
+const SHADOWS: &str = "mods/vanilla_bestiary/assets/vanilla_bestiary/items/shadow";
+
+/// Each spawn egg's shadow (`shadow/<egg>.json`), for the book's species not met yet (`Species::shadow`): an item
+/// definition drawing Minecraft's own egg model in black (a constant tint over its one layer); the book greys it. It
+/// names the game's model and copies nothing of it. The eggs no longer in the game are removed.
+fn shadows(files: &BTreeMap<String, Value>) -> crate::Result {
+    let dir = crate::root().join(SHADOWS);
+    if dir.exists() {
+        std::fs::remove_dir_all(&dir).map_err(|e| format!("{}: {e}", dir.display()))?;
+    }
+    std::fs::create_dir_all(&dir).map_err(|e| format!("{}: {e}", dir.display()))?;
+    for egg in eggs(files)? {
+        let path = dir.join(format!("{egg}_spawn_egg.json"));
+        std::fs::write(&path, shadow(egg)).map_err(|e| format!("{}: {e}", path.display()))?;
+    }
+    println!("{}", dir.display());
     Ok(())
+}
+
+/// The spawn eggs in the game, by creature (`cow`), from the English names.
+fn eggs(files: &BTreeMap<String, Value>) -> crate::Result<BTreeSet<&str>> {
+    let lang = files
+        .get("assets/minecraft/lang/en_us.json")
+        .and_then(Value::as_object)
+        .ok_or("the jar has no assets/minecraft/lang/en_us.json")?;
+    Ok(lang
+        .keys()
+        .filter_map(|k| k.strip_prefix("item.minecraft.")?.strip_suffix("_spawn_egg"))
+        .collect())
+}
+
+/// The shadow of creature `egg`'s spawn egg: its model, tinted black.
+fn shadow(egg: &str) -> String {
+    format!(
+        "{{\n  \"model\": {{\n    \"type\": \"minecraft:model\",\n    \"model\": \"minecraft:item/{egg}_spawn_egg\",\n    \
+         \"tints\": [{{ \"type\": \"minecraft:constant\", \"value\": -16777216 }}]\n  }}\n}}\n"
+    )
 }
 
 /// The creatures (by spawn egg), their biomes, drops and breeding food, as Rust.

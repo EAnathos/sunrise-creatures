@@ -120,6 +120,11 @@ fn species(c: &'static Creature) -> Species {
         wild: |id| !NOT_WILD_IDS.locked().contains(&id),
         facts: leak(facts),
         icon: Box::leak(format!("{}_spawn_egg", c.id).into_boxed_str()),
+        // Its egg as a shadow until met: the GUI can't draw Minecraft's egg texture itself (`assets/vanilla_bestiary/
+        // items/shadow/`, written by `cargo creature vanilla`).
+        shadow: Some(Box::leak(
+            format!("vanilla_bestiary:shadow/{name}_spawn_egg").into_boxed_str(),
+        )),
         scheme: None,
         rarity: c.rarity,
         draw: no_drawing,

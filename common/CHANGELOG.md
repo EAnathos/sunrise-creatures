@@ -7,6 +7,8 @@ Each version's section says what changed in it (`cargo creature release` needs o
 - The bestiary shows every installed species: how many were met of how many ("Species met: 12 / 99"), and the ones not
   met yet as a grey shadow of their spawn egg; picked, one not met yet shows only its name, its rarity and a question
   mark turning in place of the creature.
+- `Species::shadow`: an item model drawing a species' icon in black, for an egg the GUI can't draw as a shadow from its
+  texture (Minecraft's, the Vanilla Bestiary's).
 
 ## 0.4.0
 

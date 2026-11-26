@@ -2,6 +2,12 @@
 
 Each version's section says what changed in it (`cargo creature release` needs one before it tags the version).
 
+## 0.1.5
+
+- In the guide, a creature not met yet shows its spawn egg as a grey shadow, as the series' own do (Minecraft's egg
+  drawn in black by an item definition of the mod's, `assets/vanilla_bestiary/items/shadow/`). Needs Sunrise Creatures
+  0.4.1.
+
 ## 0.1.4
 
 - What it keeps about each creature lives in the library's `creature::state`, emptied when the creature leaves the

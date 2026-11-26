@@ -321,9 +321,19 @@ fn view(host: &dyn ClientHost, batch: &mut dyn DrawContext, rect: [f32; 4], subj
 /// colours (the egg's texture drawn in this colour, which keeps its alpha and takes the rest away).
 const UNMET: u32 = 0x5A00_0000;
 
-/// Draws the spawn egg `icon` (`ns:name`, its texture `ns:item/name`) at `at` as a species not met yet: a grey shadow.
-fn unmet_icon(batch: &mut dyn DrawContext, icon: &str, at: [f32; 2]) {
-    let Some((ns, path)) = icon.split_once(':') else {
+/// Draws species `sp`'s spawn egg at `at` as a species not met yet: a grey shadow, over the cell's colour `back`. An
+/// egg the GUI can draw from its texture (`ns:item/name`) is drawn in `UNMET`; another (`Species::shadow`) is drawn
+/// black by its own item model, then veiled by the cell's colour to the same grey.
+fn unmet_icon(host: &dyn ClientHost, batch: &mut dyn DrawContext, sp: &Species, at: [f32; 2], back: u32) {
+    if let Some(model) = sp.shadow {
+        if let Some(key) = item_key(host, sp.icon) {
+            batch.item_model(key, model, at, 16.0);
+            let veil = (back & 0x00FF_FFFF) | (0xFF - (UNMET >> 24)) << 24;
+            batch.fill([at[0], at[1], 16.0, 16.0], veil);
+        }
+        return;
+    }
+    let Some((ns, path)) = sp.icon.split_once(':') else {
         return;
     };
     let _ = batch.gui_paint(&[GuiDraw::Blit {
@@ -774,7 +784,8 @@ fn draw_creatures(host: &dyn ClientHost, batch: &mut dyn DrawContext, book: &mut
         if slot.entry.is_some() {
             gui_item(host, batch, slot.species.icon, [cx + 1.0, cy + 1.0], None);
         } else {
-            unmet_icon(batch, slot.species.icon, [cx + 1.0, cy + 1.0]);
+            let back = if k == book.selected { HIGHLIGHT } else { PAPER };
+            unmet_icon(host, batch, slot.species, [cx + 1.0, cy + 1.0], back);
         }
     }
     // The line above Minecraft's own creatures, when the series' are above it.
