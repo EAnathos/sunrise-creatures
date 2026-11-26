@@ -1,5 +1,5 @@
-//! The molten pickaxe (SPECS §5): a netherite pickaxe that smelts what it mines. Its blocks' drops are swapped for
-//! what a furnace would make of them (`SMELTS`), with the furnace's experience, in `block_drops`. That hook's host
+//! The molten pickaxe (SPECS §5): a netherite pickaxe that smelts the ores it mines. Their drops are swapped for what
+//! a furnace would make of them (`SMELTS`), with the furnace's experience, in `block_drops`. That hook's host
 //! reads the level only, so the items' keys are looked up once from a server tick (`prepare`).
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicU32, Ordering};
@@ -9,19 +9,20 @@ use mod_api::{BlockDropsEvent, Identifier, ItemKey, ItemStack, ServerHost};
 
 pub const PICKAXE: &str = "magma_golem:molten_pickaxe";
 
-/// What it smelts: a drop, what it becomes, the furnace's experience for one.
+/// What it smelts, the ores alone: a drop (an ore's raw metal, or its block mined with Silk Touch), what it becomes,
+/// the furnace's experience for one.
 const SMELTS: &[(&str, &str, f32)] = &[
     ("minecraft:raw_iron", "minecraft:iron_ingot", 0.7),
-    ("minecraft:raw_gold", "minecraft:gold_ingot", 1.0),
     ("minecraft:raw_copper", "minecraft:copper_ingot", 0.7),
+    ("minecraft:raw_gold", "minecraft:gold_ingot", 1.0),
+    ("minecraft:iron_ore", "minecraft:iron_ingot", 0.7),
+    ("minecraft:deepslate_iron_ore", "minecraft:iron_ingot", 0.7),
+    ("minecraft:copper_ore", "minecraft:copper_ingot", 0.7),
+    ("minecraft:deepslate_copper_ore", "minecraft:copper_ingot", 0.7),
+    ("minecraft:gold_ore", "minecraft:gold_ingot", 1.0),
+    ("minecraft:deepslate_gold_ore", "minecraft:gold_ingot", 1.0),
+    ("minecraft:nether_gold_ore", "minecraft:gold_ingot", 1.0),
     ("minecraft:ancient_debris", "minecraft:netherite_scrap", 2.0),
-    ("minecraft:sand", "minecraft:glass", 0.1),
-    ("minecraft:red_sand", "minecraft:glass", 0.1),
-    ("minecraft:cobblestone", "minecraft:stone", 0.1),
-    ("minecraft:cobbled_deepslate", "minecraft:deepslate", 0.1),
-    ("minecraft:netherrack", "minecraft:nether_brick", 0.1),
-    ("minecraft:clay_ball", "minecraft:brick", 0.3),
-    ("minecraft:wet_sponge", "minecraft:sponge", 0.15),
 ];
 
 struct Table {

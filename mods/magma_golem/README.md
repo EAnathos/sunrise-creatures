@@ -25,8 +25,8 @@ Left alone for two minutes, it lies down again where it stands, its health resto
 ## What it leaves
 
 - **Its magma heart**, always. With a netherite pickaxe in a smithing table it makes a **molten pickaxe**, which mines
-  as netherite and smelts what it mines: ores give ingots, sand gives glass, cobblestone gives stone, netherrack gives
-  nether bricks, ancient debris gives netherite scrap, with a furnace's experience.
+  as netherite and smelts the ores it mines: iron, copper and gold ores give ingots, ancient debris gives netherite
+  scrap, with a furnace's experience. Every other block drops as usual.
 - Magma cream and magma blocks, and plenty of experience.
 
 ## Licence

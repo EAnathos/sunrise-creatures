@@ -10,5 +10,5 @@ Each version's section says what changed in it (`cargo creature release` needs o
   burst in flames. It heals in lava and fire, is enraged under half health, and is crusted over by snowballs and
   splash water bottles. Drawn with its own model and animations, its seams glowing; hit where its arms are too. Its
   spawn egg, its page in the creature guide and its four facts; its drops: its magma heart, magma cream and blocks,
-  50 experience; the molten pickaxe (a netherite pickaxe and a magma heart in a smithing table), which smelts what it
-  mines. Its sounds are the game's for now.
+  50 experience; the molten pickaxe (a netherite pickaxe and a magma heart in a smithing table), which smelts the ores
+  it mines. Its sounds are the game's for now.

@@ -31,8 +31,8 @@ spawning, sleep, chase, attacks, healing, items and drawings are validated; its 
   near lava, on a floor with room for it, never within 256 blocks of another (where each appeared is saved with the
   Nether until it dies), never despawning, none in Peaceful. Its drops (its heart, magma cream and blocks, 50 experience); its guide
   page and facts ("Awake", "Crust", "Lava bath", "Heart": learnt by its killer); the magma heart and the molten pickaxe
-  (`pickaxe.rs`: raw ores give ingots, sand glass, cobblestone stone, netherrack nether bricks, ancient debris
-  netherite scrap, with the furnace's experience), its smithing recipe and its recipe book unlock.
+  (`pickaxe.rs`: the ores alone, iron, copper and gold giving ingots, ancient debris netherite scrap, with the
+  furnace's experience), its smithing recipe and its recipe book unlock.
 - **Placeholders**: its sounds are vanilla's until its own are cut from freesound (§1): its hurt, death and steps
   (`assets/magma_golem/sounds.json`: the ravager's and basalt's, pitched down, named, no file copied) and its
   attacks' (the ravager's roar, the iron golem's blow, an explosion, lava hissing, basalt breaking).
@@ -133,8 +133,8 @@ heal in lava), "Heart" (took its heart).
 
 - **Magma heart** (`magma_golem:magma_heart`): a glowing core of magma, warm in the hand. Its use:
 - **Molten pickaxe** (`magma_golem:molten_pickaxe`): a netherite pickaxe and a magma heart in a smithing table. Mines
-  as netherite, and **smelts what it mines** (iron, gold and copper ores give ingots, sand gives glass, stone gives
-  stone, cobblestone gives stone), with the furnace's experience. Fireproof. Its durability is the netherite pickaxe's.
+  as netherite, and **smelts the ores it mines** (iron, copper and gold ores give ingots, mined with Silk Touch too,
+  ancient debris gives netherite scrap; every other block drops as usual), with the furnace's experience. Fireproof. Its durability is the netherite pickaxe's.
 
 ## 6. Out of scope for v1
 
