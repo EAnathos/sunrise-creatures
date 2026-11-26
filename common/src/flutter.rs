@@ -292,13 +292,29 @@ fn random_chance(float: &mut impl FnMut() -> f64, n: u64) -> bool {
 }
 
 /// The open block over the highest block of `at`'s column (from 16 blocks above `at` down to 16 below) that `on` says
-/// a kind comes out on: through leaves and under trees, where `surface` stops at the canopy.
+/// a kind comes out on: through leaves and under trees, where `surface` stops at the canopy. Open: nothing in it a
+/// mob collides with (air, but also the grass, ferns, mushrooms and leaf litter on a forest floor), and no liquid.
 fn top_of(ground: Ground<'_>, at: [i32; 3], on: On) -> Option<i32> {
-    top_where(
-        at,
-        |y| on(ground, [at[0], y - 1, at[2]]),
-        |y| open_block(&ground.block([at[0], y, at[2]])),
-    )
+    let open = |y: i32| {
+        let name = ground.block([at[0], y, at[2]]);
+        if open_block(&name) {
+            return true;
+        }
+        let (x, z) = (f64::from(at[0]), f64::from(at[2]));
+        let cell = [
+            x + 0.05,
+            f64::from(y) + 0.05,
+            z + 0.05,
+            x + 0.95,
+            f64::from(y) + 0.95,
+            z + 0.95,
+        ];
+        !name.is_empty()
+            && !name.contains("water")
+            && !name.contains("lava")
+            && ground.level.has_collisions(ground.host, cell) == Some(false)
+    };
+    top_where(at, |y| on(ground, [at[0], y - 1, at[2]]), open)
 }
 
 /// The highest `y` of `at`'s column (16 above to 16 below) where `on(y)` and `open(y)`.
