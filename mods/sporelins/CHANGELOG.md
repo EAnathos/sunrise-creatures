@@ -9,6 +9,7 @@ Each version's section says what changed in it (`cargo creature release` needs o
   Sunrise Creatures 0.4.0.
 - The licences are in the README (its last section) rather than as copies of `LICENSE` and `LICENSE-ART.md`.
 - It comes out under a dark forest's canopy, where it is dark, as its spec says (the spawning stopped at the leaves).
+- It comes out at night, in the rain too, and never by day.
 
 ## 0.1.2
 

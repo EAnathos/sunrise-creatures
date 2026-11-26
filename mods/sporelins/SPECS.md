@@ -45,8 +45,8 @@ The Nausea effect specified in §2 is not implemented yet; the current spore puf
 
 - A small mushroom creature: a wide cap for a head, a pale stem for a body, two dark eyes, stubby arms and legs. It
   waddles. Ambient and harmless, 6 health.
-- **Spawning** ✅: dark forests, mushroom fields, old growth taigas and swamps, where it is dark (light ≤ 7 on its
-  block, as mushrooms want), 1 to 3 together; red caps and brown caps alike, red ones more common in dark forests and
+- **Spawning** ✅: dark forests, mushroom fields, old growth taigas and swamps, at night, in the rain too (never by
+  day), where it is dark (light ≤ 7 on its block, as mushrooms want), 1 to 3 together; red caps and brown caps alike, red ones more common in dark forests and
   mushroom fields. Wild ones despawn far from players.
 - **Shy** ✅: a player who comes within 6 blocks (not sneaking) makes it **hide**: it sits down and pulls its cap over
   its stem, and passes for a mushroom until the player is 10 blocks away or stands still a few seconds. A sneaking

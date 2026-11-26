@@ -97,10 +97,10 @@ static SCHEME: Scheme = Scheme {
     varieties: &VARIETIES,
 };
 
-/// When it comes out (the library's spawning takes a small flier's hours; it doesn't fly): any time but the rain; the
-/// dark is its block's (`spawns_on`).
+/// When it comes out (the library's spawning takes a small flier's hours; it doesn't fly): at night, rain or not
+/// (SPECS §2); the dark is its block's too (`spawns_on`).
 static HOURS: creature::flutter::Kind = creature::flutter::Kind {
-    hours: creature::flutter::Hours::Always,
+    hours: creature::flutter::Hours::Night,
     speed: 0.0,
     height: (0.0, 0.0),
     flight: (1, 2),
