@@ -9,6 +9,8 @@ Each version's section says what changed in it (`cargo creature release` needs o
   mark turning in place of the creature.
 - `Species::shadow`: an item model drawing a species' icon in black, for an egg the GUI can't draw as a shadow from its
   texture (Minecraft's, the Vanilla Bestiary's).
+- `creature::pick`: a creature is hit where its outline is, parts reaching out of its box too (the Magma Golem's
+  arms), through the client's `client_pick`.
 - `creature::model::draw_attached`: a model drawn with what it holds following its hand (the Magma Golem's glob).
 - `creature::particles` hands out flames, lava drops, explosions and large smoke too (the Magma Golem's).
 

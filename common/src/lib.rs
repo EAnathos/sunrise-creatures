@@ -41,6 +41,7 @@ pub mod jar;
 pub mod mob;
 pub mod model;
 pub mod particles;
+pub mod pick;
 pub mod prey;
 pub mod projectile;
 mod recipes;
@@ -51,12 +52,13 @@ pub mod territory;
 pub mod touch;
 
 use mod_api::{
-    BreakBlockEvent, BuildCreativeModeTabContentsEvent, ClientHost, CreativeTabVisibility, EntityInteractEvent,
-    EntityJoinLevelEvent, EntityLeaveLevelEvent, EntitySizeEvent, EntityTickListenedEvent, EntityTickPostEvent,
-    ExplosionDetonateEvent, Flow, HitHost, Hooks, Host, HostSide, InteractionResult, LevelTickPostEvent,
-    LivingBreatheEvent, LivingChangeTargetEvent, LivingIncomingDamageEvent, LoopContext, PlayerLoggedInEvent,
-    RegisterCommandsEvent, Registrar, RegistrationContext, RunModCommandEvent, ScreenMouseButtonPressedPreEvent,
-    ScreenMouseScrolledPreEvent, ScreenRenderPostEvent, ServerHost, TabCompleteEvent, VisualsEvent,
+    BreakBlockEvent, BuildCreativeModeTabContentsEvent, ClientHost, ClientPickEvent, CreativeTabVisibility,
+    EntityInteractEvent, EntityJoinLevelEvent, EntityLeaveLevelEvent, EntitySizeEvent, EntityTickListenedEvent,
+    EntityTickPostEvent, ExplosionDetonateEvent, Flow, HitHost, Hooks, Host, HostSide, InteractionResult,
+    LevelTickPostEvent, LivingBreatheEvent, LivingChangeTargetEvent, LivingIncomingDamageEvent, LoopContext,
+    PlayerLoggedInEvent, RegisterCommandsEvent, Registrar, RegistrationContext, RunModCommandEvent,
+    ScreenMouseButtonPressedPreEvent, ScreenMouseScrolledPreEvent, ScreenRenderPostEvent, ServerHost, TabCompleteEvent,
+    VisualsEvent,
 };
 
 /// The library's items in the guide's Items tab (SPECS §7.2).
@@ -209,6 +211,11 @@ impl Hooks for Creature {
             anger::hit(event.kind, entity, by);
         }
         Flow::Continue
+    }
+
+    /// The crosshair finds a creature by its outline (`pick`).
+    fn client_pick(&self, host: &mut dyn ClientHost, event: &mut ClientPickEvent<'_>) {
+        pick::pick(&*host, event);
     }
 
     /// The glowing creatures' lights (`glow`).

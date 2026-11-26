@@ -37,6 +37,13 @@ const SIZE: creature::mob::Size = creature::mob::Size {
     height: 6.0,
     eye_height: 4.2,
 };
+/// Where the crosshair finds it (`creature::pick`): its arms and fists reach out of its box on each side.
+const OUTLINE: creature::pick::Outline = creature::pick::Outline {
+    side: 2.3,
+    depth: 1.5,
+    height: 6.0,
+    ..creature::pick::Outline::DEFAULT
+};
 /// Its health and pace (SPECS §2), as its content file sets them, and what its template (a trader) lacks: armour, no
 /// knockback, its fist's blow.
 const HEALTH: f64 = 250.0;
@@ -148,6 +155,7 @@ impl Hooks for MagmaGolem {
     fn register(&self, r: &mut dyn Registrar, _: &RegistrationContext) {
         creature::mob::ours(GOLEM, SIZE);
         creature::mob::scale_client_box(GOLEM);
+        creature::pick::outline(GOLEM, OUTLINE);
         creature::projectile::register(glob::GLOB, glob::SIZE);
         // Their attribute rows (a type only its content file declares has none to add to), with the values their
         // content files set, then what their template lacks.

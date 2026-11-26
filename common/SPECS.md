@@ -80,6 +80,8 @@ stay in the vulture until a second mod needs them, except friends (§6.2) and th
   `mods/<mod>/assets/models/<model>.bbmodel` into a `pub static <MODEL>: Part` in the mod's crate.
 - `draw(host, draw, part, texture, pose)`: draws the tree with the mod's texture; `pose(group)` gives each group's
   animation for the frame. Called from the mod's `mob_submit` hook, which then cancels the template's model.
+- `draw_layer` (every cube grown: a layer drawn over the model), `draw_attached` (a callback after each group, in its
+  posed space: what a creature holds follows its hand, the Magma Golem's glob).
 - Users: every mob of the series.
 
 ### 3.2 Mob sounds (`creature::sounds`) ✅
@@ -257,6 +259,16 @@ a half above it with nothing to climb beside it, it first goes to the nearest lo
 renderer draws it upright, head up (`creep::clinging`); broken bark lets it fall. Users: **Ladybugs** (between
 flowers), **Phasmids** (over the canopy and up the trunks, clinging), **Dung Beetles** (about their pasture, no
 climbing).
+
+### 3.17 Where the crosshair finds a creature (`creature::pick`) ✅
+
+A creature whose parts reach out of its box (the Magma Golem's arms and fists) is hit where it is drawn. A mod gives its
+outline (`Outline`: how far it reaches to its sides, before and behind it, how high) from its `register`
+(`pick::outline`); the library's `client_pick` tries the outline, turned with the creature, along the player's look,
+and picks the creature where the look meets it first within the player's reach, unless a block or another entity is
+nearer. A client knows only the template's box, scaled (sunrise-org/sunrise#1134); with that fixed, a box is still as
+wide before a creature as to its sides. The server checks the blow against its box with vanilla's 3 blocks of leeway,
+so an outline stays within 3 blocks of the box. Users: the Magma Golem.
 
 ## 4. Glass jar and territories ✅
 
