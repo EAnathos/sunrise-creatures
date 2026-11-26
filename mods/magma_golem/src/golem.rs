@@ -819,14 +819,26 @@ fn bar(host: &mut dyn ServerHost, id: u32, g: &Golem, at: [f64; 3], health: f32)
 }
 
 /// From a level tick now and then: the boss bars of golems no longer awake here (dead, gone, or the game closed while
-/// one fought: the bars are saved with the world) are removed.
+/// one fought: the bars are saved with the world) are removed. A golem is counted only if it is still in the world: a
+/// world left for the title screen keeps the game, and its golems' states, which the next world's ids may not match.
 pub(crate) fn sweep_bars(host: &mut dyn ServerHost) {
-    let awake: Vec<String> = GOLEMS
+    let known: Vec<(u32, bool)> = GOLEMS
         .locked()
         .iter()
-        .filter(|(_, g)| matches!(g.mode, Mode::Awake | Mode::Waking(_)))
-        .map(|(id, _)| bar_id(*id))
+        .map(|(id, g)| (*id, matches!(g.mode, Mode::Awake | Mode::Waking(_))))
         .collect();
+    let mut awake = Vec::new();
+    for (id, up) in known {
+        let here = host
+            .entity(id)
+            .and_then(|e| e.kind(&*host))
+            .is_some_and(|k| k.id(&*host) == GOLEM);
+        if !here {
+            GOLEMS.locked().remove(&id);
+        } else if up {
+            awake.push(bar_id(id));
+        }
+    }
     for b in host.boss_bars() {
         let Some(name) = b.id(&*host) else {
             continue;

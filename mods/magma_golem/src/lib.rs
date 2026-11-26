@@ -17,6 +17,7 @@ mod pickaxe;
 mod spawn;
 
 use std::sync::Arc;
+use std::sync::atomic::{AtomicI64, Ordering};
 
 use creature::bestiary::{Fact, Species};
 use mod_api::{
@@ -55,8 +56,9 @@ const ATTACK_DAMAGE: f64 = 14.0;
 const SIGHT: f64 = 24.0;
 /// The experience it leaves (SPECS §2).
 const EXPERIENCE: i32 = 50;
-/// How often its boss bars are swept (ticks).
+/// How often its boss bars are swept (ticks), and when they last were (the game's time: each level's tick tells it).
 const SWEEP_EVERY: i64 = 100;
+static SWEPT: AtomicI64 = AtomicI64::new(-1);
 
 /// Where it is met (SPECS §2): the Nether's basalt deltas and wastes, by their lava seas.
 const BIOMES: &[&str] = &["minecraft:basalt_deltas", "minecraft:nether_wastes"];
@@ -351,8 +353,10 @@ impl Hooks for MagmaGolem {
         if level.dimension() == mod_api::DimensionKey::NETHER {
             spawn::tick(host, level);
         }
-        if level.dimension() == mod_api::DimensionKey::OVERWORLD
-            && level.game_time(&*host).is_some_and(|t| t % SWEEP_EVERY == 0)
+        // The bars' sweep, from whichever level ticks (one with no player in it may not), once a time.
+        if let Some(time) = level.game_time(&*host)
+            && time % SWEEP_EVERY == 0
+            && SWEPT.swap(time, Ordering::Relaxed) != time
         {
             golem::sweep_bars(host);
         }

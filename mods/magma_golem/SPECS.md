@@ -21,7 +21,8 @@ the ones tried.
   its seams full-bright over it (`magma_golem_glow.png`, the texture's glowing pixels), pulsing asleep with its eyes
   dark, brighter enraged, dark crusted; its light (the library's coloured light, `creature::glow`: seen only, it
   lights no block). Its sleep and fight (`golem.rs`): it wakes when a player comes within 6 blocks, hits it or mines
-  within 4 blocks of it; its boss bar (the players within 48 blocks; bars left by a closed game are swept); its chase
+  within 4 blocks of it; its boss bar (the players within 48 blocks; bars left by a closed game, or by golems no longer in the world, are swept every 5
+  seconds from whichever level ticks); its chase
   (straight at its target over steps up to 2 blocks, jumping when a wall holds it; a path round when the target is
   far above or below or the straight way stops bringing it nearer; the nearest player in its sight when the game
   gives it no target); the fist slam, the ground pound (fire left around, small magma cubes
