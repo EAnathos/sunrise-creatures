@@ -38,6 +38,10 @@ Found, not filed: check the tracker and the newest Nightly first.
   the rod leaves their hands or after a minute (`mods/seagulls/src/lib.rs`, `CASTS`, `bobber`). No issue on the
   tracker yet (2026-11-23; #1137 is about a bobber's impact, not finding it). To check on the newest Nightly before
   filing.
+- **A living entity's renderer gets no synced attachments**: `EntityRenderState::attachments` is filled only for a
+  general entity type (`declare_general_entity`), so a mod's living creature can't show its server's state on a client
+  of another computer (docs/ARCHITECTURE.md §8, "Multiplayer"). Ours: single player, the renderers reading the
+  server's statics by entity id. To check on the newest Dev build before filing: the API changed a lot since our pin.
 
 ## Moving the pin
 

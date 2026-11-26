@@ -20,8 +20,8 @@ confidence-threshold = 0.9
 ignore = true
 
 [bans]
-# Two versions of a crate come from our dependencies (minisign on an older sha2, png and flate2 on different
-# miniz_oxide): they only make a development tool's build a little bigger, so they aren't reported.
+# Two versions of a crate come from our dependencies (png and flate2 on different miniz_oxide, two syn): they only
+# make a development tool's build a little bigger, so they aren't reported.
 multiple-versions = "allow"
 wildcards = "deny"
 

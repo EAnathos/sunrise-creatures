@@ -20,7 +20,6 @@
 //! - `bestiary`: the book's pages, what each player met and found out (SPECS §7).
 //! - `particles`: the vanilla particles the mods send, their keys asked for at registration.
 //! - `items`: the book's Items tab, a page per item of the series, with the recipes of `recipes.rs` (SPECS §7.2).
-//! - `shown`: what a creature's renderer shows (its look, a wing beat...), synced to every client (multiplayer).
 //! - `state`: what the series keeps about each creature (`EntityMap`, `EntitySet`), dropped when it leaves the level.
 //! - `sync`: how every mutex of the series is locked (`Locked::locked`), a poisoned one counted in crash reports.
 pub mod anger;
@@ -45,7 +44,6 @@ pub mod particles;
 pub mod prey;
 pub mod projectile;
 mod recipes;
-pub mod shown;
 pub mod sounds;
 pub mod state;
 pub mod sync;
@@ -111,12 +109,6 @@ struct Creature;
 impl Hooks for Creature {
     fn register(&self, r: &mut dyn Registrar, _: &RegistrationContext) {
         colours::declare(r);
-        shown::declare(r);
-        // What the library's own renderer helpers show: a look (`colours::shown_look`), a wing beat
-        // (`flight::shown_flapping`), clinging to a trunk (`creep::shown_clinging`).
-        colours::show();
-        shown::register("creature:flapping", &[], |id| i32::from(flight::flapping(id)));
-        shown::register("creature:clinging", &[], |id| i32::from(creep::clinging(id)));
         particles::declare(r);
         territory::declare(r);
         friend::declare(r);
@@ -156,9 +148,6 @@ impl Hooks for Creature {
     fn entity_tick_post(&self, host: HostSide, event: &mut EntityTickPostEvent<'_>) {
         mob::each_ticked(host, event, |host, event| {
             bestiary::tick(host, event.dimension, event.entity, event.kind);
-            if mob::is_ours(event.kind) {
-                shown::publish(host, event.entity, event.kind);
-            }
         });
     }
 

@@ -183,20 +183,23 @@ Nothing else in the repository changes: the tools find modules by their `module.
 
 ## 8. Multiplayer
 
-The series is played and tested in single player. Its main limit there: the server's state (`creature::state`) and
-the renderers share statics by entity id, which works only when the server and the client are one process. A
-renderer has no host, but Sunrise hands it the entity's synced attachments (`EntityRenderState::attachments`), so
-what it shows goes through `creature::shown` (`common/src/shown.rs`): one synced attachment of a few integers by key,
-which the server writes at our creatures' ticks when a value changes, and which every client that sees the creature
-reads. In single player the game's own server syncs to its own client the same way, so playing alone tries it.
+The series is played and tested in single player. Its main limit: the server's state (`creature::state`) and the
+renderers share statics by entity id, which works only when the server and the client are one process. On a server
+of another computer, a client's renderers would find those statics empty.
 
-A module registers each value its renderer needs (`shown::register(key, kinds, fn(u32) -> i32)`, in its `register`)
-and its renderer reads it (`shown::get`, `shown::flag`; the library's `colours::shown_look`,
-`flight::shown_flapping`, `creep::shown_clinging`). A renderer never reads a server static.
+What a renderer can read of the server, at our pin:
 
-Done: the mechanism, the library's own values (a look, a wing beat, clinging), the Phasmids. To do, each mod's
-renderer reads moved to `shown` (about 90 reads, listed by `grep -n "entity.id" mods/*/src`), then a time a
-renderer computes from an `Instant` (the cyclops's raised club) made a tick count from the creature's age; the lights
-around glowing creatures (`creature::glow`, which the client's `visuals` draws from positions the server noted)
-taken from the client's own entities; and a test with two players.
+- **Not the entity's synced attachments.** Sunrise hands them to a renderer (`EntityRenderState::attachments`) only for
+  a general entity type (`declare_general_entity`); our creatures are living entities copying the wandering trader,
+  for which it is always none. (Tried on 2026-11-26 with the Phasmids: the renderer then saw nothing, and the change
+  was undone.) Asked of Sunrise: docs/SUNRISE-ISSUES.md, "To open".
+- **A synced attachment through a client hook.** A `ClientHost` reads attachments (`TYPE.get(host, holder)`): a
+  client hook (`client_tick_post`) could read a synced `creature:` attachment of each creature in view and keep it in
+  client-side statics by entity id, which the renderers read. This is the way, until Sunrise gives living renderers
+  their attachments; it needs the client's own list of the entities in view, and a test with two players.
+
+Either way, what a renderer shows of the server's state has to become values the server writes into a synced
+attachment: about 90 reads in the mods' renderers (`grep -n "entity.id" mods/*/src`), the times a renderer computes
+from an `Instant` (the cyclops's raised club) made tick counts from the creature's age, and the lights around glowing
+creatures (`creature::glow`, drawn by the client's `visuals` from positions the server noted).
 

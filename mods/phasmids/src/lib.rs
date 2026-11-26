@@ -527,13 +527,10 @@ fn pose(name: &str, age: f32, walk: f32, speed: f32, dead: bool) -> [f32; 3] {
     }
 }
 
-/// Drawn on a trunk (`creature::creep::shown_clinging`): lifted so its tail is at its feet, and moved to the bark it faces
+/// Drawn on a trunk (`creature::creep::clinging`): lifted so its tail is at its feet, and moved to the bark it faces
 /// (its middle is held 0.3 from it), in blocks.
 const CLING_LIFT: f32 = 0.3;
 const CLING_REACH: f32 = 0.27;
-
-/// Whether it plays dead, shown to the clients for its drawing (`creature::shown`).
-const DEAD: &str = "phasmids:dead";
 
 /// Its own model in its kind's texture.
 struct Draw {
@@ -543,8 +540,7 @@ struct Draw {
 impl EntityRenderer for Draw {
     fn submit(&self, entity: &EntityRenderState, draw: &mut dyn BlockEntityDrawContext) -> Result<(), String> {
         let mob = entity.living.as_ref();
-        // What the server shows of it (`creature::shown`): read the same on any client.
-        let look: Look = creature::colours::shown_look(entity).unwrap_or_default();
+        let look: Look = creature::colours::look(entity.id).unwrap_or_default();
         let (part, texture, scale) = if self.stick {
             (
                 &model_stick_insect::STICK_INSECT,
@@ -559,10 +555,10 @@ impl EntityRenderer for Draw {
             )
         };
         let (walk, speed) = mob.map_or((0.0, 0.0), |m| (m.walk_animation_pos, m.walk_animation_speed));
-        let dead = creature::shown::flag(entity, DEAD);
+        let dead = life::dead(entity.id);
         draw.push();
         creature::model::living_pose(draw, entity);
-        if !dead && creature::creep::shown_clinging(entity) {
+        if !dead && creature::creep::clinging(entity.id) {
             // On a trunk: upright, head up, its belly to the bark it faces, its tail at its feet.
             draw.translate([0.0, CLING_LIFT, CLING_REACH]);
             draw.rotate_about([1.0, 0.0, 0.0], -90.0, [0.0; 3]);
@@ -590,7 +586,6 @@ impl Hooks for Phasmids {
         for s in &SPAWNING {
             creature::flutter::spawns_on_leaves(s);
         }
-        creature::shown::register(DEAD, &[STICK, LEAF], |id| i32::from(life::dead(id)));
         for c in &IN_JAR {
             creature::jar::register(c);
         }

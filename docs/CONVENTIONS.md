@@ -97,11 +97,13 @@ cargo creature native-check                                                  # C
   `#[rustfmt::skip]`.
 - **Clippy** with warnings as errors, on the tools and, with `cargo creature native-check`, on the modules' crates
   against the pinned SDK (with their tests). `cargo creature install` builds them into the game.
-- **`cargo creature check`**: the shared tab is up to date, manifests carry the module's id and one version, every pin
-  is the series' Sunrise revision, mods depend on the library and on what they require, each module's `ported`
-  agrees with its crate (ported: a `Cargo.toml` and a `src/lib.rs`; not: neither, so no code is left unbuilt), tab
-  items exist, JSON parses, `en_us` and `fr_fr` have the same keys, no em dash in the docs. `native-check` refuses to
-  run on such a disagreement too.
+- **`cargo creature check`**: the shared tab is up to date, manifests carry the module's id, every crate's version is
+  `0.0.0` (the module's is its manifest's), every pin is the series' Sunrise revision, mods depend on the library and
+  on what they require, each module's `ported` agrees with its crate (ported: a `Cargo.toml` and a `src/lib.rs`; not:
+  neither, so no code is left unbuilt), the mods' literals of the library's settings structs end with
+  `..Type::DEFAULT`, a published module's release files, README licence section, lock, changelog section (not the
+  `bump` placeholder) and release workflow, tab items exist, JSON parses, `en_us` and `fr_fr` have the same keys, no
+  em dash in the docs. `native-check` refuses to run on a `ported` disagreement too.
 - CI then builds every module (`cargo creature build`) and keeps the `.smod` files as an artifact.
 
 ## Assets
@@ -114,5 +116,6 @@ cargo creature native-check                                                  # C
 
 ## Versions and commits
 
-- Semver per module, content and native versions kept equal (ARCHITECTURE.md §6). One Sunrise pin for the series (docs/SUNRISE-ISSUES.md, "Moving the pin").
+- Semver per module, its version its `sunrise-mod.toml`'s alone, raised by `cargo creature bump` (ARCHITECTURE.md §6).
+  One Sunrise pin for the series, moved by `cargo creature pin` (docs/SUNRISE-ISSUES.md, "Moving the pin").
 - A commit touches one module when it can; a library change and the mod changes that need it go together.

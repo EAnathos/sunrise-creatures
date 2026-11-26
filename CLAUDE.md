@@ -92,17 +92,14 @@ only). How the port went is in the history (`git show 2c09384:docs/SUNRISE-PORT.
   (ours copy the trader, whose behaviour is all goals; the library takes its goals off at join).
 - `entity_tick_post` fires only because the library answers `entity_tick_listened`: our behaviours (`creature::body`)
   run there, on the server. A behaviour can't hurt, give effects or set targets: it queues, the tick hook applies.
-- Rendering: a mod's `EntityRenderer`, posed at the feet, unturned (`creature::model::living_pose`, `draw`). What it
-  shows of the server's state goes through `creature::shown` (a synced attachment it reads from
-  `EntityRenderState::attachments`), never a server static: `docs/ARCHITECTURE.md` §8 (multiplayer).
+- Rendering: a mod's `EntityRenderer`, posed at the feet, unturned (`creature::model::living_pose`, `draw`).
 - Riding: the rider's keys come from the server `player_input` hook; the rider is the mount's first passenger
   (`controlling_passenger` is empty unless vanilla steers it); `entity_mount` can cancel a dismount.
 - `EntityRef::leash_holder` answers `Some(LeashHolder::Unleashed)` for a mob without a lead.
 - A payload's string holds at most 4096 bytes (`PAYLOAD_MAX_STRING_BYTES`).
 - Hosts are split by side (`ServerHost`, `ClientHost`, `HostSide`); per-type behaviour is a Part
-  (`r.entity_part`, `r.item_part`: `use_item`, `use_on`, `tooltip`). A renderer has no host: it gets the entity's
-  synced attachments (`creature::shown`); the mods not moved to it yet still read statics by entity id (single
-  player).
+  (`r.entity_part`, `r.item_part`: `use_item`, `use_on`, `tooltip`). A renderer has no host: per-entity render state
+  is kept in statics by entity id (single player).
 - A type only its content file declares has no attribute row: `declare_entity_attributes` (with the JSON's values)
   before `modify_entity_attributes`, or the game crashes at load. Particle keys are handed out at registration only
   (`creature::particles`). `finalize_spawn` gives a mob's spawn reason.

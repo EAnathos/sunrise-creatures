@@ -69,7 +69,7 @@ The modules are **pinned** to one Sunrise build, the same for every module (`[na
 | `cargo creature vanilla [jar]` | Writes the Vanilla Bestiary's `game_data.rs` from Minecraft's jar (default: the launcher's 26.3): natural spawns, drops, breeding foods |
 | `cargo creature pack <module>` | Stages a module's package in `target/stage/` and zips it into `target/<id>.smod` |
 | `cargo creature build [mod...]` | Packages and checks (`cargo sunrise-mod check`) the library and the mods into `target/dist/`, without installing |
-| `cargo creature check` | The repository's consistency: tab, manifests, pins, translations, JSON, generated files, sounds (events, files, subtitles), recipe book advancements, docs |
+| `cargo creature check` | The repository's consistency: tab, manifests, pins, crates, the library's structs in the mods (`..Type::DEFAULT`), published modules' release files, translations, JSON, generated files, sounds (events, files, subtitles), recipe book advancements, docs ([docs/CONVENTIONS.md](docs/CONVENTIONS.md)) |
 | `cargo creature native-check [sdk]` | Clippy and the unit tests on every ported crate against the pinned Sunrise SDK (fetched into `target/sunrise-sdk/`) |
 | `cargo creature install [--instance <name>] [mod...]` | Builds and installs, then runs the instance's native build |
 | `cargo creature pages [module...]` | Writes the published modules' release files in their folders: `page.toml` (from `[registry]` and the README), `page/` (the pictures), `icon.png` ([docs/PUBLISHING.md](docs/PUBLISHING.md)) |
