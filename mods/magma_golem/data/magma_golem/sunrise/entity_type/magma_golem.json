@@ -2,7 +2,13 @@
   "template": "minecraft:wandering_trader",
   "attributes": {
     "minecraft:max_health": 250.0,
-    "minecraft:movement_speed": 0.2
+    "minecraft:movement_speed": 0.3
   },
-  "shadow_radius": 1.0
+  "shadow_radius": 1.0,
+  "sounds": {
+    "hurt": "magma_golem:entity.magma_golem.hurt",
+    "death": "magma_golem:entity.magma_golem.death",
+    "ambient": "none",
+    "step": "magma_golem:entity.magma_golem.step"
+  }
 }

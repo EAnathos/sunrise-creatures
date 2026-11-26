@@ -72,6 +72,7 @@ fn windup(attack: Attack) -> Option<(f32, f32)> {
         Attack::Slam(t) => (t, golem::SLAM_WINDUP),
         Attack::Pound(t) => (t, golem::POUND_WINDUP),
         Attack::Glob(t) => (t, golem::GLOB_WINDUP),
+        Attack::Leap(t) => (t, golem::LEAP_WINDUP),
         Attack::None => return None,
     };
     Some(((t as f32 / of as f32).min(1.0), of as f32))
@@ -101,7 +102,7 @@ pub(crate) fn pose(name: &str, now: &Frame, shown: &Shown) -> [f32; 3] {
         "arm_right" => [stride * 0.7, 0.0, 0.0],
         _ => [0.0; 3],
     };
-    let attack = attack(name, shown.attack);
+    let attack = attack(name, shown);
     let roar = roar(name, shown);
     let c = curled(shown.mode);
     let m = mound(name);
@@ -114,11 +115,15 @@ pub(crate) fn pose(name: &str, now: &Frame, shown: &Shown) -> [f32; 3] {
 
 /// What an attack adds to the pose: the fist slam (one arm high behind, then down in front), the ground pound (both
 /// arms over its head, then down together, the body dropping with them), the glob (one hand lifting a glob over its
-/// head).
-fn attack(name: &str, attack: Attack) -> [f32; 3] {
+/// head), the leap (a crouch, the arms swung back; in the air the arms thrown up and forward, the legs tucked).
+fn attack(name: &str, shown: &Shown) -> [f32; 3] {
+    let attack = shown.attack;
     let Some((t, _)) = windup(attack) else {
         return [0.0; 3];
     };
+    if let Attack::Leap(_) = attack {
+        return leap(name, if shown.aloft { None } else { Some(t) });
+    }
     match (attack, name) {
         (Attack::Slam(_), "arm_right") => [-160.0 * t, 0.0, 0.0],
         (Attack::Slam(_), "body") => [-6.0 * t, 0.0, 0.0],
@@ -128,6 +133,31 @@ fn attack(name: &str, attack: Attack) -> [f32; 3] {
         (Attack::Glob(_), "arm_left") => [-175.0 * t, 0.0, -15.0 * t],
         (Attack::Glob(_), "forearm_left") => [-30.0 * t, 0.0, 0.0],
         _ => [0.0; 3],
+    }
+}
+
+/// Its leap: crouched `Some(t)` of the way, or in the air (`None`).
+fn leap(name: &str, crouch: Option<f32>) -> [f32; 3] {
+    match (crouch, name) {
+        (Some(t), "body") => [22.0 * t, 0.0, 0.0],
+        (Some(t), "leg_left" | "leg_right") => [-45.0 * t, 0.0, 0.0],
+        (Some(t), "shin_left" | "shin_right") => [70.0 * t, 0.0, 0.0],
+        (Some(t), "arm_left" | "arm_right") => [45.0 * t, 0.0, 0.0],
+        (Some(t), "head") => [-20.0 * t, 0.0, 0.0],
+        (None, "body") => [-10.0, 0.0, 0.0],
+        (None, "arm_left" | "arm_right") => [-150.0, 0.0, 0.0],
+        (None, "leg_left" | "leg_right") => [-35.0, 0.0, 0.0],
+        (None, "shin_left" | "shin_right") => [55.0, 0.0, 0.0],
+        (None, "jaw") => [30.0, 0.0, 0.0],
+        _ => [0.0; 3],
+    }
+}
+
+/// How far it sinks in its crouch before a leap (blocks).
+fn crouch_drop(shown: &Shown) -> f32 {
+    match (shown.attack, shown.aloft) {
+        (Attack::Leap(t), false) => 0.6 * (t as f32 / golem::LEAP_WINDUP as f32).min(1.0),
+        _ => 0.0,
     }
 }
 
@@ -161,7 +191,7 @@ impl EntityRenderer for Draw {
         if scale > 0.0 && scale != 1.0 {
             draw.scale([1.0 / scale; 3]);
         }
-        draw.translate([0.0, -MOUND_DROP * curled(shown.mode), 0.0]);
+        draw.translate([0.0, -MOUND_DROP * curled(shown.mode) - crouch_drop(&shown), 0.0]);
         let pose = |part: &str| pose(part, &now, &shown);
         let tint = creature::model::tint(mob);
         creature::model::draw_shown(draw, &model::MAGMA_GOLEM, TEXTURE, &pose, &|_| true, tint);

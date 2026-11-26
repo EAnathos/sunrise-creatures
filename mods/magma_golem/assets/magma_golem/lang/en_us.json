@@ -9,5 +9,8 @@
   "bestiary.magma_golem.lava_bath": "Lava bath",
   "bestiary.magma_golem.heart": "Heart",
   "bestiary.magma_golem.item.magma_heart.use": "With a netherite pickaxe in a smithing table: the molten pickaxe",
-  "bestiary.magma_golem.item.molten_pickaxe.use": "Smelts what it mines: ores give ingots, sand gives glass, cobblestone gives stone"
+  "bestiary.magma_golem.item.molten_pickaxe.use": "Smelts what it mines: ores give ingots, sand gives glass, cobblestone gives stone",
+  "subtitles.entity.magma_golem.hurt": "Magma Golem hurts",
+  "subtitles.entity.magma_golem.death": "Magma Golem crumbles",
+  "subtitles.entity.magma_golem.step": "Heavy footsteps"
 }

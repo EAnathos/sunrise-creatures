@@ -1,7 +1,7 @@
 //! A magma golem's life and fight (SPECS §2), run from its server tick (`tick`), where the game can be asked to hurt,
 //! set on fire and move: asleep as a mound of glowing rock, waking when a player comes near, hits it or mines by it,
-//! fighting under a boss bar (a fist slam in reach, a ground pound against players close around it, a magma glob at
-//! range), healing in lava, enraged under half health, crusted over by snow or water, and lying down again after a
+//! fighting under a boss bar (a fist slam in reach, a ground pound against players close around it, a leap onto a
+//! player farther off, a magma glob at range), healing in lava, enraged under half health, crusted over by snow or water, and lying down again after a
 //! while without a target. What its drawing needs is kept by its id (`Shown`, single player: the renderer reads it).
 use creature::state::{EntityMap, EntitySet};
 use mod_api::{
@@ -33,22 +33,48 @@ const POUND_DAMAGE: f32 = 8.0;
 const POUND_UP: f64 = 0.8;
 const POUND_BACK: f64 = 1.2;
 const POUND_FIRES: usize = 6;
-/// The magma glob: a target `GLOB_FROM` to `GLOB_TO` blocks away, torn and lifted for `GLOB_WINDUP` ticks, then
+/// Where its pound lights fires: a ring 3 blocks around it.
+const RING: [(i32, i32); 8] = [(3, 0), (-3, 0), (0, 3), (0, -3), (2, 2), (-2, -2), (2, -2), (-2, 2)];
+/// The magma glob: a target `GLOB_FROM` to `GLOB_TO` blocks away (nearer, it leaps), torn and lifted for `GLOB_WINDUP` ticks, then
 /// lobbed from over its head; one every `GLOB_EVERY` ticks.
-const GLOB_FROM: f64 = 8.0;
+const GLOB_FROM: f64 = 12.0;
 const GLOB_TO: f64 = 24.0;
 pub(crate) const GLOB_WINDUP: i32 = 20;
 const GLOB_EVERY: i32 = 80;
 const GLOB_HEIGHT: f64 = 6.2;
-/// Its chase: how fast it walks to its target (a multiplier of its speed), and how near it stops.
-const CHASE: f64 = 1.0;
+/// Its chase: how fast it walks to its target (a multiplier of its speed), how near it stops, how often it finds a new
+/// path (ticks). Moving less than `STUCK_MOVE` blocks a tick for `STUCK / 2` ticks, it pushes straight on (`PUSH`
+/// blocks a tick); for `STUCK` ticks, it leaps.
+const CHASE: f64 = 1.15;
 const CLOSE: f64 = 3.0;
+const REPATH: i32 = 10;
+const STUCK_MOVE: f64 = 0.03;
+const STUCK: i32 = 40;
+const PUSH: f64 = 0.18;
+/// The leap: a target `LEAP_FROM` to `LEAP_TO` blocks away across, a crouch of `LEAP_WINDUP` ticks, then a spring of
+/// `LEAP_UP` blocks a tick up (more for a target up to `LEAP_RISE` blocks higher), at most `LEAP_FASTEST` across,
+/// landing `LEAP_SHORT` blocks short of it; at most `LEAP_AIRTIME` ticks in the air. Its landing hurts the players
+/// within `LEAP_REACH` blocks by `LEAP_DAMAGE`, throwing them `LEAP_BACK` across and `LEAP_THROW` up. One every
+/// `LEAP_EVERY` ticks.
+const LEAP_FROM: f64 = 6.0;
+const LEAP_TO: f64 = 16.0;
+pub(crate) const LEAP_WINDUP: i32 = 14;
+const LEAP_UP: f64 = 0.9;
+const LEAP_RISE: f64 = 6.0;
+const LEAP_FASTEST: f64 = 1.6;
+const LEAP_SHORT: f64 = 1.5;
+const LEAP_AIRTIME: i32 = 60;
+const LEAP_REACH: f64 = 4.0;
+const LEAP_DAMAGE: f32 = 10.0;
+const LEAP_BACK: f64 = 1.0;
+const LEAP_THROW: f64 = 0.5;
+const LEAP_EVERY: i32 = 120;
 /// Healing in lava: health a tick (2 a second).
 const LAVA_HEAL: f32 = 0.1;
 /// Enraged under this share of its health: faster (its speed times `RAGE_SPEED`), its attacks' wind-ups shorter, and
 /// each ground pound sheds 1 or 2 small magma cubes.
 const RAGE: f32 = 0.5;
-const RAGE_SPEED: f64 = 1.4;
+const RAGE_SPEED: f64 = 1.3;
 /// Cooled by snow: `SNOW_DAMAGE` a snowball; `CRUST_HITS` within `CRUST_WITHIN` ticks crust it for `CRUST` ticks:
 /// slowed, its damage taken doubled. A splash water bottle within `SPLASH_NEAR` blocks crusts it at once.
 pub(crate) const SNOW_DAMAGE: f32 = 3.0;
@@ -92,6 +118,8 @@ pub(crate) enum Attack {
     Slam(i32),
     Pound(i32),
     Glob(i32),
+    /// Crouched, then in the air.
+    Leap(i32),
 }
 
 /// A golem's state.
@@ -101,10 +129,17 @@ struct Golem {
     attack: Attack,
     /// Ticks without a target, awake.
     idle: i32,
-    /// Ticks until it may slam, pound, lob again.
+    /// Ticks until it may slam, pound, lob, leap again.
     slam: i32,
     pound: i32,
     glob: i32,
+    leap: i32,
+    /// Ticks in the air since it sprang (0 on the ground).
+    aloft: i32,
+    /// Ticks until its next path, where it stood last tick, and the ticks it has hardly moved while chasing.
+    repath: i32,
+    last: Option<[f64; 3]>,
+    stuck: i32,
     enraged: bool,
     /// Its snow hits (the game's tick of each), and the ticks it stays crusted.
     snow: Vec<i64>,
@@ -126,6 +161,8 @@ pub(crate) struct Shown {
     pub attack: Attack,
     pub enraged: bool,
     pub crusted: bool,
+    /// In the air, leaping.
+    pub aloft: bool,
 }
 
 pub(crate) fn shown(id: u32) -> Shown {
@@ -134,6 +171,7 @@ pub(crate) fn shown(id: u32) -> Shown {
         attack: g.attack,
         enraged: g.enraged,
         crusted: g.crusted > 0,
+        aloft: g.aloft > 0,
     })
 }
 
@@ -320,19 +358,30 @@ fn set_speed(host: &mut dyn ServerHost, living: LivingRef, times: f64) {
     living.set_attribute_base(host, "minecraft:movement_speed", crate::SPEED * times);
 }
 
-/// Awake: it goes for its target, and slams, pounds or lobs as it can; with no target for `IDLE` ticks it lies down.
+/// Awake: it goes for its target, and slams, pounds, leaps or lobs as it can; with no target for `IDLE` ticks it lies
+/// down.
 fn fight(host: &mut dyn ServerHost, dimension: &str, id: u32, g: &mut Golem, at: [f64; 3], level: LevelRef) {
-    let Some(m) = host.entity(id).and_then(|e| host.mob(e)) else {
+    let Some(e) = host.entity(id) else {
+        return;
+    };
+    let Some(m) = host.mob(e) else {
         return;
     };
     g.slam = (g.slam - 1).max(0);
     g.pound = (g.pound - 1).max(0);
     g.glob = (g.glob - 1).max(0);
+    g.leap = (g.leap - 1).max(0);
     // Its wind-ups: shorter enraged, longer crusted.
     let pace = |ticks: i32| {
         let t = if g.enraged { ticks * 7 / 10 } else { ticks };
         if g.crusted > 0 { t * 2 } else { t }
     };
+    // Its target: the game's, or else the nearest player within its sight.
+    if m.target(&*host).is_none()
+        && let Some(player) = nearest_player(&*host, dimension, at, crate::SIGHT)
+    {
+        m.set_target(host, Some(player));
+    }
     let target = m.target(&*host).and_then(|l| {
         let e = l.entity();
         let p = e.position(&*host)?;
@@ -363,13 +412,40 @@ fn fight(host: &mut dyn ServerHost, dimension: &str, id: u32, g: &mut Golem, at:
             g.attack = Attack::None;
             g.glob = GLOB_EVERY;
         }
+        // Crouched long enough: it springs at where its target stands.
+        Attack::Leap(t) if g.aloft == 0 && t >= pace(LEAP_WINDUP) => {
+            if let (Some((_, p)), Some(v)) = (target, e.velocity(&*host)) {
+                let jump = leap_velocity(at, p);
+                e.set_velocity(host, [jump[0], jump[1].max(v[1]), jump[2]]);
+                sound(host, level, at, RUMBLE, 2.0, 1.1);
+            }
+            g.aloft = 1;
+            g.attack = Attack::Leap(t + 1);
+        }
+        // In the air until it lands (or gives up): its landing shakes the ground.
+        Attack::Leap(t) if g.aloft > 0 => {
+            let landed = g.aloft > 3 && e.on_ground(&*host) == Some(true);
+            if landed || g.aloft > LEAP_AIRTIME {
+                if landed {
+                    land(host, id, at, level);
+                }
+                g.attack = Attack::None;
+                g.aloft = 0;
+                g.leap = LEAP_EVERY;
+            } else {
+                g.aloft += 1;
+                g.attack = Attack::Leap(t + 1);
+            }
+        }
         Attack::Slam(t) => g.attack = Attack::Slam(t + 1),
         Attack::Pound(t) => g.attack = Attack::Pound(t + 1),
         Attack::Glob(t) => g.attack = Attack::Glob(t + 1),
+        Attack::Leap(t) => g.attack = Attack::Leap(t + 1),
         Attack::None => {}
     }
     let Some((_, p)) = target else {
         g.idle += 1;
+        g.stuck = 0;
         if g.idle >= IDLE && g.attack == Attack::None {
             g.mode = Mode::LyingDown(0);
             m.stop(host);
@@ -380,6 +456,8 @@ fn fight(host: &mut dyn ServerHost, dimension: &str, id: u32, g: &mut Golem, at:
     g.idle = 0;
     m.look_at(host, [p[0], p[1] + 1.0, p[2]]);
     let d = creature::body::distance(p, at);
+    let across = (p[0] - at[0]).hypot(p[2] - at[2]);
+    let grounded = e.on_ground(&*host) == Some(true);
     if g.attack == Attack::None {
         if g.pound == 0 && player_within(&*host, dimension, at, POUND_NEAR) {
             g.attack = Attack::Pound(0);
@@ -388,14 +466,89 @@ fn fight(host: &mut dyn ServerHost, dimension: &str, id: u32, g: &mut Golem, at:
         } else if g.slam == 0 && d <= SLAM_REACH {
             g.attack = Attack::Slam(0);
             m.stop(host);
+        } else if g.leap == 0
+            && grounded
+            && ((LEAP_FROM..=LEAP_TO).contains(&across) || (g.stuck >= STUCK && across > SLAM_REACH))
+        {
+            g.attack = Attack::Leap(0);
+            g.stuck = 0;
+            m.stop(host);
         } else if g.glob == 0 && (GLOB_FROM..=GLOB_TO).contains(&d) {
             g.attack = Attack::Glob(0);
             m.stop(host);
             sound(host, level, at, GRIND, 1.2, 0.7);
         }
     }
-    if g.attack == Attack::None && d > CLOSE {
+    if g.attack != Attack::None || d <= CLOSE {
+        g.stuck = 0;
+        g.last = None;
+        return;
+    }
+    // The chase: a new path every `REPATH` ticks; held back (by its size, a ledge), it pushes straight on.
+    g.repath = (g.repath - 1).max(0);
+    if g.repath == 0 {
         m.move_to(host, p, CHASE);
+        g.repath = REPATH;
+    }
+    let moved = g.last.map_or(1.0, |l| (at[0] - l[0]).hypot(at[2] - l[2]));
+    g.last = Some(at);
+    g.stuck = if moved < STUCK_MOVE { g.stuck + 1 } else { 0 };
+    if g.stuck >= STUCK / 2
+        && grounded
+        && let Some(v) = e.velocity(&*host)
+    {
+        let push = PUSH * if g.enraged { RAGE_SPEED } else { 1.0 };
+        let (dx, dz) = ((p[0] - at[0]) / across.max(0.01), (p[2] - at[2]) / across.max(0.01));
+        e.set_velocity(host, [dx * push, v[1], dz * push]);
+    }
+}
+
+/// The velocity that throws it from `from` onto `to`: up by `LEAP_UP` (more for a higher target), across as far as its
+/// flight carries it (vanilla's: gravity 0.08 and drag 0.98 down, drag 0.91 across), landing just short.
+fn leap_velocity(from: [f64; 3], to: [f64; 3]) -> [f64; 3] {
+    let rise = (to[1] - from[1]).clamp(0.0, LEAP_RISE);
+    let up = LEAP_UP + rise * 0.06;
+    // Its time in the air, until it is back down to its target's height.
+    let (mut y, mut vy, mut ticks) = (0.0, up, 0);
+    while ticks < 100 && (vy > 0.0 || y > rise) {
+        y += vy;
+        vy = (vy - 0.08) * 0.98;
+        ticks += 1;
+    }
+    let (dx, dz) = (to[0] - from[0], to[2] - from[2]);
+    let across = dx.hypot(dz).max(0.01);
+    let carried = (1.0 - 0.91f64.powi(ticks)) / 0.09;
+    let speed = ((across - LEAP_SHORT).max(0.0) / carried).min(LEAP_FASTEST);
+    [dx / across * speed, up, dz / across * speed]
+}
+
+/// Its landing: the players within `LEAP_REACH` hurt and thrown up and back, the ground shaking.
+fn land(host: &mut dyn ServerHost, id: u32, at: [f64; 3], level: LevelRef) {
+    let Some(me) = host.entity(id) else {
+        return;
+    };
+    sound(host, level, at, POUND, 1.6, 0.5);
+    sound(host, level, at, THUD, 2.0, 0.5);
+    for (particle, count, spread) in [("minecraft:explosion", 4, 1.5), ("minecraft:large_smoke", 24, 1.5)] {
+        creature::particles::puff(host, level, particle, [at[0], at[1] + 0.3, at[2]], spread, count);
+    }
+    let players: Vec<u32> = host
+        .players()
+        .server_players()
+        .into_iter()
+        .filter(|p| p.level(&*host) == Some(level) && p.is_spectator(&*host) != Some(true))
+        .filter(|p| p.is_creative(&*host) != Some(true))
+        .filter_map(|p| {
+            let e = p.entity();
+            let pos = e.position(&*host)?;
+            (creature::body::distance(pos, at) <= LEAP_REACH).then_some(e.id())
+        })
+        .collect();
+    for target in players {
+        if let Some(t) = host.entity(target) {
+            t.hurt(host, "minecraft:mob_attack", LEAP_DAMAGE, Some(me), Some(me));
+        }
+        push(host, id, target, LEAP_BACK, LEAP_THROW);
     }
 }
 
@@ -450,7 +603,7 @@ fn pound(host: &mut dyn ServerHost, dimension: &str, id: u32, at: [f64; 3], leve
         }
         push(host, id, target, POUND_BACK, POUND_UP);
     }
-    fires(host, level, at);
+    fires(host, level, at, &RING, POUND_FIRES);
     if enraged {
         let n = 1 + (level.game_time(&*host).unwrap_or(0) % 2) as usize;
         for k in 0..n {
@@ -467,8 +620,8 @@ fn pound(host: &mut dyn ServerHost, dimension: &str, id: u32, at: [f64; 3], leve
     }
 }
 
-/// Fire on up to `POUND_FIRES` open blocks over the ground around `at`.
-fn fires(host: &mut dyn ServerHost, level: LevelRef, at: [f64; 3]) {
+/// Fire on the open blocks over the ground at the `spots` around `at` (offsets across), up to `most`.
+pub(crate) fn fires(host: &mut dyn ServerHost, level: LevelRef, at: [f64; 3], spots: &[(i32, i32)], most: usize) {
     let Some(key) = host.block_key("minecraft:fire") else {
         return;
     };
@@ -477,18 +630,18 @@ fn fires(host: &mut dyn ServerHost, level: LevelRef, at: [f64; 3]) {
     };
     let ground = creature::territory::Ground::new(&*host, level);
     let base = [at[0].floor() as i32, at[1].floor() as i32, at[2].floor() as i32];
-    let mut spots = Vec::new();
-    for (dx, dz) in [(3, 0), (-3, 0), (0, 3), (0, -3), (2, 2), (-2, -2), (2, -2), (-2, 2)] {
+    let mut lit = Vec::new();
+    for &(dx, dz) in spots {
         for dy in [0, 1, -1] {
             let p = [base[0] + dx, base[1] + dy, base[2] + dz];
             let below = ground.block([p[0], p[1] - 1, p[2]]);
             if ground.block(p) == "minecraft:air" && !below.ends_with("air") && !below.contains("lava") {
-                spots.push(p);
+                lit.push(p);
                 break;
             }
         }
     }
-    for p in spots.into_iter().take(POUND_FIRES) {
+    for p in lit.into_iter().take(most) {
         let _ = level.set_block(host, p, fire, BlockUpdateFlags::CLIENTS | BlockUpdateFlags::NEIGHBORS);
     }
 }
@@ -503,6 +656,23 @@ fn push(host: &mut dyn ServerHost, golem: u32, target: u32, back: f64, up: f64) 
         let len = dx.hypot(dz).max(0.01);
         t.set_velocity(host, [v[0] + dx / len * back, v[1] + up, v[2] + dz / len * back]);
     }
+}
+
+/// The nearest player (not a spectator, not in creative) within `range` blocks of `at`.
+fn nearest_player(host: &dyn ServerHost, dimension: &str, at: [f64; 3], range: f64) -> Option<LivingRef> {
+    let level = host.level(dimension)?;
+    host.players()
+        .server_players()
+        .into_iter()
+        .filter(|p| p.level(host) == Some(level) && p.is_spectator(host) != Some(true))
+        .filter(|p| p.is_creative(host) != Some(true))
+        .filter_map(|p| {
+            let d = creature::body::distance(p.entity().position(host)?, at);
+            Some((d, host.living(p.entity())?))
+        })
+        .filter(|(d, _)| *d <= range)
+        .min_by(|a, b| a.0.total_cmp(&b.0))
+        .map(|(_, l)| l)
 }
 
 /// Whether a player (not a spectator, not in creative) is within `range` blocks of `at`.
@@ -592,5 +762,36 @@ pub(crate) fn sweep_bars(host: &mut dyn ServerHost) {
 pub(crate) fn died(host: &mut dyn ServerHost, id: u32) {
     if let Some(b) = host.boss_bar(&bar_id(id)) {
         b.remove(host);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Its flight, as vanilla moves a mob through the air: where it lands at its start's height.
+    fn lands(v: [f64; 3]) -> f64 {
+        let (mut p, mut v) = ([0.0f64; 3], v);
+        loop {
+            for k in 0..3 {
+                p[k] += v[k];
+            }
+            v = [v[0] * 0.91, (v[1] - 0.08) * 0.98, v[2] * 0.91];
+            if v[1] < 0.0 && p[1] <= 0.0 {
+                return p[0].hypot(p[2]);
+            }
+        }
+    }
+
+    #[test]
+    fn its_leap_lands_just_short_of_its_target() {
+        for across in [6.0, 10.0, 14.0] {
+            let v = leap_velocity([0.0; 3], [across, 0.0, 0.0]);
+            let landed = lands(v);
+            assert!(
+                (landed - (across - LEAP_SHORT)).abs() < 0.6,
+                "{across}: landed at {landed}"
+            );
+        }
     }
 }

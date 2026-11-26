@@ -85,7 +85,8 @@ The modules are **pinned** to one Sunrise build, the same for every module (`[na
   ingredients and rewarding it), or the recipe book never shows it; `cargo creature check` says which lack one. A
   feather in a recipe is `#creature:feathers`.
 - A new sound: its source in the mod's `sources/sounds.toml`, `cargo creature sounds <mod>`, its event in `sounds.json`
-  with a subtitle in both languages.
+  with a subtitle in both languages. Until a module has its own, an event may name the game's sound files
+  (`minecraft:mob/ravager/hurt1`, pitched in `sounds.json`): the game ships them, nothing is copied.
 - Pure logic (aiming, conversions, text built for the game) gets a unit test beside it (`#[cfg(test)]`).
 - After a native change: `cargo creature install` and a test in game, along the module's test list (its `SPECS.md`,
   "Testing in game").

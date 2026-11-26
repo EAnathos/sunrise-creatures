@@ -9,5 +9,8 @@
   "bestiary.magma_golem.lava_bath": "Bain de lave",
   "bestiary.magma_golem.heart": "Cœur",
   "bestiary.magma_golem.item.magma_heart.use": "Avec une pioche en netherite dans une table de forgeron : la pioche en fusion",
-  "bestiary.magma_golem.item.molten_pickaxe.use": "Fait fondre ce qu'elle mine : les minerais donnent des lingots, le sable du verre, la pierre taillée de la roche"
+  "bestiary.magma_golem.item.molten_pickaxe.use": "Fait fondre ce qu'elle mine : les minerais donnent des lingots, le sable du verre, la pierre taillée de la roche",
+  "subtitles.entity.magma_golem.hurt": "Le golem de magma est blessé",
+  "subtitles.entity.magma_golem.death": "Le golem de magma s'effondre",
+  "subtitles.entity.magma_golem.step": "Pas lourds"
 }

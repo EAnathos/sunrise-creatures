@@ -309,6 +309,8 @@ fn sounds(m: &Module, errors: &mut Vec<String>) {
     for name in &named {
         match name.split_once(':') {
             Some((ns, path)) if ns == m.id && oggs.contains(path) => {}
+            // The game's own sounds, a placeholder until the module's (the game ships them: nothing is copied).
+            Some(("minecraft", _)) => {}
             _ => errors.push(format!("{}: {name} has no .ogg in this module", rel(&json))),
         }
     }

@@ -10,18 +10,19 @@ found, not summoned, fought with a boss bar, and cooled with snow.
 
 ## 0. Status
 
-In development (0.1.0, not released): everything of §2 to §5 is written, built and checked (Clippy, unit tests),
-**not tried in game yet**: its numbers are the starting values below.
+In development (0.1.0, not released): everything of §2 to §5 is written, built and checked (Clippy, unit tests).
+Tried in game: it spawns in the Nether; the rest is being tried, its numbers the starting values below.
 
 - **Done**: the entity (3 × 6 blocks, 250 health, armour 10, no knockback, immune to fire and lava), its drawing
   (`draw.rs`) and every pose of §2.1 but the hurt flinch and the death (vanilla's tilt): the mound, rising with its
-  roar, lying down, walking, the fist slam, the ground pound, the glob, crusted at half pace, the jaw ajar enraged;
+  roar, lying down, walking, the fist slam, the ground pound, the glob, the leap, crusted at half pace, the jaw ajar enraged;
   its seams full-bright over it (`magma_golem_glow.png`, the texture's glowing pixels), pulsing asleep with its eyes
   dark, brighter enraged, dark crusted; its light (the library's coloured light, `creature::glow`: seen only, it
   lights no block). Its sleep and fight (`golem.rs`): it wakes when a player comes within 6 blocks, hits it or mines
-  within 4 blocks of it; its boss bar (the players within 48 blocks; bars left by a closed game are swept); the fist
-  slam, the ground pound (fire left around, small magma cubes shed enraged), the magma glob (`glob.rs`, the library's
-  lobbed projectile); it heals in lava, is enraged under half health (faster, shorter wind-ups), crusted by 5
+  within 4 blocks of it; its boss bar (the players within 48 blocks; bars left by a closed game are swept); its chase
+  (a new path every half second, the nearest player in its sight when the game gives it no target, pushing straight
+  on when its size or a ledge holds it back); the fist slam, the ground pound (fire left around, small magma cubes
+  shed enraged), the leap, the magma glob (`glob.rs`, the library's lobbed projectile, its blast and fire); it heals in lava, is enraged under half health (faster, shorter wind-ups), crusted by 5
   snowballs within 4 seconds or a splash water bottle (slowed, double damage taken) and lies down again after
   2 minutes without a target, its health restored. Its spawning (`spawn.rs`): in the Nether's basalt deltas and wastes
   near lava, on a floor with room for it, never within 256 blocks of another (where each appeared is saved with the
@@ -29,12 +30,10 @@ In development (0.1.0, not released): everything of §2 to §5 is written, built
   page and facts ("Awake", "Crust", "Lava bath", "Heart": learnt by its killer); the magma heart and the molten pickaxe
   (`pickaxe.rs`: raw ores give ingots, sand glass, cobblestone stone, netherrack nether bricks, ancient debris
   netherite scrap, with the furnace's experience), its smithing recipe and its recipe book unlock.
-- **Placeholders**: its spawn egg's texture (`assets/magma_golem/textures/item/magma_golem_spawn_egg.png`: the
-  Cyclops's egg recoloured); the heart's and the pickaxe's pictures (vanilla's magma cream and netherite pickaxe,
-  named by their item definitions, no file copied); its sounds (vanilla's: the ravager's roar, the iron golem's blow,
-  an explosion, lava hissing, basalt breaking) until its own are cut from freesound (§1).
-- **Left**: the hurt flinch and the death pose (§2.1), drawings for its egg and items, its own sounds; trying and
-  balancing it all in game.
+- **Placeholders**: its sounds are vanilla's until its own are cut from freesound (§1): its hurt, death and steps
+  (`assets/magma_golem/sounds.json`: the ravager's and basalt's, pitched down, named, no file copied) and its
+  attacks' (the ravager's roar, the iron golem's blow, an explosion, lava hissing, basalt breaking).
+- **Left**: the hurt flinch and the death pose (§2.1), its own sounds; trying and balancing it all in game.
 - **The model** (`sources/models/magma_golem.bbmodel`, pictures in docs/models/): our own design, about 6 blocks
   tall, built from boulders of dark grey-brown rock split by glowing orange seams, lava showing at the belly, the
   chest, the elbows, the wrists and the knees. Hunched forward like an ape: a massive back and huge shoulders rise
@@ -69,12 +68,15 @@ In development (0.1.0, not released): everything of §2 to §5 is written, built
 - **Spawning**: rare, in the **Nether**: basalt deltas and the nether wastes near lava seas, always dormant, on a
   floor with room for it (3 × 6 × 3), never within 256 blocks of another. It never despawns.
 - **Fighting** (a mini-boss, its boss bar while awake): 250 health, armor 10, no knockback, immune to fire and lava.
-  Slow heavy steps; it wades through lava and **heals in lava** (2 health a second).
+  Heavy steps, yet it runs at its target (a little faster than a walking player); it wades through lava and **heals
+  in lava** (2 health a second).
   - **Fist slam**: in reach (4 blocks), 14 damage and sets on fire.
   - **Ground pound**: when players are within 6 blocks, both fists on the ground: a shockwave (8 damage, thrown up and
     back, set on fire), fire left around it.
-  - **Magma glob**: at range (8 to 24 blocks), it tears a glob of magma from its body and lobs it on an arc (8 damage,
-    a burst of fire where it lands, breaks no block).
+  - **Leap**: a player 6 to 16 blocks away, or one it can't walk to: it crouches and springs, landing just short of
+    them; its landing hurts the players within 4 blocks (10 damage, thrown up and back). It takes no fall damage.
+  - **Magma glob**: at range (12 to 24 blocks, while it can't leap), it tears a glob of magma from its body and lobs
+    it on an arc (6 damage, sets on fire, a small blast and fire where it lands, breaks no block).
   - **Enraged** under half health: its cracks blaze brighter, it moves faster, and each ground pound sheds 1 or 2
     small magma cubes.
 - **Cooled by snow**: snowballs hurt it (3 damage) and a few in a row (5 within 4 seconds) **crust it over**: its cracks
@@ -101,6 +103,8 @@ ticks, slow and heavy, the ground shaking under it (dust and rock particles, a d
   body dropping with them.
 - **Magma glob**: one hand tears a glob from the opposite shoulder, lifts it over the head and lobs it (the library's
   throw timing, common/SPECS.md §3.9).
+- **Leap**: a crouch (0.7 s, the body sinking, the arms swung back), then in the air the arms thrown up and the legs
+  tucked, the jaw open; it lands on its feet.
 - **Hurt**: a short flinch back, the head jerking.
 - **Crusted** (cooled by snow): stiff and slow, every movement at half speed, its eyes dim.
 - **Enraged**: a roar (the jaw wide open, the head thrown back, the arms spread), then every movement faster.

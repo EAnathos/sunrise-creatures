@@ -2,13 +2,14 @@
 //! projectile of the library's (`creature::projectile`: `magma_golem:magma_glob`, a copy of the wandering trader that
 //! can't be hurt), thrown on an arc toward where the target stood. It hits the first time it comes within reach of its
 //! target (its `minecraft:attack_damage`, `DAMAGE`), sets it on fire, and bursts there, on the ground or against a wall,
-//! or after `LIFE` ticks: a burst of flame and lava, fire on the ground around, and no block broken. Drawn as a small
+//! or after `LIFE` ticks: a small blast (`BLAST`) of flame and lava, fire on the ground around, and no block broken. Drawn as a small
 //! magma block tumbling (no model of its own).
 use std::sync::OnceLock;
 
 use creature::projectile::{self, Launch};
 use mod_api::{
-    BlockEntityDrawContext, BlockKey, EntityRenderState, EntityRenderer, ParticleOptions, ServerHost, SoundSource,
+    BlockEntityDrawContext, BlockKey, EntityRenderState, EntityRenderer, ExplosionInteraction, ExplosionSettings,
+    ParticleOptions, ServerHost, SoundSource,
 };
 
 pub const GLOB: &str = "magma_golem:magma_glob";
@@ -19,7 +20,7 @@ pub const SIZE: creature::mob::Size = creature::mob::Size {
     eye_height: 0.4,
 };
 /// What it deals (its `minecraft:attack_damage`), and how long what it hits burns (ticks).
-pub const DAMAGE: f64 = 8.0;
+pub const DAMAGE: f64 = 6.0;
 const BURN: i32 = 100;
 /// Its gravity (blocks per tick, each tick), its speed along the ground (blocks per tick), how close it must come to
 /// its target to hit it (blocks), and how long it may fly (ticks).
@@ -27,6 +28,20 @@ const GRAVITY: f64 = 0.05;
 const SPEED: f64 = 0.8;
 const REACH: f64 = 0.8;
 const LIFE: i32 = 120;
+/// Its burst: a blast of `BLAST` (a creeper's is 3) breaking no block, and fire on up to `FIRES` of the `SPLASH` spots.
+const BLAST: f32 = 1.0;
+const FIRES: usize = 5;
+const SPLASH: [(i32, i32); 9] = [
+    (0, 0),
+    (1, 0),
+    (-1, 0),
+    (0, 1),
+    (0, -1),
+    (2, 1),
+    (-2, -1),
+    (1, -2),
+    (-1, 2),
+];
 
 /// The magma block's key, for the drawing (which has no host to ask): looked up at the first throw (single player).
 static MAGMA_BLOCK: OnceLock<BlockKey> = OnceLock::new();
@@ -76,6 +91,17 @@ pub fn tick(host: &mut dyn ServerHost, entity: u32) {
                 }
             }
         }
+        // A small blast that breaks no block, and fire on the ground around.
+        let _ = level.explode(
+            host,
+            Some(e),
+            at,
+            BLAST,
+            true,
+            ExplosionInteraction::None,
+            ExplosionSettings::default(),
+        );
+        crate::golem::fires(host, level, at, &SPLASH, FIRES);
         for (particle, count, spread) in [("minecraft:flame", 30, 0.6), ("minecraft:lava", 12, 0.4)] {
             if let Some(k) = creature::particles::key(particle) {
                 level.send_particles(

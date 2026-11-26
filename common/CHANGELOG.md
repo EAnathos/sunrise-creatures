@@ -9,6 +9,7 @@ Each version's section says what changed in it (`cargo creature release` needs o
   mark turning in place of the creature.
 - `Species::shadow`: an item model drawing a species' icon in black, for an egg the GUI can't draw as a shadow from its
   texture (Minecraft's, the Vanilla Bestiary's).
+- `creature::particles` hands out flames, lava drops, explosions and large smoke too (the Magma Golem's).
 
 ## 0.4.0
 

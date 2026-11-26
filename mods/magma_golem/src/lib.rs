@@ -40,7 +40,7 @@ const SIZE: creature::mob::Size = creature::mob::Size {
 /// Its health and pace (SPECS §2), as its content file sets them, and what its template (a trader) lacks: armour, no
 /// knockback, its fist's blow.
 const HEALTH: f64 = 250.0;
-const SPEED: f64 = 0.2;
+const SPEED: f64 = 0.3;
 const ARMOR: f64 = 10.0;
 const KNOCKBACK_RESISTANCE: f64 = 1.0;
 const ATTACK_DAMAGE: f64 = 14.0;
@@ -249,10 +249,14 @@ impl Hooks for MagmaGolem {
         (event.kind == GOLEM || event.kind == glob::GLOB).then_some(InteractionResult::Consume)
     }
 
-    /// Hurt, it wakes; crusted over, it takes double damage. Its own globs and fire don't hurt it.
+    /// Hurt, it wakes; crusted over, it takes double damage. Falls don't hurt it.
     fn living_incoming_damage(&self, _: &mut dyn HitHost, event: &mut LivingIncomingDamageEvent<'_>) -> Flow {
         if event.kind != GOLEM {
             return Flow::Continue;
+        }
+        // Its leaps don't hurt it.
+        if event.source.damage_type == "minecraft:fall" {
+            return Flow::Cancel;
         }
         let Ok(id) = u32::try_from(event.entity) else {
             return Flow::Continue;
