@@ -15,4 +15,4 @@ ported = true
 summary = "The library of the Sunrise Creatures mods: the creature guide and its bestiary, the glass jar, the series' creative tab. Needed by every mod of the series."
 categories = ["library"]
 icon = "common/assets/creature/textures/item/guide.png"
-screenshots = ["docs/media/readme/bestiary.webp"]
+screenshots = ["common/page/1-bestiary.jpg"]

@@ -14,7 +14,7 @@ summary = "A desert vulture you tame with raw chicken, saddle and fly like a pla
 categories = ["mobs", "transportation", "adventure"]
 icon = "vulture"
 screenshots = [
-  "docs/media/readme/vulture.webp",
+  "mods/vulture/page/1-vulture.jpg",
   "docs/models/vulture-vulture-front.png",
   "docs/models/vulture-vulture-back.png",
 ]

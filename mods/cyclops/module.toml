@@ -14,7 +14,7 @@ summary = "A one-eyed giant shepherd at cave mouths, with its flock, a club that
 categories = ["mobs", "adventure"]
 icon = "cyclops"
 screenshots = [
-  "docs/media/readme/cyclops.webp",
+  "mods/cyclops/page/1-cyclops.jpg",
   "docs/models/cyclops-cyclops-front.png",
   "docs/models/cyclops-cyclops-back.png",
 ]

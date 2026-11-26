@@ -28,28 +28,28 @@ shepherd, shy fairies, scorpions, spirits of living lightning, jellyfish, flying
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/media/readme/vulture.webp" alt="A tamed vulture with its saddle and two chests, and a wild one, on a flowery meadow"><br><sub>A tamed vulture, saddled, with its two chests</sub></td>
-    <td width="50%"><img src="docs/media/readme/butterflies.webp" alt="Butterflies of several colours and a moth over a meadow"><br><sub>Butterflies in many colours and patterns</sub></td>
+    <td width="50%"><img src="mods/vulture/page/1-vulture.jpg" alt="A tamed vulture with its saddle and two chests, and a wild one, on a flowery meadow"><br><sub>A tamed vulture, saddled, with its two chests</sub></td>
+    <td width="50%"><img src="mods/butterflies/page/1-butterflies.jpg" alt="Butterflies of several colours and a moth over a meadow"><br><sub>Butterflies in many colours and patterns</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/media/readme/cyclops.webp" alt="A blue one-eyed cyclops among its sheep"><br><sub>The cyclops and its flock</sub></td>
-    <td width="50%"><img src="docs/media/readme/fairies.webp" alt="Two violet fairies hovering over flowers"><br><sub>Fairies, to befriend with glow berries</sub></td>
+    <td width="50%"><img src="mods/cyclops/page/1-cyclops.jpg" alt="A blue one-eyed cyclops among its sheep"><br><sub>The cyclops and its flock</sub></td>
+    <td width="50%"><img src="mods/fairies/page/1-fairies.jpg" alt="Two violet fairies hovering over flowers"><br><sub>Fairies, to befriend with glow berries</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/media/readme/scorpions.webp" alt="A desert, a badlands and a cave scorpion on sand"><br><sub>Scorpions of the desert, the badlands and the caves</sub></td>
-    <td width="50%"><img src="docs/media/readme/bestiary.webp" alt="The creature guide open on the butterfly's page, its morphs below and the species met on the right"><br><sub>The creature guide's bestiary</sub></td>
+    <td width="50%"><img src="mods/scorpions/page/1-scorpions.jpg" alt="A desert, a badlands and a cave scorpion on sand"><br><sub>Scorpions of the desert, the badlands and the caves</sub></td>
+    <td width="50%"><img src="common/page/1-bestiary.jpg" alt="The creature guide open on the butterfly's page, its morphs below and the species met on the right"><br><sub>The creature guide's bestiary</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/media/readme/seagulls.webp" alt="Three seagulls on a sandy beach, the sea behind them"><br><sub>Seagulls on the shore</sub></td>
-    <td width="50%"><img src="docs/media/readme/flying_fish.webp" alt="A shoal of flying fish gliding over the waves, a dolphin leaping after them"><br><sub>Flying fish gliding away from a dolphin</sub></td>
+    <td width="50%"><img src="mods/seagulls/page/1-seagulls.jpg" alt="Three seagulls on a sandy beach, the sea behind them"><br><sub>Seagulls on the shore</sub></td>
+    <td width="50%"><img src="mods/flying_fish/page/1-flying_fish.jpg" alt="A shoal of flying fish gliding over the waves, a dolphin leaping after them"><br><sub>Flying fish gliding away from a dolphin</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/media/readme/ladybugs.webp" alt="Ladybugs on the flowers of a meadow"><br><sub>Ladybugs on the flowers</sub></td>
-    <td width="50%"><img src="docs/media/readme/phasmids.webp" alt="Two stick insects and a leaf insect on top of an oak's leaves"><br><sub>Stick insects and a leaf insect, hard to spot on their tree</sub></td>
+    <td width="50%"><img src="mods/ladybugs/page/1-ladybugs.jpg" alt="Ladybugs on the flowers of a meadow"><br><sub>Ladybugs on the flowers</sub></td>
+    <td width="50%"><img src="mods/phasmids/page/1-phasmids.jpg" alt="Two stick insects and a leaf insect on top of an oak's leaves"><br><sub>Stick insects and a leaf insect, hard to spot on their tree</sub></td>
   </tr>
   <tr>
-    <td width="50%"><img src="docs/media/readme/dung_beetles.webp" alt="A dung beetle rolling its ball by a cow in a pasture"><br><sub>A dung beetle rolling its ball by the herd</sub></td>
-    <td width="50%"><img src="docs/media/readme/sporelins.webp" alt="A red and two brown sporelins among mushrooms on podzol"><br><sub>Sporelins among the mushrooms</sub></td>
+    <td width="50%"><img src="mods/dung_beetles/page/1-dung_beetles.jpg" alt="A dung beetle rolling its ball by a cow in a pasture"><br><sub>A dung beetle rolling its ball by the herd</sub></td>
+    <td width="50%"><img src="mods/sporelins/page/1-sporelins.jpg" alt="A red and two brown sporelins among mushrooms on podzol"><br><sub>Sporelins among the mushrooms</sub></td>
   </tr>
 </table>
 

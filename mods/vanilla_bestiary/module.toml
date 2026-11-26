@@ -13,4 +13,4 @@ ported = true
 summary = "Minecraft's own creatures in the creature guide's bestiary: where you met them, what they eat, give and drop."
 categories = ["game-mechanics", "utility"]
 icon = "common/assets/creature/textures/item/guide.png"
-screenshots = ["docs/media/readme/bestiary.webp"]
+screenshots = ["common/page/1-bestiary.jpg"]

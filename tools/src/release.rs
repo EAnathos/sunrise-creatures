@@ -165,7 +165,7 @@ pub fn files(m: &Module) -> crate::Result<Vec<(PathBuf, Vec<u8>)>> {
     if !problems.is_empty() {
         return Err(format!("{}: [registry]: {}", m.id, problems.join("; ")));
     }
-    let pictures = pictures(registry)?;
+    let pictures = pictures(m, registry)?;
     let names: Vec<String> = pictures.iter().map(|(n, _)| n.clone()).collect();
     let mut files = vec![(
         PathBuf::from("page.toml"),
@@ -212,9 +212,11 @@ fn page(r: &Registry, description: &str, pictures: &[String]) -> String {
     out
 }
 
-/// The page's pictures, `[registry]`'s screenshots in their order: their paths in the folder (`page/<n>-<name>.png`,
-/// or `.jpg` for a JPEG or a WebP made a JPEG) and their bytes.
-fn pictures(r: &Registry) -> crate::Result<Vec<(String, Vec<u8>)>> {
+/// The page's pictures, `[registry]`'s screenshots in their order: their paths in the folder and their bytes. A picture
+/// already in the module's `page/` (an in-game picture, kept there as its only copy) keeps its name; another is copied
+/// as `page/<n>-<name>.png`, or `.jpg` for a JPEG or a WebP made a JPEG (a model's picture from `docs/models/`, or a
+/// picture another module keeps in its `page/`, the library's guide).
+fn pictures(m: &Module, r: &Registry) -> crate::Result<Vec<(String, Vec<u8>)>> {
     if r.screenshots.is_empty() || r.screenshots.len() > SCREENSHOTS {
         return Err(format!("1 to {SCREENSHOTS} screenshots"));
     }
@@ -245,7 +247,19 @@ fn pictures(r: &Registry) -> crate::Result<Vec<(String, Vec<u8>)>> {
         if bytes.len() as u64 > SCREENSHOT_BYTES {
             return Err(fail("over 5 MiB, the registry's most for a picture".into()));
         }
-        out.push((format!("page/{}-{stem}.{ext}", k + 1), bytes));
+        let name = if from.parent() == Some(m.dir.join("page").as_path()) {
+            format!("page/{stem}.{ext}")
+        } else {
+            // Another page's picture loses its number there (`1-bestiary`).
+            let stem = stem
+                .trim_start_matches(|c: char| c.is_ascii_digit())
+                .trim_start_matches('-');
+            format!("page/{}-{stem}.{ext}", k + 1)
+        };
+        if out.iter().any(|(n, _)| *n == name) {
+            return Err(fail(format!("a second picture named {name}")));
+        }
+        out.push((name, bytes));
     }
     Ok(out)
 }

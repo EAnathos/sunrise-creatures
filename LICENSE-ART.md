@@ -12,8 +12,8 @@ Everything in this repository that is an image or a model, and what is made from
 
 - the models: the Blockbench files (`mods/*/sources/models/*.bbmodel`), the model code generated from them
   (`src/model*.rs`), and the block and item models (`assets/*/models/`);
-- the textures, the icons and every other image: PNG, WebP or JPEG files, wherever they are (`assets/`, `docs/`,
-  `registry/`), including the pictures of the models (`docs/models/`), the banner, the panels and the screenshots;
+- the textures, the icons and every other image: PNG, WebP or JPEG files, wherever they are (`assets/`, `docs/`, the
+  modules' `page/`), including the pictures of the models (`docs/models/`), the banner and the in-game pictures;
 - the same artwork as it appears in the game, in the released mods (`.smod` files) and on their pages.
 
 ## What you may do

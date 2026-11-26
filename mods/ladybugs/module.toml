@@ -13,4 +13,4 @@ ported = true
 summary = "Ladybugs on the flowers in five kinds; one that lands on you brings luck for as many minutes as it has spots."
 categories = ["mobs"]
 icon = "ladybug"
-screenshots = ["docs/media/readme/ladybugs.webp", "docs/models/ladybugs-ladybug-front.png", "docs/models/ladybugs-ladybug-back.png"]
+screenshots = ["mods/ladybugs/page/1-ladybugs.jpg", "docs/models/ladybugs-ladybug-front.png", "docs/models/ladybugs-ladybug-back.png"]

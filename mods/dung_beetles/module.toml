@@ -13,4 +13,4 @@ ported = true
 summary = "Dung beetles that follow the herds, roll their balls in straight lines under the stars and bury them, turning worn pastures green again."
 categories = ["mobs"]
 icon = "dung_beetle"
-screenshots = ["docs/media/readme/dung_beetles.webp", "docs/models/dung_beetles-dung_beetle-front.png", "docs/models/dung_beetles-dung_beetle-back.png"]
+screenshots = ["mods/dung_beetles/page/1-dung_beetles.jpg", "docs/models/dung_beetles-dung_beetle-front.png", "docs/models/dung_beetles-dung_beetle-back.png"]

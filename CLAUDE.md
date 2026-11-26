@@ -73,7 +73,8 @@ only). How the port went is in the history (`git show 2c09384:docs/SUNRISE-PORT.
   its README ends with the series' licence section (no copies of the licence files). `cargo creature release` checks and tags; tags are pushed one at a time, the library's first and the
   mods' once it is listed (they build against it from the registry). The steps: `docs/PUBLISHING.md`. A released
   version never changes: a change is a new version.
-- The README's banner and panels (`docs/media/`) are hand-made images: nothing regenerates them.
+- The README's banner (`docs/media/`) and the in-game pictures (each module's `page/1-<mod>.jpg`, their only copy:
+  the root README's gallery and the registry pages show them) are hand-made: nothing regenerates them.
 - Before committing: rustfmt (tools and `src/`, `rustfmt.toml`), Clippy `-D warnings` on the tools,
   `cargo creature check`, `cargo creature native-check` (Clippy and tests of the ported crates on the pinned SDK); CI
   (`.github/workflows/ci.yml`) runs them and `cargo creature build`.

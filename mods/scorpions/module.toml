@@ -19,7 +19,7 @@ summary = "Real-size scorpions in deserts, badlands and caves: they rear up when
 categories = ["mobs", "equipment", "adventure"]
 icon = "scorpion"
 screenshots = [
-  "docs/media/readme/scorpions.webp",
+  "mods/scorpions/page/1-scorpions.jpg",
   "docs/models/scorpions-scorpion-front.png",
   "docs/models/scorpions-scorpion-back.png",
 ]

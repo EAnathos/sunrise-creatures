@@ -14,7 +14,7 @@ summary = "Butterflies by day and moths by night, in many colours and patterns; 
 categories = ["mobs", "decoration"]
 icon = "butterfly"
 screenshots = [
-  "docs/media/readme/butterflies.webp",
+  "mods/butterflies/page/1-butterflies.jpg",
   "docs/models/butterflies-butterfly-front.png",
   "docs/models/butterflies-moth-front.png",
 ]

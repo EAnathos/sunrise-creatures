@@ -41,8 +41,11 @@ Everything the workflow needs is committed in the module's folder:
 - **`module.toml`'s `[registry]`** (the repository's, not packaged): its one-line `summary` (25 to 160 characters),
   1 to 8 `categories` from a mod's list (`tools/src/release.rs`, `CATEGORIES`, as sunrise-mods'
   `registry/categories.toml`), its `icon` (one of its models, its picture in `docs/models/`, or a PNG by its path) and
-  its `screenshots` (1 to 8, PNG, JPEG, or a WebP the tool turns into a JPEG; at most 5 MiB each). A module without
-  the table is not published (the planned mods).
+  its `screenshots` (1 to 8, PNG, JPEG, or a WebP the tool turns into a JPEG; at most 5 MiB each): first its in-game
+  picture, kept in its own `page/` as `1-<mod>.jpg` (its only copy, which the root README's gallery shows too; the
+  Vanilla Bestiary's page takes the library's, `common/page/1-bestiary.jpg`), then its models' pictures (from
+  `docs/models/`, generated: their page copies are written by `pages`). A module without the table is not published
+  (the planned mods).
 - **Its release files**, written from those by `cargo creature pages` (never by hand; `cargo creature check` fails
   when one is stale): `page.toml` (the summary, the categories, the pictures, and the README as the description: its
   title and its image lines left out, its links made absolute at the version's tag; a 0.x version's page opens with a

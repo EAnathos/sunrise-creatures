@@ -14,7 +14,7 @@ summary = "Shy glowing fairies you befriend with glow berries: they circle your 
 categories = ["mobs", "magic"]
 icon = "fairy"
 screenshots = [
-  "docs/media/readme/fairies.webp",
+  "mods/fairies/page/1-fairies.jpg",
   "docs/models/fairies-fairy-front.png",
   "docs/models/fairies-fairy-back.png",
 ]
