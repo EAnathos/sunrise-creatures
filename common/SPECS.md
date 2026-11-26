@@ -127,9 +127,10 @@ fill, so small fliers would only appear with new chunks and be gone once their p
 of its biomes, at its hours. Wild ones far from players despawn, so they come and go as bats do. Users: Butterflies
 (butterflies, moths), Fireflies, Fairies, and the **Phasmids** ✅, whose groups are placed **on the top of leaves**
 instead of over the ground (`spawns_on_leaves`, mods/phasmids/SPECS.md §3), and the **Dung Beetles** ✅, on grass, dirt
-or coarse dirt, or sand next to grass (`spawns_on`, the blocks a mod's function accepts, mods/dung_beetles/SPECS.md §2);
-**Ladybugs** ✅ (their short flights and spawning,
-mods/ladybugs/SPECS.md §3).
+or coarse dirt, or sand next to grass (`spawns_on`, the blocks a mod's function accepts, mods/dung_beetles/SPECS.md §2),
+and the **Sporelins** ✅, on their soil in the dark (mods/sporelins/SPECS.md §2); **Ladybugs** ✅ (their short flights
+and spawning, mods/ladybugs/SPECS.md §3). A kind of given blocks comes out on the highest of them in the column with
+air over it, under leaves too: a sporelin on the soil under a dark forest's canopy, a phasmid on the canopy's top.
 
 ### 3.6 Small crawlers (`creature::crawl`) ✅
 

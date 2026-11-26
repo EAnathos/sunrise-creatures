@@ -8,6 +8,7 @@ Each version's section says what changed in it (`cargo creature release` needs o
   level; its settings of the library's systems end with `..Type::DEFAULT`, so a later library doesn't break it. Needs
   Sunrise Creatures 0.4.0.
 - The licences are in the README (its last section) rather than as copies of `LICENSE` and `LICENSE-ART.md`.
+- It comes out under a dark forest's canopy, where it is dark, as its spec says (the spawning stopped at the leaves).
 
 ## 0.1.2
 

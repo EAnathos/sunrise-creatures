@@ -13,6 +13,10 @@ Each version's section says what changed in it (`cargo creature release` needs o
   `aquatic::forget`, `colours::forget`, `flight::forget`, `friend::forget`, `projectile::forget`,
   `territory::forget`, `flutter::forget`, `flutter::gone`): a mod leaves a gone creature to the library. A dying
   creature keeps its look through its death animation.
+- Spawning on given blocks: a kind comes out on the highest of its blocks in the column, under leaves too (it stopped
+  at a forest's canopy, so a sporelin almost never came out in a dark forest).
+- A tree climber clings only to bark or leaves with nothing solid under its feet (a phasmid just come out on the
+  ground no longer stands upright there).
 
 ## 0.3.5
 

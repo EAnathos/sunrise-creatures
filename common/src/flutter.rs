@@ -245,22 +245,18 @@ pub fn spawn(host: &mut dyn ServerHost, level: LevelRef) {
             let angle = float() * std::f64::consts::TAU;
             let distance = SPAWN_MIN + float() * (SPAWN_MAX - SPAWN_MIN);
             let (x, z) = (p[0] + angle.cos() * distance, p[2] + angle.sin() * distance);
-            let Some(ground) = surface(
-                Ground::new(&*host, level),
-                [x.floor() as i32, p[1] as i32, z.floor() as i32],
-            ) else {
-                continue;
-            };
+            let column = [x.floor() as i32, p[1] as i32, z.floor() as i32];
             let on = ON.locked().iter().find(|(k, _)| *k == s.kind).map(|(_, on)| *on);
             let on_top = on.is_some();
-            if on.is_some_and(|on| {
-                !on(
-                    Ground::new(&*host, level),
-                    [x.floor() as i32, ground - 1, z.floor() as i32],
-                )
-            }) {
+            // A kind of given blocks comes out on the highest of them in the column, under leaves too (a sporelin on
+            // the soil under a dark forest's canopy); the others over the ground's surface.
+            let found = match on {
+                Some(on) => top_of(Ground::new(&*host, level), column, on),
+                None => surface(Ground::new(&*host, level), column),
+            };
+            let Some(ground) = found else {
                 continue;
-            }
+            };
             if !level
                 .biome_at(host, [x.floor() as i32, ground, z.floor() as i32])
                 .is_some_and(|b| s.biomes.contains(&b.as_str()))
@@ -293,6 +289,25 @@ pub fn spawn(host: &mut dyn ServerHost, level: LevelRef) {
 /// One chance in `n`, from `float` (0 to 1).
 fn random_chance(float: &mut impl FnMut() -> f64, n: u64) -> bool {
     float() * (n as f64) < 1.0
+}
+
+/// The open block over the highest block of `at`'s column (from 16 blocks above `at` down to 16 below) that `on` says
+/// a kind comes out on: through leaves and under trees, where `surface` stops at the canopy.
+fn top_of(ground: Ground<'_>, at: [i32; 3], on: On) -> Option<i32> {
+    top_where(
+        at,
+        |y| on(ground, [at[0], y - 1, at[2]]),
+        |y| open_block(&ground.block([at[0], y, at[2]])),
+    )
+}
+
+/// The highest `y` of `at`'s column (16 above to 16 below) where `on(y)` and `open(y)`.
+fn top_where(at: [i32; 3], on: impl Fn(i32) -> bool, open: impl Fn(i32) -> bool) -> Option<i32> {
+    (at[1] - 16..=at[1] + 16).rev().find(|&y| open(y) && on(y))
+}
+
+fn open_block(name: &str) -> bool {
+    name == "minecraft:air" || name == "minecraft:cave_air"
 }
 
 /// The first open block over the ground at `at`'s column, from 16 blocks above `at` down to 16 below (not over water).
@@ -596,4 +611,24 @@ pub fn tick_post(
     // A settled or befriended one stays; one despawned leaves nothing behind (`crate::state`).
     let kept = territory::settled(entity) || crate::friend::of(entity).is_some();
     crate::mob::despawn_far(host, dimension, entity, kept);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_kind_of_given_blocks_comes_out_under_the_canopy() {
+        // A column of a dark forest: soil at y 63, air 64 to 69, leaves 70 and 71, air above.
+        let leaves = |y: i32| y == 70 || y == 71;
+        let soil = |y: i32| y == 63;
+        let open = |y: i32| !leaves(y) && y >= 64;
+        let at = [0, 64, 0];
+        // On its soil: under the leaves, not on them.
+        assert_eq!(top_where(at, |y| soil(y - 1), open), Some(64));
+        // On leaves (the phasmids): on top of the canopy.
+        assert_eq!(top_where(at, |y| leaves(y - 1), open), Some(72));
+        // None of its blocks in the column.
+        assert_eq!(top_where(at, |_| false, open), None);
+    }
 }
