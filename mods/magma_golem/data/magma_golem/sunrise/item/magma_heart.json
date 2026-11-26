@@ -1,0 +1,14 @@
+{
+  "template": "minecraft:magma_cream",
+  "max_stack_size": 16,
+  "rarity": "rare",
+  "components": {
+    "minecraft:item_model": "magma_golem:magma_heart",
+    "minecraft:item_name": {
+      "translate": "item.magma_golem.magma_heart"
+    },
+    "minecraft:damage_resistant": {
+      "types": "#minecraft:is_fire"
+    }
+  }
+}

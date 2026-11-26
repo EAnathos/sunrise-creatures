@@ -8,5 +8,5 @@ the ground and lobs magma, heals in lava, and crusts over under snowballs. Its m
 into a molten pickaxe that smelts what it mines.
 **Requires** [Sunrise Creatures](https://playsunrise.net/mods/creature), the series' library.
 
-Not playable yet: the golem walks about, but neither sleeps nor fights. The design and what is done are in
-[SPECS.md](SPECS.md).
+Playable but not finished: everything is in, still to be tried and balanced in game; its sounds, its spawn egg and its
+items' pictures are placeholders. The design and what is done are in [SPECS.md](SPECS.md).

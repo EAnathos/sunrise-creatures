@@ -10,16 +10,32 @@ found, not summoned, fought with a boss bar, and cooled with snow.
 
 ## 0. Status
 
-In development (0.1.0, not released), step 1 of 5: the magma golem as an entity (`magma_golem:magma_golem`, its spawn
-egg), 3 × 6 blocks, 250 health, armour 10, no knockback, immune to fire and lava; drawn with its model and texture,
-walking with its heavy stride, breathing at rest, its head following what it looks at; its guide page (very rare,
-the Nether's basalt deltas and wastes); its drops (magma cream and magma blocks). It strolls and looks about: it
-neither sleeps nor fights yet. Not tried in game yet.
+In development (0.1.0, not released): everything of §2 to §5 is written, built and checked (Clippy, unit tests),
+**not tried in game yet**: its numbers are the starting values below.
 
-- **Its spawn egg's texture is a placeholder** (`assets/magma_golem/textures/item/magma_golem_spawn_egg.png`: the
-  Cyclops's egg recoloured in rock and magma), to be replaced by a drawing of its own.
-
-- **The model** (`assets/models/magma_golem.bbmodel`, pictures in docs/models/): our own design, about 6 blocks
+- **Done**: the entity (3 × 6 blocks, 250 health, armour 10, no knockback, immune to fire and lava), its drawing
+  (`draw.rs`) and every pose of §2.1 but the hurt flinch and the death (vanilla's tilt): the mound, rising with its
+  roar, lying down, walking, the fist slam, the ground pound, the glob, crusted at half pace, the jaw ajar enraged;
+  its seams full-bright over it (`magma_golem_glow.png`, the texture's glowing pixels), pulsing asleep with its eyes
+  dark, brighter enraged, dark crusted; its light (the library's coloured light, `creature::glow`: seen only, it
+  lights no block). Its sleep and fight (`golem.rs`): it wakes when a player comes within 6 blocks, hits it or mines
+  within 4 blocks of it; its boss bar (the players within 48 blocks; bars left by a closed game are swept); the fist
+  slam, the ground pound (fire left around, small magma cubes shed enraged), the magma glob (`glob.rs`, the library's
+  lobbed projectile); it heals in lava, is enraged under half health (faster, shorter wind-ups), crusted by 5
+  snowballs within 4 seconds or a splash water bottle (slowed, double damage taken) and lies down again after
+  2 minutes without a target, its health restored. Its spawning (`spawn.rs`): in the Nether's basalt deltas and wastes
+  near lava, on a floor with room for it, never within 256 blocks of another (where each appeared is saved with the
+  Nether until it dies), never despawning, none in Peaceful. Its drops (its heart, magma cream and blocks, 50 experience); its guide
+  page and facts ("Awake", "Crust", "Lava bath", "Heart": learnt by its killer); the magma heart and the molten pickaxe
+  (`pickaxe.rs`: raw ores give ingots, sand glass, cobblestone stone, netherrack nether bricks, ancient debris
+  netherite scrap, with the furnace's experience), its smithing recipe and its recipe book unlock.
+- **Placeholders**: its spawn egg's texture (`assets/magma_golem/textures/item/magma_golem_spawn_egg.png`: the
+  Cyclops's egg recoloured); the heart's and the pickaxe's pictures (vanilla's magma cream and netherite pickaxe,
+  named by their item definitions, no file copied); its sounds (vanilla's: the ravager's roar, the iron golem's blow,
+  an explosion, lava hissing, basalt breaking) until its own are cut from freesound (§1).
+- **Left**: the hurt flinch and the death pose (§2.1), drawings for its egg and items, its own sounds; trying and
+  balancing it all in game.
+- **The model** (`sources/models/magma_golem.bbmodel`, pictures in docs/models/): our own design, about 6 blocks
   tall, built from boulders of dark grey-brown rock split by glowing orange seams, lava showing at the belly, the
   chest, the elbows, the wrists and the knees. Hunched forward like an ape: a massive back and huge shoulders rise
   above its head, held low in front: plain dark stone, a heavy overhanging brow, two glowing eyes in dark sockets, a
@@ -27,11 +43,6 @@ neither sleeps nor fights yet. Not tried in game yet.
   fists that rest on the ground before it; short heavy legs set wide. Every moving part has its own pivot for the
   animations (§2.1): `body` (at the hips), `head` (the neck), `jaw`, `arm_*` (the shoulders), `forearm_*` (the
   elbows), `fist_*` (the wrists), `leg_*` (the hips), `shin_*` (the knees).
-
-Next, in this order: (2) dormant and waking, the boss bar, the fist slam, lying down again, healing in lava; (3) the
-ground pound, the magma glob (with the Cyclops's throw, aim and wind-up, moved to the library beside its projectiles,
-common/SPECS.md §3.9), enraged under half health; (4) cooled by snow and water; (5) its spawning in the Nether, the
-magma heart and the molten pickaxe, its sounds, the seams drawn full-bright and its light.
 
 ## 1. Technical context
 

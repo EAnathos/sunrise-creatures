@@ -3,6 +3,6 @@ id = "magma_golem"
 name = "Magma Golem"
 status = "prototype"
 # Its items in the series' creative tab, in order.
-creative = ["magma_golem:magma_golem_spawn_egg"]
+creative = ["magma_golem:magma_golem_spawn_egg", "magma_golem:magma_heart", "magma_golem:molten_pickaxe"]
 # Its Rust is built on Sunrise's mod_api.
 ported = true

@@ -1,4 +1,13 @@
 {
   "entity.magma_golem.magma_golem": "Golem de magma",
-  "item.magma_golem.magma_golem_spawn_egg": "Œuf d'apparition de golem de magma"
+  "entity.magma_golem.magma_glob": "Boule de magma",
+  "item.magma_golem.magma_golem_spawn_egg": "Œuf d'apparition de golem de magma",
+  "item.magma_golem.magma_heart": "Cœur de magma",
+  "item.magma_golem.molten_pickaxe": "Pioche en fusion",
+  "bestiary.magma_golem.awake": "Réveil",
+  "bestiary.magma_golem.crust": "Croûte",
+  "bestiary.magma_golem.lava_bath": "Bain de lave",
+  "bestiary.magma_golem.heart": "Cœur",
+  "bestiary.magma_golem.item.magma_heart.use": "Avec une pioche en netherite dans une table de forgeron : la pioche en fusion",
+  "bestiary.magma_golem.item.molten_pickaxe.use": "Fait fondre ce qu'elle mine : les minerais donnent des lingots, le sable du verre, la pierre taillée de la roche"
 }

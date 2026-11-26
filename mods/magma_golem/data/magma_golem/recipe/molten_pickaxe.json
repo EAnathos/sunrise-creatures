@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:smithing_transform",
+  "base": "minecraft:netherite_pickaxe",
+  "addition": "magma_golem:magma_heart",
+  "result": {
+    "id": "magma_golem:molten_pickaxe"
+  }
+}

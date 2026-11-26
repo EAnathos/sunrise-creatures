@@ -2,26 +2,33 @@
 //! series.
 //!
 //! A magma golem is a copy of the wandering trader (its behaviour is all goals) with its own 3 × 6 block box, drawn with
-//! its own model (`model.rs`, from `sources/models/magma_golem.bbmodel`), immune to fire and lava. In development
-//! (SPECS §0): it walks, looks about and is drawn with its heavy, ape-like gait (`pose`); its sleep, its fight and its
-//! boss bar, its snow weakness, its spawning and its items come next.
+//! its own model (`model.rs`, from `sources/models/magma_golem.bbmodel`; `draw.rs`), immune to fire and lava. It sleeps
+//! as a mound, wakes, fights under a boss bar and lies down again (`golem.rs`), lobs globs of magma (`glob.rs`),
+//! appears in the Nether (`spawn.rs`), and drops its heart, which makes the molten pickaxe (`pickaxe.rs`).
 // The library's settings are built with `..Type::DEFAULT` even when every field is given: a field the library adds
 // later then takes its default (docs/CONVENTIONS.md, "Library structs").
 #![allow(clippy::needless_update)]
 
+mod draw;
+mod glob;
+mod golem;
 mod model;
+mod pickaxe;
+mod spawn;
 
 use std::sync::Arc;
 
-use creature::bestiary::Species;
+use creature::bestiary::{Fact, Species};
 use mod_api::{
-    BlockEntityDrawContext, EntityInteractEvent, EntityJoinLevelEvent, EntityRenderState, EntityRenderer,
-    EntityTickPostEvent, Flow, GoalSpec, Hooks, HostSide, InteractionResult, RegisterEntityRenderersEvent, Registrar,
-    RegistrationContext, ServerHost, SoundSource,
+    BlockDropsEvent, BlockEntityDrawContext, BreakBlockEvent, Compound, EntityInteractEvent, EntityJoinLevelEvent,
+    EntityTickPostEvent, Flow, GoalSpec, HearsProjectileImpactsEvent, HitHost, Hooks, Host, HostSide,
+    InteractionResult, LevelHost, LevelTickPostEvent, LivingDeathEvent, LivingIncomingDamageEvent, MobFilter,
+    ProjectileImpactEvent, RegisterEntityRenderersEvent, Registrar, RegistrationContext, ServerHost, SoundSource, Tag,
 };
 
 pub const GOLEM: &str = "magma_golem:magma_golem";
 const EGG: &str = "magma_golem:magma_golem_spawn_egg";
+const HEART: &str = "magma_golem:magma_heart";
 const TEXTURE: &str = "magma_golem:entity/magma_golem/magma_golem";
 
 /// Its box (blocks: width, height, eye height), SPECS §1: 3 × 6, its eyes low in front, under its shoulders.
@@ -39,15 +46,58 @@ const KNOCKBACK_RESISTANCE: f64 = 1.0;
 const ATTACK_DAMAGE: f64 = 14.0;
 /// How far it sees a player (blocks; its follow range).
 const SIGHT: f64 = 24.0;
+/// The experience it leaves (SPECS §2).
+const EXPERIENCE: i32 = 50;
+/// How often its boss bars are swept (ticks).
+const SWEEP_EVERY: i64 = 100;
 
 /// Where it is met (SPECS §2): the Nether's basalt deltas and wastes, by their lava seas.
 const BIOMES: &[&str] = &["minecraft:basalt_deltas", "minecraft:nether_wastes"];
+
+/// Its light (SPECS §2): the orange of its seams, dimmer asleep.
+const LIGHT: creature::glow::Light = creature::glow::Light {
+    rgb: 0xFF7A1E,
+    radius: 12.0,
+    intensity: 0.9,
+    lift: 3.0,
+    ..creature::glow::Light::DEFAULT
+};
+const LIGHT_ASLEEP: creature::glow::Light = creature::glow::Light {
+    radius: 6.0,
+    intensity: 0.5,
+    lift: 1.5,
+    ..LIGHT
+};
+
+/// Its facts in the guide (SPECS §4).
+const HEART_FACT: &str = "heart";
 
 static BESTIARY: Species = Species {
     id: GOLEM,
     biomes: BIOMES,
     wild: |_| true,
-    facts: &[],
+    facts: &[
+        Fact {
+            id: golem::AWAKE_FACT,
+            item: "minecraft:magma_block",
+            key: "bestiary.magma_golem.awake",
+        },
+        Fact {
+            id: golem::CRUST_FACT,
+            item: "minecraft:snowball",
+            key: "bestiary.magma_golem.crust",
+        },
+        Fact {
+            id: golem::LAVA_FACT,
+            item: "minecraft:lava_bucket",
+            key: "bestiary.magma_golem.lava_bath",
+        },
+        Fact {
+            id: HEART_FACT,
+            item: HEART,
+            key: "bestiary.magma_golem.heart",
+        },
+    ],
     icon: EGG,
     scheme: None,
     rarity: creature::bestiary::Rarity::VeryRare,
@@ -57,96 +107,37 @@ static BESTIARY: Species = Species {
     ..Species::DEFAULT
 };
 
+/// Its items in the guide's Items tab (common/SPECS.md §7.2).
+static HEART_PAGE: creature::items::ItemPage = creature::items::ItemPage {
+    item: HEART,
+    dropped_by: &[GOLEM],
+    given_by: &[],
+    uses: &[creature::items::Use {
+        icon: "minecraft:smithing_table",
+        key: "bestiary.magma_golem.item.magma_heart.use",
+    }],
+    ..creature::items::ItemPage::DEFAULT
+};
+static PICKAXE_PAGE: creature::items::ItemPage = creature::items::ItemPage {
+    item: pickaxe::PICKAXE,
+    dropped_by: &[],
+    given_by: &[],
+    uses: &[creature::items::Use {
+        icon: "minecraft:furnace",
+        key: "bestiary.magma_golem.item.molten_pickaxe.use",
+    }],
+    ..creature::items::ItemPage::DEFAULT
+};
+
 /// Its drawing in a jar or the book: standing, its whole height in the view.
 fn book_view(draw: &mut dyn BlockEntityDrawContext, _: Option<creature::colours::Look>) {
     creature::model::draw(draw, &model::MAGMA_GOLEM, TEXTURE, &|_| [0.0; 3]);
 }
 const BOOK_SCALE: f32 = 0.15;
 
-/// How it holds itself this frame (SPECS §2.1), from its render state: heavy steps, one leg then the other, the body
-/// rolling on each footfall and the arms swinging opposite the legs, its fists brushing the ground; at rest a slow
-/// breath lifting its back and shoulders; its head turned toward what it looks at.
-fn pose(name: &str, now: &Frame) -> [f32; 3] {
-    let Frame {
-        walk,
-        speed,
-        head_yaw,
-        pitch,
-        age,
-    } = *now;
-    let speed = speed.min(1.0);
-    // A slow stride: the legs swing 22° each way at a full walk, the arms a little less.
-    let phase = walk * 0.45;
-    let stride = phase.sin() * 22.0 * speed;
-    let knee = (phase.cos().max(0.0)) * 18.0 * speed;
-    let roll = phase.sin() * 4.0 * speed;
-    let dip = (phase * 2.0).cos().abs() * 2.0 * speed;
-    // A breath every 4 seconds or so, faded out as it walks.
-    let breath = (age * 0.08).sin() * 2.5 * (1.0 - speed);
-    match name {
-        "head" => [pitch * 0.6, -head_yaw * 0.8, 0.0],
-        "body" => [dip + breath * 0.4, 0.0, roll],
-        "back" => [-breath, 0.0, 0.0],
-        "shoulder_left" | "shoulder_right" => [-breath * 0.6, 0.0, 0.0],
-        "leg_left" => [stride, 0.0, 0.0],
-        "leg_right" => [-stride, 0.0, 0.0],
-        "shin_left" => [knee, 0.0, 0.0],
-        "shin_right" => [(-phase).cos().max(0.0) * 18.0 * speed, 0.0, 0.0],
-        "arm_left" => [-stride * 0.7, 0.0, 0.0],
-        "arm_right" => [stride * 0.7, 0.0, 0.0],
-        _ => [0.0; 3],
-    }
-}
-
-/// What its pose reads of a frame: its walk's progress and speed, its head's turn and pitch (degrees), its age (ticks).
-#[derive(Clone, Copy, Debug, Default)]
-struct Frame {
-    walk: f32,
-    speed: f32,
-    head_yaw: f32,
-    pitch: f32,
-    age: f32,
-}
-
-impl Frame {
-    fn of(entity: &EntityRenderState) -> Frame {
-        let mob = entity.living.as_ref();
-        Frame {
-            walk: mob.map_or(0.0, |m| m.walk_animation_pos),
-            speed: mob.map_or(0.0, |m| m.walk_animation_speed),
-            head_yaw: mob.map_or(0.0, |m| m.y_rot),
-            pitch: mob.map_or(0.0, |m| m.x_rot),
-            age: entity.age,
-        }
-    }
-}
-
-/// Its own model, posed (`pose`).
-struct Draw;
-
-impl EntityRenderer for Draw {
-    fn submit(&self, entity: &EntityRenderState, draw: &mut dyn BlockEntityDrawContext) -> Result<(), String> {
-        let mob = entity.living.as_ref();
-        draw.push();
-        creature::model::living_pose(draw, entity);
-        // Its scale is for its client box only (`creature::mob::scale_client_box`): the model keeps its size.
-        let scale = mob.map_or(1.0, |m| m.scale);
-        if scale > 0.0 && scale != 1.0 {
-            draw.scale([1.0 / scale; 3]);
-        }
-        let now = Frame::of(entity);
-        let pose = |part: &str| pose(part, &now);
-        creature::model::draw_shown(
-            draw,
-            &model::MAGMA_GOLEM,
-            TEXTURE,
-            &pose,
-            &|_| true,
-            creature::model::tint(mob),
-        );
-        draw.pop();
-        Ok(())
-    }
+/// Whether the world is on Peaceful: none appears, and those there go, as vanilla's monsters.
+fn peaceful(host: &dyn Host, level: mod_api::LevelRef) -> bool {
+    level.difficulty(host) == Some("peaceful")
 }
 
 #[derive(Default)]
@@ -157,14 +148,23 @@ impl Hooks for MagmaGolem {
     fn register(&self, r: &mut dyn Registrar, _: &RegistrationContext) {
         creature::mob::ours(GOLEM, SIZE);
         creature::mob::scale_client_box(GOLEM);
-        // Its attribute row (a type only its content file declares has none to add to), with the values its content
-        // file sets, then what its template lacks.
+        creature::projectile::register(glob::GLOB, glob::SIZE);
+        // Their attribute rows (a type only its content file declares has none to add to), with the values their
+        // content files set, then what their template lacks.
         let _ = r.declare_entity_attributes(
             "magma_golem",
             "minecraft:wandering_trader",
             vec![
                 ("minecraft:max_health".into(), HEALTH),
                 ("minecraft:movement_speed".into(), SPEED),
+            ],
+        );
+        let _ = r.declare_entity_attributes(
+            "magma_glob",
+            "minecraft:wandering_trader",
+            vec![
+                ("minecraft:max_health".into(), 1.0),
+                ("minecraft:movement_speed".into(), 0.0),
             ],
         );
         let _ = r.modify_entity_attributes(
@@ -176,15 +176,21 @@ impl Hooks for MagmaGolem {
                 ("minecraft:follow_range".into(), Some(SIGHT)),
             ],
         );
+        let _ = r.modify_entity_attributes(glob::GLOB, vec![("minecraft:attack_damage".into(), Some(glob::DAMAGE))]);
+        spawn::declare(r);
         creature::bestiary::register(&BESTIARY);
+        creature::bestiary::register_item(&HEART_PAGE);
+        creature::bestiary::register_item(&PICKAXE_PAGE);
     }
 
     fn register_entity_renderers(&self, _: &RegistrationContext, event: &mut RegisterEntityRenderersEvent<'_>) {
-        event.renderers.register(GOLEM.into(), Arc::new(Draw));
+        event.renderers.register(GOLEM.into(), Arc::new(draw::Draw));
+        event.renderers.register(glob::GLOB.into(), Arc::new(glob::Draw));
     }
 
     /// A magma golem joining: its client box as tall as it is, immune to fire and lava (a grant of the live body, not
-    /// saved: given at each join), and vanilla's goals for its wandering and looking about.
+    /// saved: given at each join), vanilla's goals for its wandering and looking about, and its targets: whoever hurt
+    /// it, the players it sees. It sleeps first (`golem::tick`).
     fn entity_join_level(&self, host: &mut dyn ServerHost, event: &mut EntityJoinLevelEvent<'_>) -> Flow {
         if event.kind != GOLEM {
             return Flow::Continue;
@@ -200,6 +206,7 @@ impl Hooks for MagmaGolem {
         let Some(m) = host.mob(e) else {
             return Flow::Continue;
         };
+        m.set_persistence_required(host);
         m.add_goal(
             host,
             5,
@@ -223,37 +230,149 @@ impl Hooks for MagmaGolem {
             },
         );
         m.add_goal(host, 7, &GoalSpec::RandomLookAround);
+        m.add_target_goal(host, 1, &GoalSpec::HurtByTarget { alert: false });
+        m.add_target_goal(
+            host,
+            3,
+            &GoalSpec::NearestTarget {
+                prey: MobFilter::Player,
+                must_see: true,
+                must_reach: false,
+                interval: 10,
+            },
+        );
         Flow::Continue
     }
 
     /// Right-click: nothing (no trading screen, which its template would open), on both sides.
     fn entity_interact(&self, _: HostSide, event: &mut EntityInteractEvent<'_>) -> Option<InteractionResult> {
-        (event.kind == GOLEM).then_some(InteractionResult::Consume)
+        (event.kind == GOLEM || event.kind == glob::GLOB).then_some(InteractionResult::Consume)
+    }
+
+    /// Hurt, it wakes; crusted over, it takes double damage. Its own globs and fire don't hurt it.
+    fn living_incoming_damage(&self, _: &mut dyn HitHost, event: &mut LivingIncomingDamageEvent<'_>) -> Flow {
+        if event.kind != GOLEM {
+            return Flow::Continue;
+        }
+        let Ok(id) = u32::try_from(event.entity) else {
+            return Flow::Continue;
+        };
+        golem::wake(id);
+        if golem::crusted(id) {
+            let doubled = event.container.new_damage() * 2.0;
+            event.container.set_new_damage(doubled);
+        }
+        Flow::Continue
+    }
+
+    /// A block mined by a sleeping golem wakes it.
+    fn break_block(&self, host: &mut dyn ServerHost, event: &mut BreakBlockEvent<'_>) -> Flow {
+        if let Some(level) = host.players().acting_player().and_then(|p| p.level(&*host)) {
+            golem::mined(&*host, level, event.pos);
+        }
+        Flow::Continue
+    }
+
+    /// Mined with the molten pickaxe, blocks drop smelted.
+    fn block_drops(&self, _: &dyn LevelHost, event: &mut BlockDropsEvent<'_>) -> Flow {
+        pickaxe::smelt(event);
+        Flow::Continue
+    }
+
+    /// Snowballs and splash water bottles cool it (`projectile_impact`).
+    fn hears_projectile_impacts(&self, _: &dyn Host, event: &mut HearsProjectileImpactsEvent) {
+        event.hears = true;
+    }
+
+    fn projectile_impact(&self, host: &mut dyn ServerHost, event: &mut ProjectileImpactEvent<'_>) -> Flow {
+        match event.kind {
+            "minecraft:snowball" if event.entity_kind == GOLEM => {
+                if let Some(id) = event.entity {
+                    golem::snowball(host, id, event.projectile, event.owner);
+                }
+            }
+            "minecraft:splash_potion" if golem::is_water(host, event.projectile) => {
+                if let Some(level) = host.level(event.dimension) {
+                    golem::splash(&*host, level, event.at);
+                }
+            }
+            _ => {}
+        }
+        Flow::Continue
+    }
+
+    /// Its death: its boss bar goes, its light fades, the experience it leaves (its template leaves none), and its
+    /// killer learns its heart.
+    fn living_death(&self, host: &mut dyn ServerHost, event: &mut LivingDeathEvent<'_>) -> Flow {
+        if event.kind != GOLEM {
+            return Flow::Continue;
+        }
+        golem::died(host, event.entity);
+        creature::glow::dim(event.entity);
+        let e = host.entity(event.entity);
+        if let (Some(at), Some(dimension)) = (
+            e.and_then(|e| e.position(&*host)),
+            e.and_then(|e| e.level(&*host)).and_then(|l| l.dimension().id(&*host)),
+        ) {
+            spawn::forget(host, at);
+            let mut orb = Compound::new();
+            orb.insert("Value".into(), Tag::Short(EXPERIENCE as i16));
+            host.summon(&dimension, "minecraft:experience_orb", [at[0], at[1] + 1.0, at[2]], orb);
+        }
+        if let Ok(killer) = u32::try_from(event.source.causing)
+            && let Some(player) = creature::mob::player_of(&*host, killer)
+        {
+            creature::bestiary::learn(host, player, GOLEM, HEART_FACT);
+        }
+        Flow::Continue
+    }
+
+    fn level_tick_post(&self, host: HostSide, event: &mut LevelTickPostEvent) {
+        let HostSide::Server(host) = host else {
+            return;
+        };
+        let level = event.level;
+        pickaxe::prepare(&*host);
+        if level.dimension() == mod_api::DimensionKey::NETHER {
+            spawn::tick(host, level);
+        }
+        if level.dimension() == mod_api::DimensionKey::OVERWORLD
+            && level.game_time(&*host).is_some_and(|t| t % SWEEP_EVERY == 0)
+        {
+            golem::sweep_bars(host);
+        }
     }
 
     fn entity_tick_post(&self, host: HostSide, event: &mut EntityTickPostEvent<'_>) {
         creature::mob::each_ticked(host, event, |host, event| {
-            if event.kind == GOLEM {
-                creature::sounds::play_queued(host, event.entity, SoundSource::Hostile);
+            if event.kind == glob::GLOB {
+                glob::tick(host, event.entity);
+                return;
             }
+            if event.kind != GOLEM {
+                return;
+            }
+            let Some(e) = host.entity(event.entity) else {
+                return;
+            };
+            if e.level(&*host).is_some_and(|l| peaceful(&*host, l)) {
+                golem::died(host, event.entity);
+                e.discard(host);
+                return;
+            }
+            golem::tick(host, event.dimension, event.entity);
+            let shown = golem::shown(event.entity);
+            if shown.crusted {
+                creature::glow::dim(event.entity);
+            } else {
+                let light = if shown.mode == golem::Mode::Dormant {
+                    LIGHT_ASLEEP
+                } else {
+                    LIGHT
+                };
+                creature::glow::shine(&*host, event.dimension, event.entity, light);
+            }
+            creature::sounds::play_queued(host, event.entity, SoundSource::Hostile);
         });
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_stands_still_at_rest_and_strides_when_it_walks() {
-        assert_eq!(pose("leg_left", &Frame::default()), [0.0; 3]);
-        let walking = Frame {
-            walk: 3.0,
-            speed: 1.0,
-            ..Frame::default()
-        };
-        let left = pose("leg_left", &walking)[0];
-        let right = pose("leg_right", &walking)[0];
-        assert!(left != 0.0 && (left + right).abs() < 1e-4, "the legs swing opposite");
     }
 }

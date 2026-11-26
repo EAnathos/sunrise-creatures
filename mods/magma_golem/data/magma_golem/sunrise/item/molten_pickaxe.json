@@ -1,0 +1,10 @@
+{
+  "template": "minecraft:netherite_pickaxe",
+  "rarity": "rare",
+  "components": {
+    "minecraft:item_model": "magma_golem:molten_pickaxe",
+    "minecraft:item_name": {
+      "translate": "item.magma_golem.molten_pickaxe"
+    }
+  }
+}

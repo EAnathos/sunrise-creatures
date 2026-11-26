@@ -1,4 +1,13 @@
 {
   "entity.magma_golem.magma_golem": "Magma Golem",
-  "item.magma_golem.magma_golem_spawn_egg": "Magma Golem Spawn Egg"
+  "entity.magma_golem.magma_glob": "Magma Glob",
+  "item.magma_golem.magma_golem_spawn_egg": "Magma Golem Spawn Egg",
+  "item.magma_golem.magma_heart": "Magma Heart",
+  "item.magma_golem.molten_pickaxe": "Molten Pickaxe",
+  "bestiary.magma_golem.awake": "Awake",
+  "bestiary.magma_golem.crust": "Crust",
+  "bestiary.magma_golem.lava_bath": "Lava bath",
+  "bestiary.magma_golem.heart": "Heart",
+  "bestiary.magma_golem.item.magma_heart.use": "With a netherite pickaxe in a smithing table: the molten pickaxe",
+  "bestiary.magma_golem.item.molten_pickaxe.use": "Smelts what it mines: ores give ingots, sand gives glass, cobblestone gives stone"
 }

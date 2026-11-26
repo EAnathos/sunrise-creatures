@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_magma_heart": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "magma_golem:magma_heart"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipes": "magma_golem:molten_pickaxe"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_magma_heart"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "magma_golem:molten_pickaxe"
+    ]
+  }
+}
