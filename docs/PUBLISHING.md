@@ -109,7 +109,7 @@ and it is shown with the next version.
 ## The collection
 
 The collection is maintained in sunrise-mods' `registry/collections/<id>/` (`collection.toml` names its member
-projects, alongside an icon). All 16 mods and the library are listed in the registry. The Sunrise Creatures
+projects, alongside an icon). The library and the mods are listed in the registry (the Magma Golem once its first release is merged). The Sunrise Creatures
 collection (`4pggl9jF`) is present in the signed index; registry maintainers added it in [#325](https://github.com/sunrise-org/sunrise-mods/pull/325),
 temporarily removed it in [#329](https://github.com/sunrise-org/sunrise-mods/pull/329) while expecting our collection
 PR to merge, then restored it in [#330](https://github.com/sunrise-org/sunrise-mods/pull/330). Our duplicate PR
@@ -128,6 +128,7 @@ On the new registry (since 2026-11-24): each release is the GitHub release `<id>
 |---|---|---|
 | library 0.3.5, Butterflies 0.1.3, Cyclops 0.1.4, Dung Beetles 0.1.3, Fairies 0.1.4, Fireflies 0.1.3, Flying Fish 0.1.3, Jellyfish 0.1.2, Ladybugs 0.1.1, Phasmids 0.1.1, Scorpions 0.1.3, Seagulls 0.1.2, Sporelins 0.1.2, Storm Spirits 0.2.1, Vanilla Bestiary 0.1.3, Vulture 0.2.4, Worms 0.1.4 | The first releases on the new registry: locks, tree climbers, the licence in every package | [#269](https://github.com/sunrise-org/sunrise-mods/pull/269) (library), [#278](https://github.com/sunrise-org/sunrise-mods/pull/278) (Butterflies), [#306–#320](https://github.com/sunrise-org/sunrise-mods/pull/306) (other mods), all merged; collection [#330](https://github.com/sunrise-org/sunrise-mods/pull/330), merged |
 | library 0.4.0, Butterflies 0.1.4, Cyclops 0.1.5, Dung Beetles 0.1.4, Fairies 0.1.5, Fireflies 0.1.4, Flying Fish 0.1.4, Jellyfish 0.1.3, Ladybugs 0.1.2, Phasmids 0.1.2, Scorpions 0.1.4, Seagulls 0.1.3, Sporelins 0.1.3, Storm Spirits 0.2.2, Vanilla Bestiary 0.1.4, Vulture 0.2.5, Worms 0.1.5 (2026-11-26) | Per-creature state, the library structs' DEFAULTs, the licence in the READMEs, the cleanup; spawning fixes (phasmids, sporelins at night and in the rain) | [#590](https://github.com/sunrise-org/sunrise-mods/pull/590) (library), [#591–#606](https://github.com/sunrise-org/sunrise-mods/pull/591) (the mods), all merged |
+| library 0.4.1, Vanilla Bestiary 0.1.5, Magma Golem 0.1.0 (new) (2026-11-26) | The bestiary's species met of all and the unmet as shadows; the Magma Golem (registered by [#613](https://github.com/sunrise-org/sunrise-mods/pull/613), project `o7DGgKeA`), and what it brought to the library (`pick`, `draw_attached`, `living_pose_upright`, particles) | [#611](https://github.com/sunrise-org/sunrise-mods/pull/611) (library), merged; the Vanilla Bestiary's and the Magma Golem's opened by the registry's bot, under review |
 
 On the old registry (2026-11-18 to 2026-11-24, deleted with the new launcher; its entries, signed with the series'
 minisign key, are in this repository's history, `registry/` before 2026-11-24):
