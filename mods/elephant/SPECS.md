@@ -10,7 +10,14 @@ future mod; Elephant will not require that mod.
 
 ## 0. Status
 
-Planned: the approved specification and adult, baby and juvenile models; no mod implementation yet.
+In development (0.1.0, not released), step 1 of 5: the elephant as an entity (`elephant:elephant`, its spawn egg),
+2.2 × 2.6 blocks (hit where its trunk and tail reach too: the library's `creature::pick`), 50 health, its base speed;
+drawn with its adult model, walking with a four-legged gait (diagonal legs together), its ears fanning with a wide flap
+now and then, its trunk swaying, its tail flicking, its head following what it looks at; its gear hidden; its spawning
+(savanna and savanna plateau, weight 2, groups of 2 to 4, on open, about flat ground, not in water); its charge
+(`charge.rs`: hit, it runs at its attacker within 8 blocks, strikes once for 4 damage and throws them back, then lets
+them go, 3 seconds before the next); its guide page (uncommon); its sounds, the game's pitched for now (`sounds.json`:
+the camel's, a goat horn's call for its trumpet). Not tried in game yet. Its spawn egg is our own drawing.
 
 - **The adult model** (`sources/models/elephant.bbmodel`; [front](../../docs/models/elephant-elephant-front.png) and
   [back](../../docs/models/elephant-elephant-back.png) previews): a broad grey elephant with ears attached at the
@@ -28,7 +35,11 @@ Planned: the approved specification and adult, baby and juvenile models; no mod 
 - All three models share the elephant's 64 × 64 texture. The baby and juvenile models have no visible saddle blanket or
   chests; only adults can be ridden or equipped.
 
-Next: implement Elephant.
+Next, in this order: (2) taming with thrown sugar cane, following and staying, hay to heal, and its own stats (the
+Vulture's, moved to the library); (3) the saddle, the dyed blanket and riding, two seats, the owner steering, the
+charge for its riders too; (4) the double chests and the equipment screen (the Vulture's, moved to the library), its
+gear dropped at death; (5) breeding, the baby and juvenile stages, its drops (meat, the ivory tusk), the ceremonial
+trumpet, the guide's facts and items, fleeing mice.
 
 ## 1. Technical context
 

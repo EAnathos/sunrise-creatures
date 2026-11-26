@@ -1,6 +1,8 @@
 # Elephant's description for the repository's tools (docs/ARCHITECTURE.md); not shipped in the mod.
 id = "elephant"
 name = "Elephant"
-status = "planned"
-# Its items in the series' creative tab, in order (none until implementation starts).
-creative = []
+status = "prototype"
+# Its items in the series' creative tab, in order.
+creative = ["elephant:elephant_spawn_egg"]
+# Its Rust is built on Sunrise's mod_api.
+ported = true

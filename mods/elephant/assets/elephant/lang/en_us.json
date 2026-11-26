@@ -1,0 +1,9 @@
+{
+  "entity.elephant.elephant": "Elephant",
+  "item.elephant.elephant_spawn_egg": "Elephant Spawn Egg",
+  "subtitles.entity.elephant.ambient": "Elephant rumbles",
+  "subtitles.entity.elephant.trumpet": "Elephant trumpets",
+  "subtitles.entity.elephant.hurt": "Elephant hurts",
+  "subtitles.entity.elephant.death": "Elephant dies",
+  "subtitles.entity.elephant.step": "Heavy footsteps"
+}

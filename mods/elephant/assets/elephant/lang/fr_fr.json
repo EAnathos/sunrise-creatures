@@ -1,0 +1,9 @@
+{
+  "entity.elephant.elephant": "Éléphant",
+  "item.elephant.elephant_spawn_egg": "Œuf d'apparition d'éléphant",
+  "subtitles.entity.elephant.ambient": "Un éléphant grogne",
+  "subtitles.entity.elephant.trumpet": "Un éléphant barrit",
+  "subtitles.entity.elephant.hurt": "Un éléphant est blessé",
+  "subtitles.entity.elephant.death": "Un éléphant meurt",
+  "subtitles.entity.elephant.step": "Pas lourds"
+}

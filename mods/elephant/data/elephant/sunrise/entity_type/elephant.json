@@ -1,0 +1,14 @@
+{
+  "template": "minecraft:wandering_trader",
+  "attributes": {
+    "minecraft:max_health": 50.0,
+    "minecraft:movement_speed": 0.16
+  },
+  "sounds": {
+    "hurt": "elephant:entity.elephant.hurt",
+    "death": "elephant:entity.elephant.death",
+    "ambient": "elephant:entity.elephant.ambient",
+    "step": "elephant:entity.elephant.step"
+  },
+  "shadow_radius": 0.8
+}
