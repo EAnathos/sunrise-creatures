@@ -1,6 +1,6 @@
 //! Elephant (SPECS.md): a savanna elephant of the Sunrise Creatures series.
 //!
-//! An elephant is a copy of the wandering trader (its behaviour is all goals) with its own 2.2 × 2.6 block box, drawn
+//! An elephant is a copy of the wandering trader (its behaviour is all goals) with its own 4.4 × 5.2 block box, drawn
 //! with its own model (`model.rs`, from `sources/models/elephant.bbmodel`; the baby's and the juvenile's beside it,
 //! for its young stages, `Stage`). It roams the savannas in small herds, walks with a heavy four-legged gait, its ears,
 //! trunk and tail swaying, charges whoever hits it or its riders (`charge.rs`) and flees mice (`flee.rs`); tamed with
@@ -17,6 +17,7 @@ mod model;
 mod model_baby;
 mod model_juvenile;
 mod tame;
+mod trumpet;
 
 use std::sync::Arc;
 
@@ -37,15 +38,15 @@ const SADDLE_TEXTURE: &str = "elephant:entity/elephant_saddle";
 
 /// Its box (blocks: width, height, eye height), SPECS §2.
 const SIZE: creature::mob::Size = creature::mob::Size {
-    width: 2.2,
-    height: 2.6,
-    eye_height: 2.2,
+    width: 4.4,
+    height: 5.2,
+    eye_height: 4.4,
 };
 /// Where the crosshair finds it (`creature::pick`): its trunk and tusks reach out before its box, its tail behind.
 const OUTLINE: creature::pick::Outline = creature::pick::Outline {
-    side: 1.15,
-    depth: 1.9,
-    height: 2.7,
+    side: 2.3,
+    depth: 3.8,
+    height: 5.4,
     ..creature::pick::Outline::DEFAULT
 };
 /// Its health and pace, as its content file sets them, until its own stats are rolled (SPECS §2).
@@ -66,7 +67,7 @@ const KNOCKBACK_RESISTANCE: f64 = 0.8;
 /// Where it is met (SPECS §2): the savannas.
 const BIOMES: &[&str] = &["minecraft:savanna", "minecraft:savanna_plateau"];
 /// The ground it comes out on (SPECS §2): no more than `STEEP` blocks up or down within `FLAT` blocks of its spot.
-const FLAT: i32 = 2;
+const FLAT: i32 = 3;
 const STEEP: i32 = 1;
 
 static BESTIARY: Species = Species {
@@ -183,12 +184,24 @@ impl Stage {
         }
     }
 
-    fn size(self) -> f64 {
+    /// How much larger than its model it is drawn: a grown elephant twice its model's size, the young less.
+    fn drawn(self) -> f32 {
         match self {
+            Stage::Baby => 1.3,
+            Stage::Juvenile => 1.6,
+            Stage::Adult => 2.0,
+        }
+    }
+
+    /// Its box against a grown elephant's: its model's height against the adult model's (its body's), times how much
+    /// larger each is drawn.
+    fn size(self) -> f64 {
+        let model = match self {
             Stage::Baby => 0.56,
             Stage::Juvenile => 0.78,
             Stage::Adult => 1.0,
-        }
+        };
+        model * f64::from(self.drawn() / Stage::Adult.drawn())
     }
 }
 
@@ -245,32 +258,59 @@ impl Frame {
     }
 }
 
-/// How it holds itself this frame (SPECS §2): a slow four-legged walk, each front leg with the hind leg across from
-/// it, the body rocking; its ears fanning slowly, now and then a wide flap; its trunk swaying and swinging as it walks;
-/// its tail flicking; its head nodding with its steps (its tusks and trunk, beside its head in the model, with it: the
-/// whole elephant turns rather than its head).
+/// Its walk (SPECS §2): an elephant's, one foot at a time, hind left, front left, hind right, front right, each a
+/// quarter of the stride after the other. A foot stays planted while the body passes over it (`STANCE` of its stride,
+/// the leg sweeping back), then swings forward quickly, eased; the body dips at each footfall and shifts its weight to
+/// the side of the feet on the ground.
+const STRIDE: f32 = 16.0;
+const STANCE: f32 = 0.7;
+/// How far a leg swings each way at a walk (degrees), reached from this much of its walk's speed.
+const LEG_SWING: f32 = 26.0;
+const FULL_STRIDE_AT: f32 = 0.35;
+
+/// A leg's swing `u` into its stride (0 to 1): from forward to back while planted, then quickly forward again.
+fn leg(u: f32) -> f32 {
+    let u = u.rem_euclid(1.0);
+    if u < STANCE {
+        1.0 - 2.0 * u / STANCE
+    } else {
+        let t = (u - STANCE) / (1.0 - STANCE);
+        -(std::f32::consts::PI * t).cos()
+    }
+}
+
+/// How it holds itself this frame (SPECS §2): its walk (`leg`), the body dipping and rolling with it; its ears fanning
+/// slowly, now and then a wide flap; its trunk swaying and swinging as it walks; its tail flicking; its head nodding
+/// with its steps (its tusks and trunk, beside its head in the model, with it: the whole elephant turns rather than its
+/// head).
 fn pose(name: &str, now: &Frame) -> [f32; 3] {
-    let speed = now.speed.min(1.0);
-    let phase = now.walk * 0.5;
-    let swing = phase.sin() * 24.0 * speed;
+    let amount = (now.speed / FULL_STRIDE_AT).min(1.0);
+    let u = now.walk / STRIDE;
+    let swing = |offset: f32| -leg(u + offset) * LEG_SWING * amount;
+    let tau = std::f32::consts::TAU;
+    // Four footfalls a stride: a dip at each; its weight on its left feet for the first half, its right the second.
+    let dip = (u * 4.0 * tau).cos() * 1.5 * amount;
+    let roll = (u * tau).sin() * 3.0 * amount;
     // Its ears: a slow fanning, and a wide flap every 10 seconds or so.
     let flap = (now.age * 0.031).sin().max(0.0).powi(8) * 30.0;
     let fan = (now.age * 0.09).sin() * 5.0 + flap;
     let sway = (now.age * 0.05).sin() * 6.0;
-    let nod = (phase * 2.0).cos() * 2.0 * speed;
+    let nod = (u * 2.0 * tau).cos() * 2.5 * amount;
     match name {
-        "leg_front_left" | "leg_back_right" => [swing, 0.0, 0.0],
-        "leg_front_right" | "leg_back_left" => [-swing, 0.0, 0.0],
-        "body" => [0.0, 0.0, phase.sin() * 2.0 * speed],
+        "leg_back_left" => [swing(0.0), 0.0, 0.0],
+        "leg_front_left" => [swing(0.25), 0.0, 0.0],
+        "leg_back_right" => [swing(0.5), 0.0, 0.0],
+        "leg_front_right" => [swing(0.75), 0.0, 0.0],
+        "body" => [dip, 0.0, roll],
         "head" | "tusk_left" | "tusk_right" => [nod, 0.0, 0.0],
         "ear_left" => [0.0, fan, 0.0],
         "ear_right" => [0.0, -fan, 0.0],
         "trunk" => [
-            nod + phase.cos() * 8.0 * speed + (now.age * 0.04).sin() * 3.0,
+            nod + (u * tau).cos() * 8.0 * amount + (now.age * 0.04).sin() * 3.0,
             0.0,
             sway,
         ],
-        "tail" => [10.0 + speed * 10.0, 0.0, (now.age * 0.12).sin() * 12.0],
+        "tail" => [10.0 + amount * 10.0, 0.0, (now.age * 0.12).sin() * 12.0],
         _ => [0.0; 3],
     }
 }
@@ -297,6 +337,7 @@ impl EntityRenderer for Draw {
         } else {
             Stage::of(entity.id)
         };
+        draw.scale([stage.drawn(); 3]);
         creature::model::draw_shown(draw, stage.model(), TEXTURE, &pose, &bare, tint);
         // Its chests, on each flank fitted, and its blanket: a grown elephant's only.
         let gear = if stage == Stage::Adult {
@@ -386,6 +427,8 @@ impl Hooks for Elephant {
             ELEPHANT,
             vec![("minecraft:knockback_resistance".into(), Some(KNOCKBACK_RESISTANCE))],
         );
+        let trumpet = r.item_key(trumpet::TRUMPET);
+        r.item_part(trumpet, trumpet::Trumpet);
         creature::bestiary::register(&BESTIARY);
         creature::bestiary::register_item(&TUSK_PAGE);
         creature::bestiary::register_item(&TRUMPET_PAGE);
@@ -561,24 +604,28 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_stands_still_at_rest_and_its_legs_go_in_diagonal_pairs() {
+    fn it_stands_still_at_rest_and_puts_one_foot_down_at_a_time() {
         assert_eq!(pose("leg_front_left", &Frame::default()), [0.0; 3]);
-        let walking = Frame {
-            walk: 3.0,
+        let walking = |walk: f32| Frame {
+            walk,
             speed: 1.0,
             ..Frame::default()
         };
-        let front_left = pose("leg_front_left", &walking)[0];
-        assert!(front_left != 0.0);
-        assert_eq!(
-            pose("leg_back_right", &walking)[0],
-            front_left,
-            "diagonal legs together"
+        // A planted leg sweeps back steadily; then it swings forward again, quickly.
+        let a = pose("leg_back_left", &walking(0.0))[0];
+        let b = pose("leg_back_left", &walking(STRIDE * 0.35))[0];
+        assert!(b > a, "planted, the leg sweeps back");
+        assert!(
+            (leg(STANCE) + 1.0).abs() < 1e-5 && (leg(1.0) - 1.0).abs() < 1e-5,
+            "swung back to the front"
         );
-        assert_eq!(
-            pose("leg_front_right", &walking)[0],
-            -front_left,
-            "the other pair opposite"
-        );
+        // Each leg a quarter of the stride after the one before: never two legs at the same point.
+        let legs = ["leg_back_left", "leg_front_left", "leg_back_right", "leg_front_right"];
+        let at: Vec<f32> = legs.iter().map(|l| pose(l, &walking(3.0))[0]).collect();
+        for i in 0..4 {
+            for j in i + 1..4 {
+                assert!((at[i] - at[j]).abs() > 1e-3, "{} and {} together", legs[i], legs[j]);
+            }
+        }
     }
 }

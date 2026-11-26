@@ -10,12 +10,14 @@ future mod; Elephant will not require that mod.
 
 ## 0. Status
 
-In development (0.1.0, not released), all five steps written, built and checked (Clippy, unit tests); not tried in
-game yet:
+In development (0.1.0, not released), all five steps written, built and checked (Clippy, unit tests). Tried in game:
+its taming, riding and chests, breeding and growth, and its drops work; the size, the walk and the trumpet were
+redone after:
 
-- **Step 1**: the elephant as an entity (`elephant:elephant`, its spawn egg), 2.2 × 2.6 blocks (hit where its trunk and
-  tail reach too: the library's `creature::pick`); drawn with its adult model, walking with a four-legged gait
-  (diagonal legs together), its ears fanning with a wide flap now and then, its trunk swaying, its tail flicking, its
+- **Step 1**: the elephant as an entity (`elephant:elephant`, its spawn egg), 4.4 × 5.2 blocks, its model drawn at
+  twice its size (tried in game: at its model's size it was too small; hit where its trunk and tail reach too: the
+  library's `creature::pick`); walking one foot at a time (hind left, front left, hind right, front right), each foot
+  planted while the body passes over it and swung forward quickly, the body dipping at each footfall, its ears fanning with a wide flap now and then, its trunk swaying, its tail flicking, its
   head following what it looks at; its gear hidden; its spawning (savanna and savanna plateau, weight 2, groups of 2
   to 4, on open, about flat ground, not in water); its charge (`charge.rs`: hit, it runs at its attacker within 8
   blocks, strikes once for 4 damage and throws them back, then lets them go, 3 seconds before the next); its guide
@@ -42,11 +44,13 @@ game yet:
 - **Step 5**: breeding and growth (the library's `creature::growth`, moved from the Vulture): a hay bale puts a grown,
   rested tamed elephant in love (or heals it when hurt); two in love meet and have a baby, tamed to the owner, its
   stats inherited; parents wait 5 minutes. A baby for 10 minutes (the baby model), a juvenile 10 more (the juvenile
-  model), a hay bale a minute sooner; its box and outline as much smaller (`minecraft:scale`); only a grown elephant is
+  model), drawn 1.3 and 1.6 times their models' size, a hay bale a minute sooner; its box and outline as much
+  smaller (`minecraft:scale`, which the library's box follows); only a grown elephant is
   fitted or ridden. The guide's "Bred" (at the birth) and "Raised" (as it grows up, for its owner). Its drops: 1 to 3
   raw elephant (cooked in a furnace, smoker or campfire), an ivory tusk 5% of the time (more with Looting); a young
-  one drops nothing. The ceremonial trumpet (an ivory tusk, a copper ingot and string): a goat horn's instrument of our
-  own, the elephant's trumpet, 3 seconds between calls, no wear. The Items tab: the tusk, the trumpet, the meat. Mice
+  one drops nothing. The ceremonial trumpet (an ivory tusk, a copper ingot and string; `trumpet.rs`): a right-click
+  plays the elephant's trumpet, 3 seconds between calls, no wear (a goat horn's inline instrument played nothing in
+  game). The Items tab: the tusk, the trumpet, the meat. Mice
   (`mice:mouse`, when the Mice mod is installed): within 8 blocks, it trumpets and flees for 5 seconds, its riders
   staying on (`flee.rs`). Our own pictures for the meats, the tusk and the trumpet.
 
@@ -86,8 +90,8 @@ Next: trying it all in game (§8), then its release.
 - **Appearance** ✅: a sturdy African savanna elephant with muted grey-brown, wrinkled skin and grey ears attached at
   the temples. Their rounded, stepped outline curves slightly back and narrows toward the head in a heart-like shape.
   It has two ivory tusks, a segmented trunk tapering toward its tip, thick legs and dark toenails. The longer model is
-  about 2.25 blocks wide, 2.6 blocks tall and 3.75 blocks long, including its trunk and lowered, tufted tail; the
-  starting hitbox is 2.2 × 2.6 blocks.
+  about 4.5 blocks wide, 5.2 blocks tall and 7.5 blocks long, including its trunk and lowered, tufted tail (its
+  model drawn at twice its size); its hitbox is 4.4 × 5.2 blocks.
 - **Spawning** ✅: uncommon in savanna and savanna plateau, with spawn weight 2, in groups of 2 to 4, on open, mostly
   flat ground. It does not spawn in water or on steep slopes. The weight is relative to other natural spawns.
 - **Behaviour** ✅: an elephant does not attack unprovoked. If it or one of its riders is attacked, it makes a short

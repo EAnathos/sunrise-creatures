@@ -22,15 +22,15 @@ const HAY: &str = "minecraft:hay_block";
 const HEAL: f32 = 10.0;
 
 /// Breeding and growth (SPECS §4, the library's `creature::growth`): a baby for 10 minutes, a juvenile 10 more, a hay
-/// bale a minute sooner; parents wait 5 minutes; love lasts 30 seconds; partners meet within 4 blocks, found within 12.
+/// bale a minute sooner; parents wait 5 minutes; love lasts 30 seconds; partners meet within 6 blocks, found within 16.
 pub(crate) static BREEDING: creature::growth::Breeding = creature::growth::Breeding {
     kind: ELEPHANT,
     young: 24_000,
     pause: 6_000,
     love: 600,
     meal: 1_200,
-    search: 12.0,
-    near: 4.0,
+    search: 16.0,
+    near: 6.0,
     pace: 1.0,
     stats: Some(&crate::STATS),
     ..creature::growth::Breeding::DEFAULT
@@ -42,7 +42,7 @@ pub(crate) const JUVENILE: f32 = 0.5;
 /// how fast it walks to it (a multiplier of its speed).
 const FOOD_RANGE: f64 = 12.0;
 const SCAN: i32 = 10;
-const EAT_REACH: f64 = 2.0;
+const EAT_REACH: f64 = 3.6;
 const FOOD_PACE: f64 = 1.0;
 
 /// Its guide fact (SPECS §6).
@@ -50,10 +50,10 @@ pub(crate) const TAMED_FACT: &str = "tamed";
 pub(crate) const BRED_FACT: &str = "bred";
 pub(crate) const RAISED_FACT: &str = "raised";
 
-/// Following its owner on foot (the library's): from 6 blocks away, stopping within 3, and past 24 at once.
+/// Following its owner on foot (the library's): from 9 blocks away, stopping within 5, and past 24 at once.
 pub(crate) static FOLLOWING: creature::friend::Following = creature::friend::Following {
-    follow: 6.0,
-    near: 3.0,
+    follow: 9.0,
+    near: 5.0,
     teleport: 24.0,
     speed: 1.1,
     ..creature::friend::Following::DEFAULT

@@ -10,7 +10,7 @@ use mod_api::ServerHost;
 /// its middle: half its width and a little), how long a charge may last and how long until the next (ticks).
 const NEAR: f64 = 8.0;
 const SPEED: f64 = 0.32;
-const REACH: f64 = 2.0;
+const REACH: f64 = 3.8;
 const LONGEST: i32 = 50;
 const COOLDOWN: i32 = 60;
 /// Its blow: damage, and how far it throws back and up (blocks a tick).

@@ -6,6 +6,7 @@ Each version's section says what changed in it (`cargo creature release` needs o
 
 - Its own sounds, cut from CC0 recordings: a low roar as it wakes and is enraged, rock knocked and falling apart,
   heavy stomps for its steps, its fist and its pound, rock grinding, hissing magma.
+- The molten pickaxe's picture redrawn, its head even on both sides of its handle.
 - Its loot table in the series' format (`modifier`), so its magma cream and blocks drop in their counts.
 
 ## 0.1.0

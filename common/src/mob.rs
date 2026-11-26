@@ -102,15 +102,23 @@ pub fn is_ours(kind: &str) -> bool {
     OURS.locked().contains_key(kind)
 }
 
-/// From the library's `entity_size`: our creature's own box in place of its template's (a trader's).
+/// From the library's `entity_size`: our creature's own box in place of its template's (a trader's), as much larger
+/// or smaller as its `minecraft:scale` beyond its client box's (`scale_client_box`): a young elephant's stage. The
+/// answer is its box as it is: the game scales it no further.
 pub fn size(host: &dyn Host, event: &mut EntitySizeEvent<'_>) {
     let Some(kind) = event.entity.kind(host) else {
         return;
     };
     let id = kind.id(host);
-    if let Some(s) = OURS.locked().get(id.as_str()) {
-        *event.size = [s.width, s.height, s.eye_height];
-    }
+    let Some(s) = OURS.locked().get(id.as_str()).copied() else {
+        return;
+    };
+    let scale = host
+        .living(event.entity)
+        .and_then(|l| l.attribute_value(host, "minecraft:scale"))
+        .map_or(1.0, |v| v as f32 / client_box_scale(&id));
+    let scale = if scale.is_finite() && scale > 0.0 { scale } else { 1.0 };
+    *event.size = [s.width * scale, s.height * scale, s.eye_height * scale];
 }
 
 /// From the library's `entity_join_level`: our creature `mob` loses its template's goals, keeping ours (named with

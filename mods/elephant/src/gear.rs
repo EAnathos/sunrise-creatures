@@ -39,7 +39,7 @@ const DYES: [(&str, u32); 16] = [
 ];
 /// Riding (SPECS §3): its speed under its owner (blocks a tick, times its pace), backward and sideways a share of it,
 /// and how fast it turns toward where its rider looks (degrees a tick).
-const RIDE_SPEED: f64 = 0.22;
+const RIDE_SPEED: f64 = 0.26;
 const BACKWARD: f64 = 0.4;
 const SIDEWAYS: f64 = 0.4;
 const TURN: f32 = 9.0;
