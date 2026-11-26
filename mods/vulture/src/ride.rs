@@ -9,6 +9,7 @@
 use std::collections::BTreeMap;
 use std::sync::Mutex;
 
+use creature::state::EntityMap;
 use creature::sync::Locked;
 use mod_api::ServerHost;
 
@@ -40,7 +41,7 @@ const SPRINT: i32 = 64;
 /// The keys of each player riding a vulture, as last heard.
 static KEYS: Mutex<BTreeMap<u128, i32>> = Mutex::new(BTreeMap::new());
 /// Each ridden vulture's rider this tick.
-static RIDERS: Mutex<BTreeMap<u32, Rider>> = Mutex::new(BTreeMap::new());
+static RIDERS: EntityMap<Rider> = EntityMap::new();
 
 /// From the `player_input` hook: `riding` whether the player rides a vulture (only their keys are kept).
 pub fn heard(player: u128, flags: i32, riding: bool) {

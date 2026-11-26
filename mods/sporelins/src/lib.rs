@@ -11,12 +11,11 @@ mod life;
 mod model_sporelin;
 mod model_sporelin_brown;
 
-use std::collections::BTreeMap;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use creature::bestiary::{Fact, Species};
 use creature::colours::{Colour, Pattern, Scheme, Variety};
-use creature::sync::Locked;
+use creature::state::EntityMap;
 use creature::territory::Ground;
 use life::Action;
 use mod_api::{
@@ -209,7 +208,7 @@ fn look_of(id: u32) -> usize {
 const NIGHT_LIGHT: [u32; 2] = [0xFFE0C8, 0xF0D8A8];
 
 /// The befriended ones glowing now, for their drawing.
-static GLOWING: Mutex<BTreeMap<u32, ()>> = Mutex::new(BTreeMap::new());
+static GLOWING: EntityMap<()> = EntityMap::new();
 
 fn glowing(id: u32) -> bool {
     GLOWING.locked().contains_key(&id)

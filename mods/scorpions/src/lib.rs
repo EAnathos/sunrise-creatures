@@ -20,12 +20,12 @@ mod fight;
 mod model_scorpion;
 mod posture;
 
-use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
 
 use creature::bestiary::{Fact, Rarity, Species};
 use creature::colours::{Colour, Look, Pattern, Scheme, Variety};
 use creature::jar::Catchable;
+use creature::state::EntityMap;
 use creature::sync::Locked;
 use creature::territory::{self, Rule};
 use mod_api::{
@@ -213,7 +213,7 @@ const BOOK_SCALE: f32 = 2.4;
 
 /// How a scorpion holds itself for the drawing, by its mood (`MOODS`): reared (tail arched high, claws open) when it
 /// threatens or fights, its tail low otherwise..
-static MOODS: Mutex<BTreeMap<u32, bool>> = Mutex::new(BTreeMap::new());
+static MOODS: EntityMap<bool> = EntityMap::new();
 /// Mob victims of the dagger's venom: ticks of Poison remaining. The pinned native API can damage any mob but exposes
 /// potion-effect mutation only for players, so we reproduce Poison's health ticks and particles for mob targets.
 fn set_reared(id: u32, reared: bool) {

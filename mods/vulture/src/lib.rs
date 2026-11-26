@@ -29,18 +29,18 @@ mod talons;
 mod tame;
 mod wild;
 
-use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex, OnceLock};
 
 use creature::body::{Behaviour, Body, World};
 use creature::flight::{Controls, Flight, Wings};
+use creature::state::EntityMap;
 use creature::sync::Locked;
 use mod_api::{
     BlockEntityDrawContext, ClientHost, ClientTickPostEvent, EntityInteractEvent, EntityJoinLevelEvent,
-    EntityLeaveLevelEvent, EntityMountEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, GoalSpec,
-    HitHost, Hooks, HostSide, InteractionResult, KeyRegistration, LivingDeathEvent, LivingIncomingDamageEvent,
-    LivingRenderState, MenuClickedEvent, MenuClosedEvent, PayloadCodec, PayloadId, PlayerInputEvent,
-    RegisterEntityRenderersEvent, Registrar, RegistrationContext, ServerHost, SoundSource, ToServer,
+    EntityMountEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, GoalSpec, HitHost, Hooks, HostSide,
+    InteractionResult, KeyRegistration, LivingDeathEvent, LivingIncomingDamageEvent, LivingRenderState,
+    MenuClickedEvent, MenuClosedEvent, PayloadCodec, PayloadId, PlayerInputEvent, RegisterEntityRenderersEvent,
+    Registrar, RegistrationContext, ServerHost, SoundSource, ToServer,
 };
 
 pub const KIND: &str = "vulture:vulture";
@@ -508,7 +508,7 @@ fn pose(name: &str, mob: &Frame, flapping: bool, look: &state::Look, carrying: b
 }
 
 /// Whether each vulture is off the ground, from its server tick, for the drawing (single player).
-static FLYING: Mutex<BTreeMap<u32, bool>> = Mutex::new(BTreeMap::new());
+static FLYING: EntityMap<bool> = EntityMap::new();
 
 /// The Blockbench model (`model.rs`), posed by `pose` every frame.
 struct Draw;
@@ -710,13 +710,6 @@ impl Hooks for Vulture {
             FLYING.locked().remove(&event.entity);
         }
         Flow::Continue
-    }
-
-    /// Its state is dropped once it is gone (not at its death: it ticks, and is drawn, until it leaves the level).
-    fn entity_leave_level(&self, _: &mut dyn ServerHost, event: &mut EntityLeaveLevelEvent<'_>) {
-        if event.kind == KIND {
-            state::forget(event.entity);
-        }
     }
 
     /// The talons key (SPECS §6.4), sent to the server, where the ridden vulture takes it. A mod's own mapping is read

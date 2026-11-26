@@ -4,10 +4,10 @@
 //! in the ground. A player who takes its ball (`take`) leaves it looking around.
 //!
 //! What it can't do itself (turn the ground greener, teach a fact) it queues as an `Action` (`crate::act`).
-use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Mutex;
 
 use creature::body::{Behaviour, Body, Vec3, World, flat_distance, turned};
+use creature::state::{EntityMap, EntitySet};
 use creature::sync::Locked;
 use creature::territory;
 
@@ -35,9 +35,9 @@ pub(crate) enum Ball {
 }
 
 /// Each beetle's ball, the beetles busy with theirs (their crawl waits), the ones whose ball a player took.
-static BALL: Mutex<BTreeMap<u32, Ball>> = Mutex::new(BTreeMap::new());
-static BUSY: Mutex<BTreeSet<u32>> = Mutex::new(BTreeSet::new());
-static TAKEN: Mutex<BTreeSet<u32>> = Mutex::new(BTreeSet::new());
+static BALL: EntityMap<Ball> = EntityMap::new();
+static BUSY: EntitySet = EntitySet::new();
+static TAKEN: EntitySet = EntitySet::new();
 
 pub(crate) fn ball(id: u32) -> Option<Ball> {
     BALL.locked().get(&id).copied()

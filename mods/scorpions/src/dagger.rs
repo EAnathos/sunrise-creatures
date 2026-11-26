@@ -10,11 +10,10 @@
 //!   it, point in, until a player walks onto it and takes it back (`stuck`), as a trident. Each throw wears it by one use
 //!   (broken at the last). The flying dagger holds the item in its own main hand, so a world saved with it stuck in the
 //!   ground keeps it. In creative the dagger stays in hand and the thrown one is only for show.
-use std::collections::{BTreeMap, BTreeSet};
-use std::sync::{Mutex, OnceLock};
+use std::sync::OnceLock;
 
 use creature::projectile::{self, End, Launch};
-use creature::sync::Locked;
+use creature::state::{EntityMap, EntitySet};
 use mod_api::{
     BlockEntityDrawContext, ClientHost, EntityRenderState, EntityRenderer, Hand, HostSide, InteractionResult,
     ItemDisplayContext, ItemKey, ItemPart, ItemStack, ServerHost, SoundSource, Text, TooltipEvent, UseItemEvent,
@@ -56,10 +55,10 @@ const SPIN: f32 = 18.0;
 const BOUNCE: f64 = 0.1;
 
 /// The daggers falling after a hit (`bounce`): they hurt nothing more.
-static SPENT: Mutex<BTreeSet<u32>> = Mutex::new(BTreeSet::new());
+static SPENT: EntitySet = EntitySet::new();
 
 /// Who threw each flying dagger (its entity id).
-static FLYING: Mutex<BTreeMap<u32, u32>> = Mutex::new(BTreeMap::new());
+static FLYING: EntityMap<u32> = EntityMap::new();
 
 /// A dagger stuck where it landed: where it is held, and how long it has been there (ticks).
 #[derive(Clone, Copy)]
@@ -71,7 +70,7 @@ struct Stuck {
 }
 
 /// The stuck daggers, read by the drawing too (single player: the same id).
-static STUCK: Mutex<BTreeMap<u32, Stuck>> = Mutex::new(BTreeMap::new());
+static STUCK: EntityMap<Stuck> = EntityMap::new();
 
 /// Poisons `target` (a mob's or a player's id) with the dagger's venom.
 pub fn poison(host: &mut dyn ServerHost, target: u32) {

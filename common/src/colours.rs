@@ -10,7 +10,6 @@
 //! The drawing reads the looks from a static map filled on the server's side: single player only, as the vulture's
 //! render state. On Sunrise a synced attachment can reach the client, but a renderer has no host to read it: the map
 //! could be filled from a client hook instead.
-use std::collections::BTreeMap;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -20,6 +19,7 @@ use mod_api::{
 };
 
 use crate::model::{self, Part};
+use crate::state::EntityMap;
 use crate::sync::Locked;
 
 /// A colour a creature can take: its id (saved) and its tint, 0xRRGGBB.
@@ -110,7 +110,7 @@ fn decode(c: &Compound) -> Result<Saved, AttachmentError> {
 }
 
 /// Each creature's look, for the drawing.
-static LOOKS: Mutex<BTreeMap<u32, Look>> = Mutex::new(BTreeMap::new());
+static LOOKS: EntityMap<Look> = EntityMap::new();
 
 /// The look of creature `entity`, once `tick` has seen it; for a creature no tick has seen (the book's, drawn in a
 /// screen) the look the book shows (`set_preview`).

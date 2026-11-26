@@ -15,7 +15,7 @@ use creature::bestiary::{Fact, Species};
 use creature::colours::{Colour, Look, Pattern, Scheme, Variety};
 use creature::jar::Catchable;
 use creature::model::{WHITE, draw_layer, multiply};
-use creature::sync::Locked;
+use creature::state::EntityMap;
 use luck::Action;
 use mod_api::{
     BlockEntityDrawContext, EntityInteractEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, Hooks,
@@ -486,8 +486,7 @@ fn lucky_from(host: &mut dyn ServerHost, player: u128, k: usize) -> bool {
 }
 
 /// The health of the player each ladybug rides, as it landed: hurt, they make it fly off (SPECS §4).
-static RIDDEN: std::sync::Mutex<std::collections::BTreeMap<u32, f32>> =
-    std::sync::Mutex::new(std::collections::BTreeMap::new());
+static RIDDEN: EntityMap<f32> = EntityMap::new();
 
 /// What a behaviour queued (`luck::Action`).
 fn act(host: &mut dyn ServerHost, action: Action) {

@@ -7,11 +7,11 @@
 //! its creature as a hunter of another mod's prey (`add_hunter`: the seagull, of the flying fish).
 //!
 //! Single player: the hooks share the mob's id (as the rest of the series).
-use std::collections::BTreeMap;
 use std::sync::Mutex;
 
 use mod_api::{ParticleOptions, ServerHost, SoundSource};
 
+use crate::state::EntityMap;
 use crate::sync::Locked;
 
 /// A hunter of a prey: its entity type, how far it sees the prey (blocks) and its speed going for it (its navigation's
@@ -37,7 +37,7 @@ static CAUGHT: Mutex<Vec<(&'static str, Caught)>> = Mutex::new(Vec::new());
 /// Hunters added by other mods, by their prey's kind.
 static ADDED: Mutex<Vec<(&'static str, &'static Hunter)>> = Mutex::new(Vec::new());
 /// The hunter going for each prey.
-static CHASED: Mutex<BTreeMap<u32, u32>> = Mutex::new(BTreeMap::new());
+static CHASED: EntityMap<u32> = EntityMap::new();
 /// How often a prey looks out for a new hunter (ticks), and how near a hunter eats it (blocks).
 const LOOK_EVERY: i32 = 20;
 const REACH: f64 = 1.3;

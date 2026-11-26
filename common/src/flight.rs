@@ -9,12 +9,10 @@
 //! - `Follow`: following its friend (the library's `friend`) in flight, as `Following` says.
 //!
 //! Everything runs from the server tick (the library's `body`), which writes back the velocity, heading and pitch set.
-use std::collections::BTreeMap;
-use std::sync::Mutex;
 
 use crate::body::{Behaviour, Body, World};
 use crate::sounds;
-use crate::sync::Locked;
+use crate::state::EntityMap;
 
 /// The slowest it flies before it stalls, in blocks per tick.
 pub const STALL: f64 = 0.18;
@@ -193,7 +191,7 @@ pub fn wrap(degrees: f32) -> f32 {
 
 /// Whether each flier is beating its wings, for `pose` (the render state doesn't carry it). Single player:
 /// the behaviours and the drawing share the mob's id.
-static FLAPPING: Mutex<BTreeMap<u32, bool>> = Mutex::new(BTreeMap::new());
+static FLAPPING: EntityMap<bool> = EntityMap::new();
 
 fn set_flapping(id: u32, flapping: bool) {
     let mut map = FLAPPING.locked();

@@ -9,11 +9,9 @@
 //!   `RUNNER`, scares it off.
 //!
 //! The player is the nearest one (`World::player`).
-use std::collections::BTreeSet;
-use std::sync::Mutex;
 
 use creature::body::{Behaviour, Body, World, distance};
-use creature::sync::Locked;
+use creature::state::EntitySet;
 
 /// Its friend further than this (blocks): it comes to them at once (the mod's tick teleports it).
 pub const TELEPORT: f64 = 24.0;
@@ -39,7 +37,7 @@ pub const GLOW_BERRIES: &str = "minecraft:glow_berries";
 pub const SWEET_BERRIES: &str = "minecraft:sweet_berries";
 
 /// The fairies this behaviour moves now, for the drawing (their wings beat).
-static ACTIVE: Mutex<BTreeSet<u32>> = Mutex::new(BTreeSet::new());
+static ACTIVE: EntitySet = EntitySet::new();
 
 /// Whether this behaviour moves it now (it is flying).
 pub fn active(fairy: u32) -> bool {

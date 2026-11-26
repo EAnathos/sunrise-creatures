@@ -4,12 +4,11 @@
 //! The damage hook can't ask where the projectile was, so each tick the arrows and tridents near a cyclops are noted
 //! with their velocity (`watch`), and on the hit (which names the projectile) its path is followed to the cyclops's
 //! face: the eye is struck if it crosses the face within the eye's height and width.
-use std::collections::{BTreeMap, BTreeSet};
-use std::sync::Mutex;
+use std::collections::BTreeMap;
 use std::time::Instant;
 
 use creature::body::{Behaviour, Body, World, distance};
-use creature::sync::Locked;
+use creature::state::{EntityMap, EntitySet};
 use mod_api::{LevelRef, LivingIncomingDamageEvent, ParticleOptions, ServerHost, SoundSource};
 
 const PROJECTILES: [&str; 3] = ["minecraft:arrow", "minecraft:spectral_arrow", "minecraft:trident"];
@@ -26,13 +25,13 @@ const WATCH: f64 = 10.0;
 /// A projectile's position and velocity.
 type Motion = ([f64; 3], [f64; 3]);
 /// The arrows and tridents near a cyclops, last tick: where and how fast.
-static FLYING: Mutex<BTreeMap<u32, Motion>> = Mutex::new(BTreeMap::new());
+static FLYING: EntityMap<Motion> = EntityMap::new();
 /// Each cyclops's feet and facing (degrees), from its tick.
-static FACING: Mutex<BTreeMap<u32, ([f64; 3], f32)>> = Mutex::new(BTreeMap::new());
+static FACING: EntityMap<([f64; 3], f32)> = EntityMap::new();
 /// Struck in the eye: the stun to start (`Stunned`), the cry to play (its tick), when (the drawing).
-static STRUCK: Mutex<BTreeSet<u32>> = Mutex::new(BTreeSet::new());
-static CRY: Mutex<BTreeSet<u32>> = Mutex::new(BTreeSet::new());
-static DAZED: Mutex<BTreeMap<u32, Instant>> = Mutex::new(BTreeMap::new());
+static STRUCK: EntitySet = EntitySet::new();
+static CRY: EntitySet = EntitySet::new();
+static DAZED: EntityMap<Instant> = EntityMap::new();
 
 /// From `level_tick_post`: notes the arrows and tridents near a cyclops.
 pub fn watch(host: &mut dyn ServerHost, level: LevelRef) {

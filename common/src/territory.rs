@@ -17,14 +17,12 @@
 //! The anchor is saved on the entity (`creature:territory`). The mod's goals read it through a static map (`anchor`),
 //! filled by `tick` from the mod's `entity_tick_post` (single player, as the colours), and tell a moved or lost anchor
 //! back (`moved`), which `tick` saves. Blocks are read through a `Ground`: the host and the level the creature is in.
-use std::collections::BTreeMap;
-use std::sync::Mutex;
 
 use mod_api::{
     AttachmentCodec, AttachmentError, AttachmentType, Compound, Holder, Host, LevelRef, Registrar, ServerHost, Tag,
 };
 
-use crate::sync::Locked;
+use crate::state::EntityMap;
 
 /// The flowers within this many blocks of the anchor make the area; it reaches this far around them and up.
 pub const PATCH: i32 = 8;
@@ -145,7 +143,7 @@ struct Known {
     dirty: bool,
 }
 
-static ANCHORS: Mutex<BTreeMap<u32, Known>> = Mutex::new(BTreeMap::new());
+static ANCHORS: EntityMap<Known> = EntityMap::new();
 
 /// From the jar's release (or a mod): `entity` settles with `anchor`.
 pub fn settle(host: &mut dyn ServerHost, entity: u32, anchor: [i32; 3]) {

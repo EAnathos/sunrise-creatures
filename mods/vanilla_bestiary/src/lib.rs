@@ -11,16 +11,15 @@
 mod creatures;
 mod game_data;
 
-use std::collections::{BTreeMap, BTreeSet};
-use std::sync::Mutex;
+use std::collections::BTreeSet;
 
 use creature::bestiary::{Fact, Species};
-use creature::sync::Locked;
+use creature::state::{EntityMap, EntitySet};
 use mod_api::{
     BlockEntityDrawContext, EntityBreedEvent, EntityChangeBlockEvent, EntityDropItemEvent, EntityEnterLoveModeEvent,
-    EntityInteractEvent, EntityJoinLevelEvent, EntityLeaveLevelEvent, EntityTameEvent, EntityTickPostEvent,
-    ExplosionPrimeEvent, FinalizeSpawnEvent, Flow, Hooks, Host, HostSide, InteractionResult, LivingConversionPostEvent,
-    LootDropsEvent, PlayerBucketEntityEvent, Registrar, RegistrationContext, ServerHost, SpawnReason, Tag,
+    EntityInteractEvent, EntityJoinLevelEvent, EntityTameEvent, EntityTickPostEvent, ExplosionPrimeEvent,
+    FinalizeSpawnEvent, Flow, Hooks, Host, HostSide, InteractionResult, LivingConversionPostEvent, LootDropsEvent,
+    PlayerBucketEntityEvent, Registrar, RegistrationContext, ServerHost, SpawnReason, Tag,
 };
 
 use creatures::{Breed, CREATURES, Creature, How, Seen};
@@ -44,9 +43,9 @@ const SPECIAL: &str = "special";
 const KEYS: &str = "bestiary.vanilla_bestiary";
 
 /// The creatures known not to be wild, by entity id (from their tag, read when they join the level).
-static NOT_WILD_IDS: Mutex<BTreeSet<u32>> = Mutex::new(BTreeSet::new());
+static NOT_WILD_IDS: EntitySet = EntitySet::new();
 /// Where each creeper is, to tell which one an explosion was.
-static CREEPERS: Mutex<BTreeMap<u32, ([f64; 3], String)>> = Mutex::new(BTreeMap::new());
+static CREEPERS: EntityMap<([f64; 3], String)> = EntityMap::new();
 
 fn creature(kind: &str) -> Option<&'static Creature> {
     CREATURES.iter().find(|c| c.id == kind)
@@ -280,11 +279,6 @@ impl Hooks for VanillaBestiary {
             NOT_WILD_IDS.locked().insert(event.entity);
         }
         Flow::Continue
-    }
-
-    fn entity_leave_level(&self, _: &mut dyn ServerHost, event: &mut EntityLeaveLevelEvent<'_>) {
-        NOT_WILD_IDS.locked().remove(&event.entity);
-        CREEPERS.locked().remove(&event.entity);
     }
 
     /// Fed what breeds it: the player who fed it found out what it eats.

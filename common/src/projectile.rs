@@ -10,13 +10,11 @@
 //! has lost its velocity: it ends at once, as landed.
 //!
 //! Single player: the flight and the hooks share the mob's id (as the rest of the series).
-use std::collections::BTreeMap;
-use std::sync::Mutex;
 
 use mod_api::{Compound, Host, LevelRef, ServerHost, Tag};
 
 use crate::body::{Behaviour, Body, World};
-use crate::sync::Locked;
+use crate::state::EntityMap;
 
 /// How a projectile flies: its velocity (blocks a tick), its gravity (blocks a tick, each tick), how long it may fly
 /// (ticks), and its target (its entity id), if it has one, with how close it must come to its middle to hit it
@@ -39,13 +37,13 @@ pub enum End {
 }
 
 /// Each projectile's launch, read by its flight on its first tick.
-static LAUNCHES: Mutex<BTreeMap<u32, Launch>> = Mutex::new(BTreeMap::new());
+static LAUNCHES: EntityMap<Launch> = EntityMap::new();
 /// Each flying projectile's velocity now, for its drawing (it points where it goes).
-static VELOCITIES: Mutex<BTreeMap<u32, [f64; 3]>> = Mutex::new(BTreeMap::new());
+static VELOCITIES: EntityMap<[f64; 3]> = EntityMap::new();
 /// How each projectile ended, for the mod's hook.
-static ENDED: Mutex<BTreeMap<u32, End>> = Mutex::new(BTreeMap::new());
+static ENDED: EntityMap<End> = EntityMap::new();
 /// The target each projectile reached, for `tick_post` to hurt it.
-static REACHED: Mutex<BTreeMap<u32, u32>> = Mutex::new(BTreeMap::new());
+static REACHED: EntityMap<u32> = EntityMap::new();
 
 /// Summons projectile `kind` (a mob of the mod's, which `register` gives its flight) at `from`, flying as `launch` says.
 /// Its id, if it came.

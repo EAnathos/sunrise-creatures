@@ -59,8 +59,10 @@ Hooks, behaviours and renderers share per-creature state through `static` mutexe
   `MAP.locked().insert(id, e.health(host))` holds the lock while `health` runs, and an `if let` or `match` on
   `MAP.locked()...` holds it through the whole block.
 - Two locks at once only in one order, everywhere.
-- Every per-entity entry is dropped when its entity goes: `living_death` for what only the living use, the
-  `entity_leave_level` hook otherwise (a dying creature still ticks and is drawn until it leaves).
+- What is kept about each creature lives in a `creature::state::EntityMap<T>` or `EntitySet` (a static, locked with
+  `.locked()`), never a `Mutex<BTreeMap<u32, _>>`: the library's `entity_leave_level` drops an entity from all of them,
+  so a module writes no cleanup of its own for an entity that is gone. What must end at a creature's death (a dying
+  creature still ticks and is drawn until it leaves) is the module's `living_death`'s.
 - A fix to this gets a test that would deadlock or fail without it (the SDK's `mod_api::testing::FakeHost` is there
   for the tests, `cargo creature native-check`).
 

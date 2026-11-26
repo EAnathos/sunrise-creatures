@@ -1,4 +1,5 @@
 //! Its fight (SPECS §2): the club's overhead blow in reach, a boulder lifted and hurled out of it (`Smash`).
+use creature::state::{EntityMap, EntitySet};
 use creature::sync::Locked;
 
 use super::*;
@@ -27,13 +28,13 @@ pub(crate) const HELD_HEIGHT: f32 = 4.4;
 pub(crate) const THROW: &str = "cyclops:entity.cyclops.throw";
 
 /// When each cyclops raised its club, or a boulder, last, for the drawing (single player).
-pub(crate) static RAISED: Mutex<BTreeMap<u32, Instant>> = Mutex::new(BTreeMap::new());
-pub(crate) static LIFTED: Mutex<BTreeMap<u32, Instant>> = Mutex::new(BTreeMap::new());
+pub(crate) static RAISED: EntityMap<Instant> = EntityMap::new();
+pub(crate) static LIFTED: EntityMap<Instant> = EntityMap::new();
 
 /// What a cyclops's fight asked its tick to do (a behaviour can't hurt or change a target): its club hit `target`, or
 /// it let its target go.
 pub(crate) static HITS: Mutex<Vec<(u32, u32)>> = Mutex::new(Vec::new());
-pub(crate) static LET_GO: Mutex<BTreeSet<u32>> = Mutex::new(BTreeSet::new());
+pub(crate) static LET_GO: EntitySet = EntitySet::new();
 
 /// From the cyclops's tick: its club's hits (its attack damage, a push away and up) and a target let go.
 pub(crate) fn apply(host: &mut dyn ServerHost, cyclops: u32) {

@@ -12,6 +12,7 @@ use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use creature::body::{Body, World};
+use creature::state::EntityMap;
 use creature::sync::Locked;
 use mod_api::ServerHost;
 
@@ -30,7 +31,7 @@ const HANG: f64 = 0.7;
 /// When each rider last pressed the key, in milliseconds since the epoch: a press moves only the sender's own vulture.
 static PRESSED: Mutex<BTreeMap<u128, u64>> = Mutex::new(BTreeMap::new());
 /// Each vulture's catch, and where to hold it.
-static CARRIED: Mutex<BTreeMap<u32, (u32, [f64; 3])>> = Mutex::new(BTreeMap::new());
+static CARRIED: EntityMap<(u32, [f64; 3])> = EntityMap::new();
 
 fn now() -> u64 {
     SystemTime::now()

@@ -20,6 +20,7 @@
 //! - `bestiary`: the book's pages, what each player met and found out (SPECS §7).
 //! - `particles`: the vanilla particles the mods send, their keys asked for at registration.
 //! - `items`: the book's Items tab, a page per item of the series, with the recipes of `recipes.rs` (SPECS §7.2).
+//! - `state`: what the series keeps about each creature (`EntityMap`, `EntitySet`), dropped when it leaves the level.
 //! - `sync`: how every mutex of the series is locked (`Locked::locked`), a poisoned one counted in crash reports.
 pub mod anger;
 pub mod aquatic;
@@ -44,6 +45,7 @@ pub mod prey;
 pub mod projectile;
 mod recipes;
 pub mod sounds;
+pub mod state;
 pub mod sync;
 pub mod territory;
 pub mod touch;
@@ -150,17 +152,12 @@ impl Hooks for Creature {
     }
 
     fn entity_leave_level(&self, _: &mut dyn ServerHost, event: &mut EntityLeaveLevelEvent<'_>) {
-        bestiary::forget(event.entity);
-        glow::dim(event.entity);
-        anger::forget(event.entity);
+        // Everything kept by entity id, the library's and the mods' (`state`); then what isn't kept that way: touches
+        // (by pairs), the hunters going for prey (by the hunter too), the sounds queued (a list).
+        state::forget(event.entity);
         touch::forget(event.entity);
         prey::forget(event.entity);
-        aquatic::forget(event.entity);
         sounds::forget(event.entity);
-        creep::let_go(event.entity);
-        flight::forget(event.entity);
-        // A creature's behaviours, dropped at its death by its mod, and here for one that left otherwise (unloaded).
-        body::forget(event.entity);
     }
 
     /// Small fliers come out near players.

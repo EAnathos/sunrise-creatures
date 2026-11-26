@@ -3,11 +3,11 @@
 //! neighbour taking off), and now and then for nothing, it races up, bursts out of the water and glides a block or two
 //! over the waves, beats its tail on a wave to glide again, and falls back in. Out of water and not gliding it is
 //! beached: the library's `aquatic` makes it fall and flop.
-use std::collections::{BTreeMap, BTreeSet};
 use std::f64::consts::TAU;
 use std::sync::Mutex;
 
 use creature::body::{Behaviour, Body, Vec3, World, turned, unit};
+use creature::state::{EntityMap, EntitySet};
 use creature::sync::Locked;
 
 /// Its speed swimming and gliding (blocks a tick), and how fast it climbs out.
@@ -47,16 +47,16 @@ use crate::{BEAT, GLIDE, SPLASH};
 /// A fish's place and heading.
 type Place = ([f64; 3], [f64; 2]);
 /// Each fish's place and heading, for its shoal (single player: the hooks share the ids).
-static FISH: Mutex<BTreeMap<u32, Place>> = Mutex::new(BTreeMap::new());
+static FISH: EntityMap<Place> = EntityMap::new();
 /// Fish told to take off: in so many ticks, away along this heading.
-static PANIC: Mutex<BTreeMap<u32, (i32, [f64; 2])>> = Mutex::new(BTreeMap::new());
+static PANIC: EntityMap<(i32, [f64; 2])> = EntityMap::new();
 /// The fish out of the water gliding, for their drawing (fins spread).
-static GLIDING: Mutex<BTreeSet<u32>> = Mutex::new(BTreeSet::new());
+static GLIDING: EntitySet = EntitySet::new();
 /// What the mod's tick turns into facts: glides longer than `LONG_GLIDE` (by the fish) and shoals taking off (where).
 static GLIDED: Mutex<Vec<u32>> = Mutex::new(Vec::new());
 static TOOK_OFF: Mutex<Vec<[f64; 3]>> = Mutex::new(Vec::new());
 /// Gliders that ran into a player or a mob (the mod's tick sees it): the heading they bounce off along.
-static BUMPED: Mutex<BTreeMap<u32, [f64; 2]>> = Mutex::new(BTreeMap::new());
+static BUMPED: EntityMap<[f64; 2]> = EntityMap::new();
 
 /// Flying fish `id`, gliding, ran into something at `from`: it bounces off and drops (SPECS §3).
 pub(crate) fn bump(id: u32, at: [f64; 3], from: [f64; 3]) {

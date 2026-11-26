@@ -6,11 +6,11 @@
 //! `Dive` (fishing for its friend), `FollowBoat` (a wild one behind a boat), `LuckySpot` (circling over a lucky spot
 //! for its friend), following its friend (the library's `Follow`, as `FOLLOWING` says), `Stay`, `Eat` (food on the ground), the library's `Soar`, `Float` (bobbing on the
 //! water), `Walk`; `Upkeep` watches every tick (no fall damage, its calls).
-use std::collections::BTreeMap;
 use std::sync::Mutex;
 
 use creature::body::{Behaviour, Body, Vec3, World};
 use creature::flight::{Controls, Flight, Following, heading_of};
+use creature::state::EntityMap;
 use creature::sync::Locked;
 
 use crate::{CRY, LAUGH, SPLASH, WINGS};
@@ -61,7 +61,7 @@ pub(crate) struct Around {
     pub friend_boating: bool,
 }
 
-static AROUND: Mutex<BTreeMap<u32, Around>> = Mutex::new(BTreeMap::new());
+static AROUND: EntityMap<Around> = EntityMap::new();
 
 pub(crate) fn set_around(id: u32, around: Around) {
     AROUND.locked().insert(id, around);
@@ -72,11 +72,11 @@ fn around(id: u32) -> Around {
 }
 
 /// For its drawing (single player: the renderer reads them): diving with its wings folded back, floating.
-static DIVING: Mutex<BTreeMap<u32, ()>> = Mutex::new(BTreeMap::new());
+static DIVING: EntityMap<()> = EntityMap::new();
 /// What each seagull carries (stolen food: its item id), for the hit that makes it drop it and the drawing.
-static CARRIED: Mutex<BTreeMap<u32, String>> = Mutex::new(BTreeMap::new());
+static CARRIED: EntityMap<String> = EntityMap::new();
 /// Each friend's lucky spot, by the seagull circling over it: (the spot, its friend's UUID).
-static LUCKY: Mutex<BTreeMap<u32, ([f64; 3], u128)>> = Mutex::new(BTreeMap::new());
+static LUCKY: EntityMap<([f64; 3], u128)> = EntityMap::new();
 
 pub(crate) fn diving(id: u32) -> bool {
     DIVING.locked().contains_key(&id)

@@ -5,12 +5,10 @@
 //! it through a static map (`of`), filled by `tick` from the mod's `entity_tick_post` (single player, as the
 //! territory); a change (`befriend`, `set_staying`) is saved by the next `tick`. A glass jar keeps the friend
 //! of the creature it holds (`jar`).
-use std::collections::BTreeMap;
-use std::sync::Mutex;
 
 use mod_api::{AttachmentCodec, AttachmentError, AttachmentType, Compound, Holder, Registrar, ServerHost, Tag};
 
-use crate::sync::Locked;
+use crate::state::EntityMap;
 
 /// Whom a creature is the friend of, and whether it stays where it is.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -83,7 +81,7 @@ struct Known {
     dirty: bool,
 }
 
-static FRIENDS: Mutex<BTreeMap<u32, Known>> = Mutex::new(BTreeMap::new());
+static FRIENDS: EntityMap<Known> = EntityMap::new();
 
 /// What a player sees of their try to befriend a creature at `at`: hearts when it worked, smoke when not (as vanilla's
 /// taming).

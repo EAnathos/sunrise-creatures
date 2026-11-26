@@ -38,6 +38,7 @@ use mod_api::{
 use crate::colours::{self, Look, Scheme};
 use crate::items::{self, Recipe, Station};
 pub use crate::items::{ItemPage, Use};
+use crate::state::EntityMap;
 use crate::sync::Locked;
 
 /// A fact a player can learn about a species: an item drawn beside it and its text's language key (empty: a drop, its
@@ -291,7 +292,7 @@ pub fn learn(host: &mut dyn ServerHost, player: u128, species: &str, fact: &str)
 }
 
 /// Ticks since each creature's last check.
-static TICKS: Mutex<BTreeMap<u32, u32>> = Mutex::new(BTreeMap::new());
+static TICKS: EntityMap<u32> = EntityMap::new();
 
 /// From the library's `entity_tick_post`: the players near a creature of a registered species meet it, in its biome.
 /// Every entity ticks, and with the Vanilla Bestiary most kinds are species: the species is looked up only every

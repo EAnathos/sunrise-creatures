@@ -3,16 +3,17 @@
 //! or out of reach). The library's damage hook notes who hit it; the mod's own behaviour does the fighting.
 //!
 //! Single player: the hooks and the behaviours share the mob's id (as the rest of the series).
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 use std::sync::Mutex;
 
 use crate::body::{Body, World};
+use crate::state::EntityMap;
 use crate::sync::Locked;
 
 /// The kinds that fight back.
 static KINDS: Mutex<BTreeSet<&'static str>> = Mutex::new(BTreeSet::new());
 /// Each angered creature's target: who hit it last (an entity id).
-static TARGETS: Mutex<BTreeMap<u32, u32>> = Mutex::new(BTreeMap::new());
+static TARGETS: EntityMap<u32> = EntityMap::new();
 
 /// From a mod's `register`: creatures of `kind` fight back when hit.
 pub fn register(kind: &'static str) {

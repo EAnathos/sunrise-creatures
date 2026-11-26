@@ -1,10 +1,8 @@
 //! What its blows break (SPECS §2): the club and the boulder tear up the blocks around where they land, without
 //! drops, unless the `mob_griefing` game rule is off. Left alone: blocks that players can't break either (bedrock, obsidian, portals, command blocks...),
 //! liquids, containers (their contents would be lost with no drops) and the library's placed jars (their creature).
-use std::collections::BTreeMap;
-use std::sync::Mutex;
 
-use creature::sync::Locked;
+use creature::state::EntityMap;
 use creature::territory::Ground;
 use mod_api::{BlockUpdateFlags, GameRuleValue, LevelRef, ParticleOptions, ServerHost};
 
@@ -53,7 +51,7 @@ const KEPT_EXACTLY: &[&str] = &[
 ];
 
 /// Club blows to make, from the goals' ticks (which have no host): where each cyclops's club came down.
-static BLOWS: Mutex<BTreeMap<u32, [f64; 3]>> = Mutex::new(BTreeMap::new());
+static BLOWS: EntityMap<[f64; 3]> = EntityMap::new();
 
 /// From the club goal: `cyclops`'s club came down at `at`.
 pub fn blow(cyclops: u32, at: [f64; 3]) {

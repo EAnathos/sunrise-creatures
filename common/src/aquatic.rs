@@ -10,7 +10,6 @@
 //! - **Spawning** (`spawns`): groups in the water of their biomes, out of sight of the players, under a cap.
 //!
 //! Single player: the hooks share the mob's id (as the rest of the series).
-use std::collections::BTreeMap;
 use std::sync::Mutex;
 
 use mod_api::{
@@ -18,6 +17,7 @@ use mod_api::{
     LivingBreatheEvent, ServerHost, SoundSource, Tag, UseOnEvent,
 };
 
+use crate::state::EntityMap;
 use crate::sync::Locked;
 use crate::territory::Ground;
 use crate::{colours, hand, jar};
@@ -54,9 +54,9 @@ pub const KEPT: &str = "creature.kept";
 static AQUATIC: Mutex<Vec<&'static Aquatic>> = Mutex::new(Vec::new());
 static SPAWNING: Mutex<Vec<&'static Spawning>> = Mutex::new(Vec::new());
 /// Ticks each one has spent out of water.
-static DRY: Mutex<BTreeMap<u32, u32>> = Mutex::new(BTreeMap::new());
+static DRY: EntityMap<u32> = EntityMap::new();
 /// Each one's kind and where it is, for the spawning caps.
-static AT: Mutex<BTreeMap<u32, (&'static str, [f64; 3])>> = Mutex::new(BTreeMap::new());
+static AT: EntityMap<(&'static str, [f64; 3])> = EntityMap::new();
 static SPAWN_TICKS: Mutex<u32> = Mutex::new(0);
 
 /// From a mod's `register`.

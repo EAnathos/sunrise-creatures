@@ -5,13 +5,11 @@
 //! library hands them out: to the creatures nearest a player. The client's `visuals` hook knows no positions: a mod
 //! notes each glowing creature from its server tick (`shine`), the library's `visuals` draws them (single player, as
 //! the rest of the series).
-use std::collections::BTreeMap;
-use std::sync::Mutex;
 use std::time::Instant;
 
 use mod_api::{ColoredLight, ServerHost, VisualsEvent};
 
-use crate::sync::Locked;
+use crate::state::EntityMap;
 
 /// A creature's light: its colour (`0xRRGGBB`), reach (blocks) and strength (0 to 1), how high above its feet, and
 /// whether it shines at this moment (a firefly's pulse).
@@ -39,7 +37,7 @@ struct Shining {
     when: Instant,
 }
 
-static SHINING: Mutex<BTreeMap<u32, Shining>> = Mutex::new(BTreeMap::new());
+static SHINING: EntityMap<Shining> = EntityMap::new();
 
 /// From the mod's `entity_tick_post`: creature `entity`, in level `dimension`, shines `light` this tick.
 pub fn shine(host: &dyn ServerHost, dimension: &str, entity: u32, light: Light) {

@@ -6,10 +6,10 @@
 //!   mod's tick finds where), and rests there.
 //!
 //! What a behaviour can't do itself (seat it on a player, let it go, give luck) it queues as an `Action`.
-use std::collections::BTreeMap;
 use std::sync::Mutex;
 
 use creature::body::{Behaviour, Body, World};
+use creature::state::EntityMap;
 use creature::sync::Locked;
 
 /// What the mod's tick does for a behaviour.
@@ -28,11 +28,11 @@ pub(crate) fn actions() -> Vec<Action> {
 }
 
 /// The ladybugs riding a player, for their drawing and the right-click that lets one go (single player).
-static PERCHED: Mutex<BTreeMap<u32, ()>> = Mutex::new(BTreeMap::new());
+static PERCHED: EntityMap<()> = EntityMap::new();
 /// The day each ladybug last landed on a player (the game's day count): once a day each.
-static LANDED: Mutex<BTreeMap<u32, i64>> = Mutex::new(BTreeMap::new());
+static LANDED: EntityMap<i64> = EntityMap::new();
 /// Where each ladybug gathers (its cluster at night or in the cold, its shelter in the rain), found by the mod's tick.
-static CLUSTER: Mutex<BTreeMap<u32, [f64; 3]>> = Mutex::new(BTreeMap::new());
+static CLUSTER: EntityMap<[f64; 3]> = EntityMap::new();
 
 pub(crate) fn perched(id: u32) -> bool {
     PERCHED.locked().contains_key(&id)

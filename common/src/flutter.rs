@@ -22,12 +22,12 @@
 //!
 //! The flight runs from the server tick (`body`: it sets the flier's velocity itself). The drawing needs to know which
 //! are flying (`flying`), which their render state doesn't say: a static map, single player only (as the vulture's).
-use std::collections::BTreeMap;
 use std::sync::Mutex;
 
 use mod_api::{Host, LevelRef, ServerHost, SoundSource};
 
 use crate::body::{Behaviour, Body, World};
+use crate::state::EntityMap;
 use crate::sync::Locked;
 use crate::territory::{self, Ground};
 
@@ -104,7 +104,7 @@ fn brightest_light(world: &World<'_>, at: [f64; 3]) -> Option<[i32; 3]> {
 /// Where on a flower it sits, above the flower block's bottom.
 const ON_FLOWER: f64 = 0.4;
 
-static FLYING: Mutex<BTreeMap<u32, bool>> = Mutex::new(BTreeMap::new());
+static FLYING: EntityMap<bool> = EntityMap::new();
 
 /// Where small fliers come out (`spawns`): a kind, its flight (for its hours), its biomes, its groups, how many at most
 /// near a player, and one chance in how many each try.
@@ -129,8 +129,8 @@ const GROUP_HEIGHT: (f64, f64) = (0.5, 2.5);
 static SPAWNING: Mutex<Vec<&'static Spawning>> = Mutex::new(Vec::new());
 static SPAWN_TICKS: Mutex<u32> = Mutex::new(0);
 /// Each flier's kind (from `register`) and where it is (from `tick_post`), for the caps.
-static KINDS: Mutex<BTreeMap<u32, String>> = Mutex::new(BTreeMap::new());
-static AT: Mutex<BTreeMap<u32, [f64; 3]>> = Mutex::new(BTreeMap::new());
+static KINDS: EntityMap<String> = EntityMap::new();
+static AT: EntityMap<[f64; 3]> = EntityMap::new();
 
 /// From a mod's `hooks()`: its kind comes out near players.
 pub fn spawns(spawning: &'static Spawning) {

@@ -4,6 +4,7 @@
 use std::collections::BTreeSet;
 use std::sync::Mutex;
 
+use creature::state::EntitySet;
 use creature::sync::Locked;
 use mod_api::{Hand, LevelRef, ParticleOptions, ServerHost};
 
@@ -25,7 +26,7 @@ const SPEED: f64 = 1.1;
 
 static TICKS: Mutex<u32> = Mutex::new(0);
 /// The animals following a player's crook now: a cyclops's flock (`flock`) leaves them be.
-pub static HERDED: Mutex<BTreeSet<u32>> = Mutex::new(BTreeSet::new());
+pub static HERDED: EntitySet = EntitySet::new();
 
 /// From `level_tick_post`.
 pub fn tick(host: &mut dyn ServerHost, level: LevelRef) {

@@ -7,10 +7,11 @@
 //!   up: to the nearest trunk, up it through the leaves, onto the canopy.
 //!
 //! What a behaviour can't do itself (count a spotting, teach a fact) it queues as an `Action` (`crate::act`).
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 use std::sync::Mutex;
 
 use creature::body::{Behaviour, Body, Vec3, World};
+use creature::state::{EntityMap, EntitySet};
 use creature::sync::Locked;
 
 /// What the mod's tick does for a behaviour.
@@ -29,10 +30,10 @@ pub(crate) fn actions() -> Vec<Action> {
 }
 
 /// Whether each phasmid keeps still (its crawl waits), and whether it lies playing dead (for its drawing).
-static BUSY: Mutex<BTreeSet<u32>> = Mutex::new(BTreeSet::new());
-static DEAD: Mutex<BTreeSet<u32>> = Mutex::new(BTreeSet::new());
+static BUSY: EntitySet = EntitySet::new();
+static DEAD: EntitySet = EntitySet::new();
 /// The players who spotted each phasmid (each counts once).
-static SPOTTED: Mutex<BTreeMap<u32, BTreeSet<u128>>> = Mutex::new(BTreeMap::new());
+static SPOTTED: EntityMap<BTreeSet<u128>> = EntityMap::new();
 
 /// For its crawl (`creature::creep::Creeping::may`): it keeps still.
 pub(crate) fn busy(id: u32) -> bool {
@@ -49,7 +50,7 @@ pub(crate) fn forget(id: u32) {
     SPOTTED.locked().remove(&id);
 }
 
-fn set(set: &Mutex<BTreeSet<u32>>, id: u32, on: bool) {
+fn set(set: &'static EntitySet, id: u32, on: bool) {
     let mut all = set.locked();
     if on {
         all.insert(id);

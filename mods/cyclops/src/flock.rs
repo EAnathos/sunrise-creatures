@@ -1,11 +1,12 @@
 //! Its flock (SPECS §2): the sheep that came with it follow it, and it turns on whoever hurts one of them.
+use creature::state::EntityMap;
 use creature::sync::Locked;
 
 use super::*;
 
 /// Whom each cyclops is to turn on, for hurting one of its sheep (from `living_incoming_damage`, which can't change a
 /// target): the attacker's entity id. Its tick takes it as its target (`anger`).
-pub(crate) static ANGERED: Mutex<BTreeMap<u32, u32>> = Mutex::new(BTreeMap::new());
+pub(crate) static ANGERED: EntityMap<u32> = EntityMap::new();
 
 /// From the cyclops's tick: whoever hurt one of its sheep becomes its target.
 pub(crate) fn anger(host: &mut dyn ServerHost, cyclops: u32) {
@@ -22,11 +23,11 @@ pub(crate) fn anger(host: &mut dyn ServerHost, cyclops: u32) {
 }
 
 /// Where each cyclops is (from its tick): for the flock and for keeping cyclopes apart.
-pub(crate) static CYCLOPS_AT: Mutex<BTreeMap<u32, [f64; 3]>> = Mutex::new(BTreeMap::new());
+pub(crate) static CYCLOPS_AT: EntityMap<[f64; 3]> = EntityMap::new();
 /// Each sheep seen near a cyclops: whether it is of a flock (its tag, read once).
-pub(crate) static FLOCK: Mutex<BTreeMap<u32, bool>> = Mutex::new(BTreeMap::new());
+pub(crate) static FLOCK: EntityMap<bool> = EntityMap::new();
 /// Each flock sheep's cyclops (the nearest).
-pub(crate) static SHEPHERD: Mutex<BTreeMap<u32, u32>> = Mutex::new(BTreeMap::new());
+pub(crate) static SHEPHERD: EntityMap<u32> = EntityMap::new();
 /// The players who have noted the flock fact this session (`bestiary::learn` keeps it).
 pub(crate) static NOTED: Mutex<BTreeSet<u128>> = Mutex::new(BTreeSet::new());
 

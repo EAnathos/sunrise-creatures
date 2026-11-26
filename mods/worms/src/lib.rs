@@ -8,13 +8,13 @@
 //! (SPECS §4). While it rains, worms come up near players (`rain`). Wild ones despawn far from players.
 mod model_worm;
 
-use std::collections::BTreeMap;
 use std::sync::Mutex;
 
 use std::sync::{Arc, OnceLock};
 
 use creature::bestiary::{Fact, Species};
 use creature::jar::Catchable;
+use creature::state::EntityMap;
 use creature::sync::Locked;
 use creature::territory::{self, Rule};
 use mod_api::{
@@ -149,7 +149,7 @@ const GROW_EVERY: u32 = 400;
 const MAX_WORMS: usize = 3;
 
 /// Ticks since each worm last helped a crop.
-static TICKS: Mutex<BTreeMap<u32, u32>> = Mutex::new(BTreeMap::new());
+static TICKS: EntityMap<u32> = EntityMap::new();
 
 /// The age a crop is grown at, by block (those with an `age`); others are left alone.
 fn grown_age(block: &str) -> Option<u32> {
@@ -247,7 +247,7 @@ const SOIL: [&str; 5] = [
 static SPARKLE: OnceLock<ParticleKey> = OnceLock::new();
 
 /// Where each worm is, from its tick (for the rain's cap).
-static WORMS_AT: Mutex<BTreeMap<u32, [f64; 3]>> = Mutex::new(BTreeMap::new());
+static WORMS_AT: EntityMap<[f64; 3]> = EntityMap::new();
 static RAIN_TICKS: Mutex<u32> = Mutex::new(0);
 
 /// From `level_tick_post`, in the overworld: worms come up near players while it rains.

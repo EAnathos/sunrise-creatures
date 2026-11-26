@@ -2,11 +2,9 @@
 //! it rises about a block), then sinks slowly, drifting. It stays under the surface, deeper by day and nearer the
 //! surface by night (the glow jelly deeper still by day). Out of water it is beached: the library's `aquatic` makes it
 //! fall and flop.
-use std::collections::BTreeMap;
-use std::sync::Mutex;
 
 use creature::body::{Behaviour, Body, Vec3, World};
-use creature::sync::Locked;
+use creature::state::EntityMap;
 
 /// A pulse's length (ticks) and climb (blocks a tick); its sinking (blocks a tick) and drift between pulses.
 const PULSE_TICKS: i32 = 8;
@@ -23,7 +21,7 @@ const GLOW_DAY_DEPTH: (f64, f64) = (8.0, 16.0);
 const LOOK_UP: i32 = 20;
 
 /// The ticks of the pulse each jellyfish is in, for its drawing (single player: the renderer reads it).
-static PULSING: Mutex<BTreeMap<u32, i32>> = Mutex::new(BTreeMap::new());
+static PULSING: EntityMap<i32> = EntityMap::new();
 
 /// How far into its pulse jellyfish `id` is (0 to 1), 0 between pulses.
 pub(crate) fn pulse(id: u32) -> f32 {

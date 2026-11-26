@@ -9,13 +9,12 @@
 mod model;
 mod swim;
 
-use std::collections::BTreeMap;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use creature::aquatic::{Aquatic, Spawning};
 use creature::bestiary::{Fact, Species};
 use creature::colours::{Colour, Look, Pattern, Scheme, Variety};
-use creature::sync::Locked;
+use creature::state::EntityMap;
 use mod_api::{
     BlockEntityDrawContext, ClientHost, EmissiveEvent, EntityInteractEvent, EntityRenderState, EntityRenderer,
     EntityTickPostEvent, EquipmentSlot, Flow, Hooks, HostSide, InteractionResult, LivingDeathEvent,
@@ -249,7 +248,7 @@ const STING_EVERY: i32 = 20;
 const STING_REACH: f64 = 0.45;
 
 /// Where each jellyfish is, for its blooms (single player).
-static AT: Mutex<BTreeMap<u32, [f64; 3]>> = Mutex::new(BTreeMap::new());
+static AT: EntityMap<[f64; 3]> = EntityMap::new();
 /// A bloom: this many within `BLOOM_REACH` blocks of one another.
 const BLOOM: usize = 5;
 const BLOOM_REACH: f64 = 6.0;

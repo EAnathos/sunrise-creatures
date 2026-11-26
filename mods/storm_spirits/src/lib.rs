@@ -11,10 +11,10 @@ mod flight;
 mod model_storm_spirit;
 mod spark;
 
-use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
 
 use creature::bestiary::{Fact, Species};
+use creature::state::EntityMap;
 use creature::sync::Locked;
 use mod_api::{
     BlockEntityDrawContext, ClientHost, EmissiveEvent, EntityInteractEvent, EntityRenderState, EntityRenderer,
@@ -111,7 +111,7 @@ static LIGHT: creature::glow::Light = creature::glow::Light {
 /// Weather strikes that give birth to a spirit, summoned on the next level tick (`level_tick_post`).
 static BIRTHS: Mutex<Vec<[f64; 3]>> = Mutex::new(Vec::new());
 /// The ticks each spirit has left once the storm is over.
-static FADING: Mutex<BTreeMap<u32, u64>> = Mutex::new(BTreeMap::new());
+static FADING: EntityMap<u64> = EntityMap::new();
 /// Shocks its behaviours made (spirit, target), dealt by the tick hook (a behaviour can't hurt).
 static SHOCKS: Mutex<Vec<(u32, u32)>> = Mutex::new(Vec::new());
 

@@ -11,13 +11,11 @@
 //! A tree climber (`Creep::climber`: the phasmids) holds on to the side it is on, its belly to the bark, while it pauses or
 //! keeps still, rather than dropping; under a target well above it, it first goes to the nearest trunk. Its renderer
 //! draws it upright while it clings (`clinging`).
-use std::collections::BTreeMap;
-use std::sync::Mutex;
 
 use mod_api::Host;
 
 use crate::body::{Behaviour, Body, Vec3, World};
-use crate::sync::Locked;
+use crate::state::EntityMap;
 
 /// How a creature creeps.
 pub struct Creeping {
@@ -47,7 +45,7 @@ const WELL_ABOVE: f64 = 1.5;
 
 /// The creatures clinging to a side now, and the side's direction (x, z): for their drawing (single player, as the
 /// rest of the series: the behaviours and the renderer share the mob's id).
-static CLINGING: Mutex<BTreeMap<u32, [i32; 2]>> = Mutex::new(BTreeMap::new());
+static CLINGING: EntityMap<[i32; 2]> = EntityMap::new();
 
 /// Whether creature `id` clings to a side now (its renderer draws it upright, belly to the bark).
 pub fn clinging(id: u32) -> bool {

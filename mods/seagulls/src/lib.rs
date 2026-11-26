@@ -15,6 +15,7 @@ use std::sync::{Arc, Mutex};
 use coast::{Action, Around};
 use creature::bestiary::{Fact, Species};
 use creature::flight::{Soaring, Wings};
+use creature::state::EntityMap;
 use creature::sync::Locked;
 use mod_api::{
     BlockEntityDrawContext, EntityInteractEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, Hand,
@@ -192,7 +193,7 @@ fn bobber(host: &dyn ServerHost, level: mod_api::LevelRef, player: u128, now: i6
 }
 
 /// Whether each seagull is in the air, and in the water, from its server tick, for the drawing (single player).
-static FLYING: Mutex<BTreeMap<u32, (bool, bool)>> = Mutex::new(BTreeMap::new());
+static FLYING: EntityMap<(bool, bool)> = EntityMap::new();
 
 /// From `entity_tick_post`, for each seagull: its friend's save, its behaviours, what they queued, what it finds
 /// around it, its sounds, despawning far from players.

@@ -79,8 +79,8 @@ only). How the port went is in the history (`git show 2c09384:docs/SUNRISE-PORT.
   (`.github/workflows/ci.yml`) runs them and `cargo creature build`.
 - A native mod's stderr reaches no log: debug by writing to a file.
 - Shared state: every mutex is taken with `creature::sync::Locked` (`.locked()`), never held while calling the game,
-  a callback or another module; per-entity entries are dropped when the entity goes (`docs/CONVENTIONS.md`,
-  "Shared state").
+  a callback or another module; what is kept per creature is a `creature::state::EntityMap`/`EntitySet`, emptied by
+  the library when the entity leaves (`docs/CONVENTIONS.md`, "Shared state").
 - `ported` and a module's crate agree (`Cargo.toml` and `src/lib.rs` exactly when ported): `cargo creature check`
   and `native-check` refuse a disagreement.
 - No em dash in docs or text.

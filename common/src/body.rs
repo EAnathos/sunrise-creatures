@@ -9,13 +9,11 @@
 //! A mod gives each of its creatures its behaviours on its first tick (`tick`'s `make`), in priority order: the first
 //! that can run each tick runs (a lower priority number first), a passive one (`claims` false) runs every tick beside
 //! it. They are not saved, as goals aren't: what must outlive a reload goes in attachments.
-use std::collections::BTreeMap;
-use std::sync::Mutex;
 
 use mod_api::{Host, LivingRef, ServerHost};
 
 use crate::colours::Random;
-use crate::sync::Locked;
+use crate::state::EntityMap;
 use crate::territory::Ground;
 
 /// A position or a motion, in blocks (a tick).
@@ -182,7 +180,7 @@ struct Brain {
 
 /// Each creature's brain, by id. A brain is taken out (`None` in its place) while its behaviours run, so that they run
 /// with no lock held: they may call the game, the library (`prey::quarry`) or `forget`.
-static BRAINS: Mutex<BTreeMap<u32, Option<Brain>>> = Mutex::new(BTreeMap::new());
+static BRAINS: EntityMap<Option<Brain>> = EntityMap::new();
 
 /// From the mod's `entity_tick_post`, for each of its creatures moved by hand: runs its behaviours (`make` gives them,
 /// in priority order, the first time) and writes back what they changed.
@@ -431,9 +429,12 @@ fn write(host: &mut dyn ServerHost, before: &Body, after: &Body) {
 
 #[cfg(test)]
 pub(crate) mod tests {
+    use std::sync::Mutex;
+
     use mod_api::testing::FakeHost;
 
     use super::*;
+    use crate::sync::Locked;
 
     /// A creature standing still at the origin, for the library's tests.
     pub(crate) fn body(id: u32) -> Body {

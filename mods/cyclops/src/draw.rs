@@ -1,5 +1,4 @@
 //! Its drawing's poses: strides, the club's blow, the boulder lifted and hurled, dazed.
-use creature::sync::Locked;
 
 use super::*;
 
@@ -43,7 +42,7 @@ pub(crate) struct Moment {
 
 impl Moment {
     pub(crate) fn of(id: u32) -> Moment {
-        let since = |m: &Mutex<BTreeMap<u32, Instant>>| {
+        let since = |m: &'static creature::state::EntityMap<Instant>| {
             m.locked()
                 .get(&id)
                 .map(|at| at.elapsed().as_secs_f32())

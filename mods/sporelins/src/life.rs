@@ -10,10 +10,10 @@
 //!
 //! What a behaviour can't do itself (place a mushroom, puff spores, teach a fact) it queues as an `Action`
 //! (`crate::act`).
-use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Mutex;
 
 use creature::body::{Behaviour, Body, Vec3, World, distance, flat_distance};
+use creature::state::{EntityMap, EntitySet};
 use creature::sync::Locked;
 
 /// What the mod's tick does for a behaviour.
@@ -44,9 +44,9 @@ fn queue(action: Action) {
 
 /// The sporelins hiding (for their drawing), where each one told to stay stays (from the mod's tick), and the ones
 /// shaking their cap (a bowl asked twice the same day), for so many more ticks.
-static HIDING: Mutex<BTreeSet<u32>> = Mutex::new(BTreeSet::new());
-static STAYS_AT: Mutex<BTreeMap<u32, [f64; 3]>> = Mutex::new(BTreeMap::new());
-static SHAKING: Mutex<BTreeMap<u32, i32>> = Mutex::new(BTreeMap::new());
+static HIDING: EntitySet = EntitySet::new();
+static STAYS_AT: EntityMap<[f64; 3]> = EntityMap::new();
+static SHAKING: EntityMap<i32> = EntityMap::new();
 
 pub(crate) fn hiding(id: u32) -> bool {
     HIDING.locked().contains(&id)

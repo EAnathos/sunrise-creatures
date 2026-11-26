@@ -10,14 +10,13 @@
 mod companion;
 mod model_fairy;
 
-use std::collections::BTreeMap;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use creature::bestiary::{Fact, Species};
 use creature::friend::Friend;
 use creature::jar::Catchable;
 use creature::particles::key;
-use creature::sync::Locked;
+use creature::state::EntityMap;
 use mod_api::{
     ActiveEffect, AttachmentCodec, AttachmentError, AttachmentType, BlockEntityDrawContext, ClientHost, Compound,
     EmissiveEvent, EntityInteractEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, HitHost, Holder,
@@ -123,7 +122,7 @@ static LIGHT: creature::glow::Light = creature::glow::Light {
 const FOLLOWING_RADIUS: f32 = 8.0;
 
 /// Ticks seen per fairy, for what it does now and then.
-static TICKS: Mutex<BTreeMap<u32, u32>> = Mutex::new(BTreeMap::new());
+static TICKS: EntityMap<u32> = EntityMap::new();
 
 /// The day it last gave its friend fairy dust (SPECS §3), saved on it (`fairies:dust_day`).
 static DUST_DAY: AttachmentType<i64> = AttachmentType {
@@ -197,7 +196,7 @@ fn friend_player(host: &dyn ServerHost, friend: Friend) -> Option<PlayerRef> {
 }
 
 /// The entity id of each befriended fairy's friend, for the damage hook (which has no players to look through).
-static FRIEND_IDS: Mutex<BTreeMap<u32, u32>> = Mutex::new(BTreeMap::new());
+static FRIEND_IDS: EntityMap<u32> = EntityMap::new();
 
 fn sparkles(host: &mut dyn ServerHost, level: LevelRef, at: [f64; 3], count: i32) {
     if let Some(k) = key("minecraft:end_rod") {

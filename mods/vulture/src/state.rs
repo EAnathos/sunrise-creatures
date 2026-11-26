@@ -14,10 +14,10 @@
 //! (`food`); the `Eat` behaviour walks to it and eats it (`eaten`); the hook then takes one from the stack.
 //!
 //! Single player: the behaviours and the hooks share the mob's id.
-use std::collections::BTreeMap;
 use std::sync::Mutex;
 
 use creature::body::Body;
+use creature::state::{EntityMap, EntitySet};
 use creature::sync::Locked;
 use mod_api::{AttachmentCodec, AttachmentError, AttachmentType, Compound, Holder, LevelRef, ServerHost, Tag};
 
@@ -177,7 +177,7 @@ static BIRTHS: Mutex<Vec<Birth>> = Mutex::new(Vec::new());
 
 /// Vultures that have had their baby this time, until they are out of love: one baby per pair, whichever of the two
 /// goals gets there first.
-static BRED: Mutex<std::collections::BTreeSet<u32>> = Mutex::new(std::collections::BTreeSet::new());
+static BRED: EntitySet = EntitySet::new();
 
 /// Whether vulture `id` is in love (another vulture's breeding goal asks).
 pub fn in_love(id: u32) -> bool {
@@ -240,7 +240,7 @@ pub fn pace(id: u32) -> f64 {
     })
 }
 
-static SHARED: Mutex<BTreeMap<u32, Shared>> = Mutex::new(BTreeMap::new());
+static SHARED: EntityMap<Shared> = EntityMap::new();
 
 /// A change the hooks ask of the vulture, applied on its next tick (taking the saddle or a chest off: its screen's).
 #[derive(Clone, Copy, Debug)]
@@ -612,12 +612,6 @@ fn written(id: u32, state: &Saved) {
     }
 }
 
-/// From the mod's `entity_leave_level`: it is gone, its state dropped.
-pub fn forget(id: u32) {
-    SHARED.locked().remove(&id);
-    BRED.locked().remove(&id);
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -662,7 +656,7 @@ mod tests {
         assert!(SHARED.locked()[&id].dirty, "the second chest is still to be saved");
         written(id, &saved(id));
         assert!(!SHARED.locked()[&id].dirty);
-        forget(id);
+        creature::state::forget(id);
         assert!(!SHARED.locked().contains_key(&id));
     }
 
@@ -678,7 +672,7 @@ mod tests {
             let s = &map[&id];
             assert!(s.read && s.dirty && s.loaded.is_some());
         }
-        forget(id);
+        creature::state::forget(id);
     }
 
     #[test]
@@ -687,7 +681,7 @@ mod tests {
         // `saved` locks: under the lock, as before, it would wait for itself forever.
         with(id, |s| s.chests = saved(id).chests + 1);
         assert_eq!(saved(id).chests, 1);
-        forget(id);
+        creature::state::forget(id);
     }
 
     #[test]
