@@ -1,6 +1,7 @@
 //! Its defence (SPECS §2): it attacks nothing unprovoked, but hit (the library's `anger` notes by whom), it makes a
 //! short charge at its attacker if they are within `NEAR` blocks, strikes them once on reaching them (`DAMAGE`, thrown
-//! back) and lets them go: no pursuit. Hit again, it may charge again once `COOLDOWN` ticks have passed.
+//! back) and lets them go: no pursuit. Hit again, it may charge again once `COOLDOWN` ticks have passed. Whoever hits
+//! one of its riders is charged the same way (`riders_hit`).
 use creature::body::{Behaviour, Body, World};
 use creature::state::EntityMap;
 use mod_api::ServerHost;
@@ -86,6 +87,34 @@ impl Charge {
         self.cooldown = COOLDOWN;
         m.velocity.x = 0.0;
         m.velocity.z = 0.0;
+    }
+}
+
+/// Players hit, and by whom (an entity id), for the elephant they ride (from the damage hook, which can't look up a
+/// player's mount).
+static RIDERS_HIT: EntityMap<u32> = EntityMap::new();
+
+/// From the damage hook: player `rider` (an entity id) was hit by `by`.
+pub(crate) fn rider_hit(rider: u32, by: u32) {
+    RIDERS_HIT.locked().insert(rider, by);
+}
+
+/// From its tick: whoever hit one of its riders is charged (SPECS §2), unless it is one of them.
+pub(crate) fn riders_hit(host: &dyn ServerHost, elephant: u32) {
+    let riders: Vec<u32> = host
+        .entity(elephant)
+        .and_then(|e| e.passengers(host))
+        .unwrap_or_default()
+        .into_iter()
+        .map(|r| r.id())
+        .collect();
+    for rider in &riders {
+        let Some(by) = RIDERS_HIT.locked().remove(rider) else {
+            continue;
+        };
+        if by != elephant && !riders.contains(&by) {
+            creature::anger::provoke(elephant, by);
+        }
     }
 }
 

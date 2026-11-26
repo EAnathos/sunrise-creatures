@@ -45,6 +45,7 @@ pub mod pick;
 pub mod prey;
 pub mod projectile;
 mod recipes;
+pub mod ride;
 pub mod sounds;
 pub mod state;
 pub mod stats;
@@ -57,9 +58,9 @@ use mod_api::{
     EntityInteractEvent, EntityJoinLevelEvent, EntityLeaveLevelEvent, EntitySizeEvent, EntityTickListenedEvent,
     EntityTickPostEvent, ExplosionDetonateEvent, Flow, HitHost, Hooks, Host, HostSide, InteractionResult,
     LevelTickPostEvent, LivingBreatheEvent, LivingChangeTargetEvent, LivingIncomingDamageEvent, LoopContext,
-    PlayerLoggedInEvent, RegisterCommandsEvent, Registrar, RegistrationContext, RunModCommandEvent,
-    ScreenMouseButtonPressedPreEvent, ScreenMouseScrolledPreEvent, ScreenRenderPostEvent, ServerHost, TabCompleteEvent,
-    VisualsEvent,
+    PlayerInputEvent, PlayerLoggedInEvent, PlayerLoggedOutEvent, RegisterCommandsEvent, Registrar, RegistrationContext,
+    RunModCommandEvent, ScreenMouseButtonPressedPreEvent, ScreenMouseScrolledPreEvent, ScreenRenderPostEvent,
+    ServerHost, TabCompleteEvent, VisualsEvent,
 };
 
 /// The library's items in the guide's Items tab (SPECS §7.2).
@@ -129,6 +130,20 @@ impl Hooks for Creature {
         if let Some(level) = host.level(event.dimension) {
             jar::spare_from_blast(territory::Ground::new(&*host, level), event.blocks);
         }
+    }
+
+    /// The keys of the players riding one of our creatures (`ride`).
+    fn player_input(&self, host: &mut dyn ServerHost, event: &mut PlayerInputEvent<'_>) {
+        let riding = host
+            .player(event.player)
+            .and_then(|p| p.entity().vehicle(&*host))
+            .and_then(|v| v.kind(&*host))
+            .is_some_and(|k| mob::is_ours(&k.id(&*host)));
+        ride::heard(event.player, event.flags, riding);
+    }
+
+    fn player_logged_out(&self, _: &mut dyn ServerHost, event: &mut PlayerLoggedOutEvent<'_>) {
+        ride::left(event.player);
     }
 
     fn player_logged_in(&self, host: &mut dyn ServerHost, event: &mut PlayerLoggedInEvent<'_>) {

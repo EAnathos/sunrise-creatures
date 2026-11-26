@@ -10,5 +10,17 @@
     "ambient": "elephant:entity.elephant.ambient",
     "step": "elephant:entity.elephant.step"
   },
-  "shadow_radius": 0.8
+  "shadow_radius": 0.8,
+  "passenger_attachments": [
+    [
+      0.0,
+      1.46,
+      0.15
+    ],
+    [
+      0.0,
+      1.46,
+      -0.34
+    ]
+  ]
 }

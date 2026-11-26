@@ -24,7 +24,7 @@ pub static SOARING: Soaring = Soaring {
 /// Only a wild vulture soars on its own; a tamed one follows its owner (`tame.rs`).
 fn idle(m: &Body, cx: &World<'_>) -> bool {
     crate::state::saved(m.id).owner.is_none()
-        && crate::ride::of(m.id).is_none()
+        && creature::ride::of(m.id).is_none()
         && crate::target(cx, m.id).is_none()
         && !crate::state::leashed(m.id)
 }
@@ -58,7 +58,7 @@ pub struct DiveAttack {
 
 impl Behaviour for DiveAttack {
     fn can_use(&mut self, m: &mut Body, cx: &World<'_>) -> bool {
-        let on = crate::ride::of(m.id).is_none() && crate::target(cx, m.id).is_some();
+        let on = creature::ride::of(m.id).is_none() && crate::target(cx, m.id).is_some();
         if on && !self.on {
             self.flight = Flight::default();
             self.cooldown = 0;

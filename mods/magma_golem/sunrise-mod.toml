@@ -1,6 +1,6 @@
 id = "magma_golem"
 name = "Magma Golem"
-version = "0.1.0"
+version = "0.1.1"
 description = "A giant of living magma asleep in the Nether, a rare mini-boss. Needs Sunrise Creatures."
 authors = ["EAnathos"]
 api = "0.2"

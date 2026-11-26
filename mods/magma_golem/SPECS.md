@@ -33,12 +33,13 @@ spawning, sleep, chase, attacks, healing, items and drawings are validated; its 
   page and facts ("Awake", "Crust", "Lava bath", "Heart": learnt by its killer); the magma heart and the molten pickaxe
   (`pickaxe.rs`: the ores alone, iron, copper and gold giving ingots, ancient debris netherite scrap, with the
   furnace's experience), its smithing recipe and its recipe book unlock.
-- **Placeholders**: its sounds are vanilla's until its own are cut from freesound (§1): its hurt, death and steps
-  (`assets/magma_golem/sounds.json`: the ravager's and basalt's, pitched down, named, no file copied) and its
-  attacks' (the ravager's roar, the iron golem's blow, an explosion, lava hissing, basalt breaking).
+- **Its sounds** (`sources/sounds.toml`, cut from CC0 freesound recordings by `cargo creature sounds`): a roar as it
+  wakes and is enraged (a monster's growl, far lower), rock knocked and a low growl when hurt, rocks falling apart as
+  it dies, heavy stomps for its steps, its fist and its pound (the same stomp, lower and louder), rock grinding as it
+  tears a glob off and lies down, magma hissing (water on hot stones, steam) as it heals in lava, crusts over and as
+  a glob bursts.
 - **Its hitbox**: the crosshair finds it by its outline (the library's `creature::pick`, common/SPECS.md §3.17), 4.6
   blocks across its arms, as the client's box is only the trader's scaled (sunrise-org/sunrise#1134).
-- **Left**: its own sounds (§1).
 - **The model** (`sources/models/magma_golem.bbmodel`, pictures in docs/models/): our own design, about 6 blocks
   tall, built from boulders of dark grey-brown rock split by glowing orange seams, lava showing at the belly, the
   chest, the elbows, the wrists and the knees. Hunched forward like an ape: a massive back and huge shoulders rise

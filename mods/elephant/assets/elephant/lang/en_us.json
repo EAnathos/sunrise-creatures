@@ -8,5 +8,10 @@
   "subtitles.entity.elephant.step": "Heavy footsteps",
   "bestiary.elephant.tamed": "Tamed",
   "elephant.stays": "Your elephant stays here",
-  "elephant.follows": "Your elephant follows you"
+  "elephant.follows": "Your elephant follows you",
+  "bestiary.elephant.saddled": "Saddled",
+  "bestiary.elephant.coloured": "Coloured",
+  "bestiary.elephant.rode": "Rode",
+  "bestiary.elephant.two_riders": "Two riders",
+  "elephant.owner_in_front": "Its owner rides in front: get on once they are on"
 }

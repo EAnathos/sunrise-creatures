@@ -1,0 +1,115 @@
+# The magma golem's sounds, made by `cargo creature sounds magma_golem` from freesound downloads (all CC0, nothing to
+# credit). A downloaded file keeps the name freesound gives it: it is found by its number. Each clip: a slice of a
+# source (`start` in seconds of the source, `length` of the output), resampled by `pitch`, faded out over `fade`
+# seconds, `gain` in dB.
+out = "sounds/magma_golem"
+
+[sources]
+monster = 797697  # randbsoundbites, Monster (already pitched low)
+stomps = 622737   # RobHorror240, GiantStompFootsteps
+rocks = 336023    # adamgryu, Rocks
+gravel = 567249   # iwanPlays, Bricks/Stones/Rocks/Gravel Falling
+sauna = 21067     # elonen, In sauna 3 (water thrown on hot rocks)
+steam = 234782    # wubitog, Steam/hiss
+
+# Its roar as it wakes and as it is enraged: the monster's growls, far lower (a giant of rock).
+[[clip]]
+name = "roar1"
+source = "monster"
+start = 2.6
+length = 1.27
+pitch = 0.55
+fade = 0.4
+
+[[clip]]
+name = "roar2"
+source = "monster"
+start = 0.32
+length = 1.36
+pitch = 0.55
+fade = 0.4
+
+# Hurt: rock knocked, a short low growl; death: rocks falling apart, slow.
+[[clip]]
+name = "hurt1"
+source = "rocks"
+start = 0.0
+length = 0.6
+pitch = 0.6
+fade = 0.2
+
+[[clip]]
+name = "hurt2"
+source = "monster"
+start = 1.36
+length = 0.6
+pitch = 0.6
+fade = 0.2
+
+[[clip]]
+name = "death"
+source = "gravel"
+start = 0.0
+length = 2.5
+pitch = 0.6
+fade = 1.0
+
+# Its steps, its fist coming down, its ground pound: the same stomp, ever lower and louder.
+[[clip]]
+name = "step"
+source = "stomps"
+start = 2.48
+length = 0.9
+pitch = 0.7
+fade = 0.3
+gain = -2.0
+
+[[clip]]
+name = "slam"
+source = "stomps"
+start = 2.48
+length = 0.8
+pitch = 0.55
+fade = 0.3
+gain = 2.0
+
+[[clip]]
+name = "pound"
+source = "stomps"
+start = 2.48
+length = 1.2
+pitch = 0.45
+fade = 0.5
+gain = 4.0
+
+# Rock grinding: as it tears a glob off, as it lies down.
+[[clip]]
+name = "grind"
+source = "rocks"
+start = 0.0
+length = 1.5
+pitch = 0.6
+fade = 0.4
+
+# Hissing: healing in lava, crusted by snow or water, a glob bursting.
+[[clip]]
+name = "hiss1"
+source = "sauna"
+start = 0.0
+length = 1.5
+fade = 0.5
+
+[[clip]]
+name = "hiss2"
+source = "sauna"
+start = 6.0
+length = 1.5
+fade = 0.5
+
+[[clip]]
+name = "hiss3"
+source = "steam"
+start = 0.0
+length = 1.44
+pitch = 0.9
+fade = 0.4

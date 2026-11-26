@@ -10,7 +10,7 @@ future mod; Elephant will not require that mod.
 
 ## 0. Status
 
-In development (0.1.0, not released), steps 1 and 2 of 5:
+In development (0.1.0, not released), steps 1 to 3 of 5:
 
 - **Step 1**: the elephant as an entity (`elephant:elephant`, its spawn egg), 2.2 × 2.6 blocks (hit where its trunk and
   tail reach too: the library's `creature::pick`); drawn with its adult model, walking with a four-legged gait
@@ -18,12 +18,20 @@ In development (0.1.0, not released), steps 1 and 2 of 5:
   head following what it looks at; its gear hidden; its spawning (savanna and savanna plateau, weight 2, groups of 2
   to 4, on open, about flat ground, not in water); its charge (`charge.rs`: hit, it runs at its attacker within 8
   blocks, strikes once for 4 damage and throws them back, then lets them go, 3 seconds before the next); its guide
-  page (uncommon); its sounds, the game's pitched for now (`sounds.json`: the camel's, a goat horn's call for its
-  trumpet). Its spawn egg is our own drawing.
+  page (uncommon); its sounds (`sources/sounds.toml`, cut from CC0 freesound recordings: trumpets from a zoo's and a
+  wild elephant's, grumbles, hurt cries, a long low call as it dies, heavy steps). Its spawn egg is our own drawing.
 - **Step 2**: its own stats (the library's `creature::stats`, moved from the Vulture: 40 to 60 health, 0.8 to 1.2 times
   its speed); taming (`tame.rs`: sugar cane a player throws near it, eaten, one chance in four a piece, hearts or
   smoke; the guide's "Tamed"); tamed, it follows its owner on foot (the library's `friend::Follow`, moved from the
   Sporelins) or stays on an empty-handed right-click, never despawns, and a hay bale from its owner heals 10 health.
+- **Step 3** (`gear.rs`): its owner fits a vanilla saddle, drawn as its blanket (the `saddle` group in
+  `elephant_saddle.png`'s neutral colours), dyed in place with any of the 16 dyes (saved on it, `elephant:gear`);
+  saddled, an empty-handed right-click gets on: its owner in front (whoever sat there moving behind), another player
+  behind its owner only (alone, they are told the owner rides in front); two seats (`passenger_attachments`). Its
+  owner steers (the library's `creature::ride`, moved from the Vulture): it turns toward where they look and walks
+  forward, back and sideways at its pace, stepping up a block; with another in front, it stands. Whoever hits one of
+  its riders is charged as if they hit it (the library's `anger::provoke`). Its saddle drops when it dies. The guide's
+  "Saddled", "Coloured", "Rode" and "Two riders".
 
 Not tried in game yet.
 - **The adult model** (`sources/models/elephant.bbmodel`; [front](../../docs/models/elephant-elephant-front.png) and
@@ -42,8 +50,7 @@ Not tried in game yet.
 - All three models share the elephant's 64 × 64 texture. The baby and juvenile models have no visible saddle blanket or
   chests; only adults can be ridden or equipped.
 
-Next, in this order: (3) the saddle, the dyed blanket and riding, two seats, the owner steering, the
-charge for its riders too; (4) the double chests and the equipment screen (the Vulture's, moved to the library), its
+Next, in this order: (4) the double chests and the equipment screen (the Vulture's, moved to the library), its
 gear dropped at death; (5) breeding, the baby and juvenile stages, its drops (meat, the ivory tusk), the ceremonial
 trumpet, the guide's facts and items, fleeing mice.
 

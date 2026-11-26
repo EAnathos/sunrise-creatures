@@ -12,5 +12,10 @@
   "bestiary.magma_golem.item.molten_pickaxe.use": "Smelts the ores it mines: iron, copper and gold give ingots, ancient debris gives netherite scrap",
   "subtitles.entity.magma_golem.hurt": "Magma Golem hurts",
   "subtitles.entity.magma_golem.death": "Magma Golem crumbles",
-  "subtitles.entity.magma_golem.step": "Heavy footsteps"
+  "subtitles.entity.magma_golem.step": "Heavy footsteps",
+  "subtitles.entity.magma_golem.roar": "Magma Golem roars",
+  "subtitles.entity.magma_golem.slam": "Magma Golem slams",
+  "subtitles.entity.magma_golem.pound": "Magma Golem pounds the ground",
+  "subtitles.entity.magma_golem.grind": "Rock grinds",
+  "subtitles.entity.magma_golem.hiss": "Magma hisses"
 }

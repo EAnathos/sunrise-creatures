@@ -14,7 +14,7 @@ use creature::body::{Behaviour, Body, World};
 
 use creature::flight::Following;
 
-use crate::{ride, sounds, state};
+use crate::{sounds, state};
 
 /// One raw chicken in this many tames it.
 const TAME_CHANCE: i32 = 4;
@@ -34,7 +34,7 @@ pub fn fighting(m: &Body, cx: &World<'_>) -> bool {
 }
 
 fn free(m: &Body, cx: &World<'_>) -> bool {
-    ride::of(m.id).is_none() && !fighting(m, cx)
+    creature::ride::of(m.id).is_none() && !fighting(m, cx)
 }
 
 /// Following its owner: free, not sitting, not on a lead (the lead leads it), and not a chick (a juvenile does).
@@ -108,7 +108,7 @@ pub struct Sit;
 impl Behaviour for Sit {
     fn can_use(&mut self, m: &mut Body, _: &World<'_>) -> bool {
         let s = state::saved(m.id);
-        s.owner.is_some() && s.sitting && ride::of(m.id).is_none()
+        s.owner.is_some() && s.sitting && creature::ride::of(m.id).is_none()
     }
     fn tick(&mut self, m: &mut Body, _: &World<'_>) {
         m.stop_walking = true;

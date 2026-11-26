@@ -1,0 +1,85 @@
+# The elephant's sounds, made by `cargo creature sounds elephant` from freesound downloads (all CC0, nothing to credit).
+# A downloaded file keeps the name freesound gives it: it is found by its number. Each clip: a slice of a source
+# (`start` in seconds of the source, `length` of the output), resampled by `pitch`, faded out over `fade` seconds,
+# `gain` in dB.
+out = "sounds/elephant"
+
+[sources]
+trumpets = 527845  # D.jones, Elephant Trumpets Growls
+zoo = 819668       # ikbenraar, Elephant sound (a zoo's: a blast, a grumble, two trumpets)
+wild = 103117      # geronimo83, Elephant (Tanzania: calls among the bush's noises)
+stomps = 622737    # RobHorror240, GiantStompFootsteps
+
+# Its trumpet (its charge, the ceremonial trumpet): the three clear trumpets.
+[[clip]]
+name = "trumpet1"
+source = "trumpets"
+start = 0.0
+length = 1.3
+fade = 0.3
+
+[[clip]]
+name = "trumpet2"
+source = "zoo"
+start = 4.4
+length = 1.25
+fade = 0.3
+
+[[clip]]
+name = "trumpet3"
+source = "zoo"
+start = 6.1
+length = 1.4
+fade = 0.4
+
+# Its grumble now and then: the zoo's long grumble and a wild call, low.
+[[clip]]
+name = "ambient1"
+source = "zoo"
+start = 1.6
+length = 2.875
+pitch = 0.8
+fade = 0.6
+
+[[clip]]
+name = "ambient2"
+source = "wild"
+start = 69.5
+length = 2.0
+pitch = 0.75
+fade = 0.5
+
+# Hurt: the zoo's short blast, a wild cry; death: the wild's longest call, low, fading out.
+[[clip]]
+name = "hurt1"
+source = "zoo"
+start = 0.0
+length = 0.89
+pitch = 0.9
+fade = 0.2
+
+[[clip]]
+name = "hurt2"
+source = "wild"
+start = 96.0
+length = 1.44
+pitch = 0.9
+fade = 0.3
+
+[[clip]]
+name = "death"
+source = "wild"
+start = 49.0
+length = 4.33
+pitch = 0.75
+fade = 1.5
+
+# A heavy step, softer and a little higher than the cyclops's.
+[[clip]]
+name = "step"
+source = "stomps"
+start = 2.48
+length = 0.6
+pitch = 1.1
+fade = 0.2
+gain = -6.0

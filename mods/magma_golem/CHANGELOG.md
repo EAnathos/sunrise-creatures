@@ -2,6 +2,11 @@
 
 Each version's section says what changed in it (`cargo creature release` needs one before it tags the version).
 
+## 0.1.1
+
+- Its own sounds, cut from CC0 recordings: a low roar as it wakes and is enraged, rock knocked and falling apart,
+  heavy stomps for its steps, its fist and its pound, rock grinding, hissing magma.
+
 ## 0.1.0
 
 - First version: the magma golem, six blocks tall, a rare mini-boss of the Nether. Asleep as a mound of glowing rock

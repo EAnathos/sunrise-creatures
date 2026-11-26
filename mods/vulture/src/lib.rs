@@ -42,8 +42,8 @@ use mod_api::{
     BlockEntityDrawContext, ClientHost, ClientTickPostEvent, EntityInteractEvent, EntityJoinLevelEvent,
     EntityMountEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, GoalSpec, HitHost, Hooks, HostSide,
     InteractionResult, KeyRegistration, LivingDeathEvent, LivingIncomingDamageEvent, LivingRenderState,
-    MenuClickedEvent, MenuClosedEvent, PayloadCodec, PayloadId, PlayerInputEvent, RegisterEntityRenderersEvent,
-    Registrar, RegistrationContext, ServerHost, SoundSource, ToServer,
+    MenuClickedEvent, MenuClosedEvent, PayloadCodec, PayloadId, RegisterEntityRenderersEvent, Registrar,
+    RegistrationContext, ServerHost, SoundSource, ToServer,
 };
 
 pub const KIND: &str = "vulture:vulture";
@@ -172,7 +172,7 @@ struct Fly {
 
 impl Behaviour for Fly {
     fn can_use(&mut self, m: &mut Body, _: &World<'_>) -> bool {
-        let on = ride::of(m.id).is_some();
+        let on = creature::ride::of(m.id).is_some();
         if on && !self.on {
             self.flight = Flight::default();
             m.body_yaw = m.yaw;
@@ -186,7 +186,7 @@ impl Behaviour for Fly {
         talons::release(m.id);
     }
     fn tick(&mut self, m: &mut Body, cx: &World<'_>) {
-        let Some(r) = ride::of(m.id) else {
+        let Some(r) = creature::ride::of(m.id) else {
             return;
         };
         if m.on_ground && !r.jumping {
@@ -240,7 +240,7 @@ impl Behaviour for Sync {
         m.fall_distance = 0.0;
         let fighting = tame::fighting(m, cx);
         // A baby fed raw meat: a burst of hearts as it grows (SPECS §8).
-        if state::sync(m, ride::of(m.id).is_some(), fighting) {
+        if state::sync(m, creature::ride::of(m.id).is_some(), fighting) {
             particles(
                 m.id,
                 "minecraft:heart",
@@ -368,7 +368,7 @@ fn defend(host: &mut dyn ServerHost, id: u32) {
     let Some(owner) = saved.owner else {
         return;
     };
-    if saved.sitting || ride::of(id).is_some() {
+    if saved.sitting || creature::ride::of(id).is_some() {
         return;
     }
     let owner = creature::friend::uuid(owner);
@@ -646,16 +646,6 @@ impl Hooks for Vulture {
         Some(InteractionResult::Consume)
     }
 
-    /// The rider's keys, for the ridden flight: kept only for a player riding a vulture.
-    fn player_input(&self, host: &mut dyn ServerHost, event: &mut PlayerInputEvent<'_>) {
-        let riding = host
-            .player(event.player)
-            .and_then(|p| p.entity().vehicle(&*host))
-            .and_then(|v| v.kind(&*host))
-            .is_some_and(|k| k.id(&*host) == KIND);
-        ride::heard(event.player, event.flags, riding);
-    }
-
     /// Sneaking in the air descends: a rider getting off a vulture that isn't on the ground stays on. One who gets off
     /// leaves their keys behind.
     fn entity_mount(&self, host: &mut dyn ServerHost, event: &mut EntityMountEvent<'_>) -> Flow {
@@ -666,14 +656,13 @@ impl Hooks for Vulture {
             return Flow::Cancel;
         }
         if let Some(player) = creature::mob::player_of(&*host, event.entity) {
-            ride::left(player);
+            creature::ride::left(player);
             talons::left(player);
         }
         Flow::Continue
     }
 
     fn player_logged_out(&self, _: &mut dyn ServerHost, event: &mut mod_api::PlayerLoggedOutEvent<'_>) {
-        ride::left(event.player);
         talons::left(event.player);
     }
 
@@ -727,7 +716,7 @@ impl Hooks for Vulture {
             }
             let id = event.entity;
             water_escape(host, id);
-            ride::read(&*host, id);
+            creature::ride::read(&*host, id);
             creature::stats::tick(host, id, &state::STATS, |host| state::legacy(host, id));
             creature::body::tick(host, id, || {
                 vec![

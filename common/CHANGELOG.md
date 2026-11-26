@@ -7,6 +7,9 @@ Each version's section says what changed in it (`cargo creature release` needs o
 - `creature::stats`: a creature's own stats (its maximum health and its pace), rolled within its kind's ranges, saved
   on it (`creature:stats`) and inherited by its babies; moved from the Vulture for the Elephant.
 - `creature::friend::Follow`: following a friend on foot, moved from the Sporelins for the Elephant.
+- `creature::ride`: a ridden creature's rider and the keys they hold (the server's `player_input`, kept by the library
+  for any of the series' creatures), moved from the Vulture for the Elephant.
+- `creature::anger::provoke`: a creature set on someone who didn't hit it (whoever hit its rider: the Elephant).
 
 ## 0.4.2
 

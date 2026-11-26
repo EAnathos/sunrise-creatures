@@ -8,5 +8,10 @@
   "subtitles.entity.elephant.step": "Pas lourds",
   "bestiary.elephant.tamed": "Apprivoisé",
   "elephant.stays": "Votre éléphant reste ici",
-  "elephant.follows": "Votre éléphant vous suit"
+  "elephant.follows": "Votre éléphant vous suit",
+  "bestiary.elephant.saddled": "Sellé",
+  "bestiary.elephant.coloured": "Coloré",
+  "bestiary.elephant.rode": "Chevauché",
+  "bestiary.elephant.two_riders": "À deux",
+  "elephant.owner_in_front": "Son propriétaire monte devant : montez une fois qu'il est installé"
 }

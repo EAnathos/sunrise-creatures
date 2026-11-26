@@ -126,7 +126,7 @@ pub fn tick(host: &mut dyn ServerHost, entity: u32) {
         }
         level.play_sound(
             host,
-            "minecraft:block.lava.extinguish",
+            crate::golem::HISS,
             at,
             SoundSource::Hostile,
             1.2,

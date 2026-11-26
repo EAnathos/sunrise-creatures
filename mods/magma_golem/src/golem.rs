@@ -97,12 +97,12 @@ pub(crate) const AWAKE_FACT: &str = "awake";
 pub(crate) const CRUST_FACT: &str = "crust";
 pub(crate) const LAVA_FACT: &str = "lava_bath";
 
-/// Its sounds: vanilla's until its own are cut (SPECS §1).
-const RUMBLE: &str = "minecraft:entity.ravager.roar";
-const THUD: &str = "minecraft:entity.iron_golem.attack";
-const POUND: &str = "minecraft:entity.generic.explode";
-const HISS: &str = "minecraft:block.lava.extinguish";
-const GRIND: &str = "minecraft:block.basalt.break";
+/// Its sounds (`assets/magma_golem/sounds.json`, cut from freesound by `sources/sounds.toml`).
+const RUMBLE: &str = "magma_golem:entity.magma_golem.roar";
+const THUD: &str = "magma_golem:entity.magma_golem.slam";
+const POUND: &str = "magma_golem:entity.magma_golem.pound";
+pub(crate) const HISS: &str = "magma_golem:entity.magma_golem.hiss";
+const GRIND: &str = "magma_golem:entity.magma_golem.grind";
 
 /// What it is doing.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]

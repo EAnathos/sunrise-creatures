@@ -27,6 +27,13 @@ pub(crate) fn hit(kind: &str, entity: u32, by: u32) {
     }
 }
 
+/// From a mod: `entity` turns on `by`, as if `by` had hit it (whoever hit its rider: the elephant).
+pub fn provoke(entity: u32, by: u32) {
+    if entity != by {
+        TARGETS.locked().insert(entity, by);
+    }
+}
+
 /// Whom `entity` fights, if anyone.
 pub fn target(entity: u32) -> Option<u32> {
     TARGETS.locked().get(&entity).copied()

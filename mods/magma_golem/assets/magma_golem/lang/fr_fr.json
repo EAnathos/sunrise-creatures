@@ -12,5 +12,10 @@
   "bestiary.magma_golem.item.molten_pickaxe.use": "Fait fondre les minerais qu'elle mine : le fer, le cuivre et l'or donnent des lingots, les débris antiques des fragments de netherite",
   "subtitles.entity.magma_golem.hurt": "Le golem de magma est blessé",
   "subtitles.entity.magma_golem.death": "Le golem de magma s'effondre",
-  "subtitles.entity.magma_golem.step": "Pas lourds"
+  "subtitles.entity.magma_golem.step": "Pas lourds",
+  "subtitles.entity.magma_golem.roar": "Le golem de magma rugit",
+  "subtitles.entity.magma_golem.slam": "Le golem de magma frappe",
+  "subtitles.entity.magma_golem.pound": "Le golem de magma frappe le sol",
+  "subtitles.entity.magma_golem.grind": "De la roche grince",
+  "subtitles.entity.magma_golem.hiss": "Le magma siffle"
 }
