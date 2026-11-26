@@ -339,10 +339,12 @@ A book about the series' creatures, given to every player.
   a creature's footprint on the cover ✅).
 - **Given at a player's first spawn** in a world ✅ (once per player, remembered on the player; `native_player_logged_in`
   ✅). Craftable again ✅ to replace a lost one: a book, a feather and leather (shapeless).
-- **The bestiary** ✅: right-click opens it. On the right, the species met as small
-  icons; picking one opens its page on the left: the creature turning in 3D (as Create's Ponder), the biomes it was met
-  in, what was found out (how it is tamed, what makes it breed, a jar catches it, it settles on a flower...) and, for
-  a species with looks, the morphs met. Nothing about a species not met yet, not even how many there are.
+- **The bestiary** ✅: right-click opens it. On the right, every installed species as its spawn egg, with how many
+  were met of how many ("Species met: 12 / 99"); one not met yet is a grey shadow of its egg, with none of its
+  colours. Picking one opens its page on the left: met, the creature turning in 3D (as Create's Ponder), the biomes it
+  was met in, what was found out (how it is tamed, what makes it breed, a jar catches it, it settles on a flower...)
+  and, for a species with looks, the morphs met; not met yet, only its name, its rarity and a question mark of blocks
+  turning where the creature would.
 - Each mod registers its species and the facts a player can learn about them (`creature::bestiary::register`); the
   library draws the book. A page opens when a player first meets a wild one, and each fact when they find it out.
 - **For Minecraft's own creatures** ✅ (the Vanilla Bestiary, mods/vanilla_bestiary/SPECS.md): a species with no model

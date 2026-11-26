@@ -1,5 +1,8 @@
 //! The creature guide's book on the client: opened with the player's bestiary (`open`, `received`), drawn as a mod
 //! screen (`draw`: the Creatures and Items tabs, a creature's or an item's page, the 3D view), clicked and scrolled.
+use mod_api::client::hud_layout::Blend;
+use mod_api::{BlockState, GuiDraw, HostBlockStates, Scene, SceneBlock, SceneView};
+
 use super::*;
 
 use crate::sync::Locked;
@@ -172,10 +175,11 @@ pub fn received(host: &mut dyn ClientHost, data: &[u8]) {
     {
         let mut book = BOOK.locked();
         book.entries = entries;
-        book.selected = book.selected.min(book.entries.len().saturating_sub(1));
+        let slots = slots(&book.entries);
+        book.selected = book.selected.min(slots.len().saturating_sub(1));
         book.morph = 0;
         book.scroll = 0;
-        book.grid_scroll = book.grid_scroll.min(grid_rows(&book.entries).saturating_sub(GRID_ROWS));
+        book.grid_scroll = book.grid_scroll.min(grid_rows(&slots).saturating_sub(GRID_ROWS));
         book.detail_scroll = 0;
     }
     host.mod_screen_open(MOD_ID);
@@ -313,6 +317,64 @@ fn view(host: &dyn ClientHost, batch: &mut dyn DrawContext, rect: [f32; 4], subj
     }
 }
 
+/// What a species not met yet looks like on the right page: its spawn egg's shape alone, a grey shadow with none of its
+/// colours (the egg's texture drawn in this colour, which keeps its alpha and takes the rest away).
+const UNMET: u32 = 0x5A00_0000;
+
+/// Draws the spawn egg `icon` (`ns:name`, its texture `ns:item/name`) at `at` as a species not met yet: a grey shadow.
+fn unmet_icon(batch: &mut dyn DrawContext, icon: &str, at: [f32; 2]) {
+    let Some((ns, path)) = icon.split_once(':') else {
+        return;
+    };
+    let _ = batch.gui_paint(&[GuiDraw::Blit {
+        texture: format!("{ns}:item/{path}").into(),
+        blend: Blend::Textured,
+        x: at[0] as i32,
+        y: at[1] as i32,
+        w: 16,
+        h: 16,
+        uv: [0.0, 0.0],
+        src: [16, 16],
+        tex: [16, 16],
+        color: UNMET,
+    }]);
+}
+
+/// The question mark shown, turning, for a species not met yet: rows of five from the top, `#` a block.
+const QUESTION: [&str; 7] = [".###.", "#...#", "....#", "...#.", "..#..", ".....", "..#.."];
+const QUESTION_BLOCK: &str = "minecraft:gray_concrete";
+
+/// Draws the question mark in `rect`, a scene of blocks turning as a creature does in the view.
+fn question_mark(host: &dyn ClientHost, batch: &mut dyn DrawContext, rect: [f32; 4]) {
+    let Some(key) = host.block_key(QUESTION_BLOCK) else {
+        return;
+    };
+    let metadata = host.block_states();
+    let Ok(state) = BlockState::of(&metadata, key, &[]) else {
+        return;
+    };
+    let rows = QUESTION.len() as i32;
+    let blocks: Vec<SceneBlock> = QUESTION
+        .iter()
+        .enumerate()
+        .flat_map(|(row, line)| {
+            line.chars()
+                .enumerate()
+                .filter(|(_, c)| *c == '#')
+                .map(move |(col, _)| SceneBlock::new([col as i32, rows - 1 - row as i32, 0], state, None))
+        })
+        .collect();
+    let yaw = (millis() % SPIN) as f32 / SPIN as f32 * 360.0;
+    let view = SceneView::new(
+        [2.5, rows as f32 / 2.0, 0.5],
+        yaw,
+        VIEW_PITCH,
+        rect[3] * 0.7 / rows as f32,
+    );
+    let corners = [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]];
+    let _ = batch.draw_scene(corners, &Scene::new(blocks), view);
+}
+
 /// Item `item`'s icon, large, in the middle of `rect`.
 fn icon(host: &dyn Host, batch: &mut dyn DrawContext, rect: [f32; 4], item: &str) {
     let size = rect[3].min(rect[2]) * 0.8;
@@ -357,11 +419,38 @@ fn millis() -> u128 {
         .map_or(0, |d| d.as_millis())
 }
 
-/// The right page's icons: each entry's index with its row and column, the series' first, then, on a new row, the
-/// vanilla ones, each part in the order met. The first vanilla row, if any.
-fn grid(entries: &[Entry]) -> (Vec<(usize, usize, usize)>, Option<usize>) {
-    let series = entries.iter().enumerate().filter(|(_, e)| !is_vanilla(&e.species));
-    let vanilla = entries.iter().enumerate().filter(|(_, e)| is_vanilla(&e.species));
+/// A species of the right page: every installed one is shown, met (its entry, from the server) or not yet.
+#[derive(Clone, Copy)]
+struct Slot {
+    species: &'static Species,
+    entry: Option<usize>,
+}
+
+/// Every installed species, the series' first then Minecraft's, each in the order registered, with its entry when
+/// the player met it.
+fn slots(entries: &[Entry]) -> Vec<Slot> {
+    let all = super::all_species();
+    let series = all.iter().filter(|s| !is_vanilla(s.id));
+    let vanilla = all.iter().filter(|s| is_vanilla(s.id));
+    series
+        .chain(vanilla)
+        .map(|&species| Slot {
+            species,
+            entry: entries.iter().position(|e| e.species == species.id),
+        })
+        .collect()
+}
+
+/// The entry of the species picked, when it was met.
+fn picked<'a>(book: &'a Book, slots: &[Slot]) -> Option<&'a Entry> {
+    slots.get(book.selected)?.entry.and_then(|i| book.entries.get(i))
+}
+
+/// The right page's icons: each slot's index with its row and column, the series' first, then, on a new row, the
+/// vanilla ones. The first vanilla row, if any.
+fn grid(slots: &[Slot]) -> (Vec<(usize, usize, usize)>, Option<usize>) {
+    let series = slots.iter().enumerate().filter(|(_, s)| !is_vanilla(s.species.id));
+    let vanilla = slots.iter().enumerate().filter(|(_, s)| is_vanilla(s.species.id));
     let mut cells: Vec<(usize, usize, usize)> = series
         .enumerate()
         .map(|(k, (i, _))| (i, k / PER_ROW, k % PER_ROW))
@@ -376,8 +465,8 @@ fn grid(entries: &[Entry]) -> (Vec<(usize, usize, usize)>, Option<usize>) {
 }
 
 /// How many rows the right page's icons take.
-fn grid_rows(entries: &[Entry]) -> usize {
-    grid(entries).0.last().map_or(0, |c| c.1 + 1)
+fn grid_rows(slots: &[Slot]) -> usize {
+    grid(slots).0.last().map_or(0, |c| c.1 + 1)
 }
 
 /// The items' icons on the right page: each page's index with its row and column.
@@ -668,18 +757,12 @@ fn grid_scrollbar(_: &dyn ClientHost, batch: &mut dyn DrawContext, x: f32, y: f3
 fn draw_creatures(host: &dyn ClientHost, batch: &mut dyn DrawContext, book: &mut Book, x: f32, y: f32) {
     let rx = x + PAGE + MARGIN;
     batch.text(&tr(host, "bestiary.creature.title"), [rx, y + MARGIN], ink(INK), false);
-    if book.entries.is_empty() {
-        for (k, line) in wrap(host, &tr(host, "bestiary.creature.empty"), PAGE - 2.0 * MARGIN)
-            .iter()
-            .enumerate()
-        {
-            batch.text(line, [rx, y + GRID_TOP + k as f32 * LINE], ink(FADED), false);
-        }
-        return;
-    }
-    let met = format!("{}: {}", tr(host, "bestiary.creature.met"), book.entries.len());
+    let slots = slots(&book.entries);
+    // How many of the installed species were met, of how many.
+    let met = slots.iter().filter(|s| s.entry.is_some()).count();
+    let met = format!("{}: {met} / {}", tr(host, "bestiary.creature.met"), slots.len());
     batch.text(&met, [rx, y + MARGIN + 12.0], ink(FADED), false);
-    let (cells, line) = grid(&book.entries);
+    let (cells, line) = grid(&slots);
     for &(k, row, col) in &cells {
         let Some([cx, cy]) = cell(x, y, row, col, book.grid_scroll) else {
             continue;
@@ -687,8 +770,11 @@ fn draw_creatures(host: &dyn ClientHost, batch: &mut dyn DrawContext, book: &mut
         if k == book.selected {
             batch.fill([cx - 1.0, cy - 1.0, CELL - 2.0, CELL - 2.0], HIGHLIGHT);
         }
-        if let Some(s) = species(&book.entries[k].species) {
-            gui_item(host, batch, s.icon, [cx + 1.0, cy + 1.0], None);
+        let slot = slots[k];
+        if slot.entry.is_some() {
+            gui_item(host, batch, slot.species.icon, [cx + 1.0, cy + 1.0], None);
+        } else {
+            unmet_icon(batch, slot.species.icon, [cx + 1.0, cy + 1.0]);
         }
     }
     // The line above Minecraft's own creatures, when the series' are above it.
@@ -697,20 +783,24 @@ fn draw_creatures(host: &dyn ClientHost, batch: &mut dyn DrawContext, book: &mut
     {
         batch.fill([rx, ly - 2.0, PAGE - 2.0 * MARGIN, 1.0], FOLD);
     }
-    grid_scrollbar(host, batch, x, y, grid_rows(&book.entries), book.grid_scroll);
-    // Left page: the creature picked.
-    let Some(entry) = book.entries.get(book.selected) else {
+    grid_scrollbar(host, batch, x, y, grid_rows(&slots), book.grid_scroll);
+    // Left page: the creature picked, its name and how rare it is on the right of it.
+    let Some(slot) = slots.get(book.selected).copied() else {
         return;
     };
-    let Some(sp) = species(&entry.species) else {
-        return;
-    };
+    let sp = slot.species;
     let (px, width) = (x + MARGIN, PAGE - 2.0 * MARGIN);
-    batch.text(&tr(host, &entity_key(&entry.species)), [px, y + 8.0], ink(INK), false);
-    // How rare it is, on the right of its name.
+    batch.text(&tr(host, &entity_key(sp.id)), [px, y + 8.0], ink(INK), false);
     let rarity = tr(host, sp.rarity.key());
     let rx_end = x + PAGE - MARGIN - tw(host, &rarity);
     batch.text(&rarity, [rx_end, y + 8.0], ink(sp.rarity.colour()), false);
+    // Not met yet: a question mark turns where the creature would, and nothing more is told.
+    let Some(entry) = slot.entry.and_then(|i| book.entries.get(i)) else {
+        let view_box = [x + VIEW[0], y + VIEW[1], VIEW[2], VIEW[3]];
+        batch.fill(view_box, VIEW_BACK);
+        question_mark(host, batch, view_box);
+        return;
+    };
     let morphs = sorted_morphs(sp, entry);
     let look = sp.scheme.map(|_| morphs.get(book.morph).copied().unwrap_or_default());
     // A species with looks has its swatches below: its view is shorter, to leave its details room.
@@ -857,7 +947,8 @@ pub fn clicked(host: &dyn ClientHost, event: &ScreenMouseButtonPressedPreEvent<'
             }
             return true;
         }
-        for (k, row, col) in grid(&book.entries).0 {
+        let slots = slots(&book.entries);
+        for (k, row, col) in grid(&slots).0 {
             let Some([cx, cy]) = cell(x, y, row, col, book.grid_scroll) else {
                 continue;
             };
@@ -873,7 +964,7 @@ pub fn clicked(host: &dyn ClientHost, event: &ScreenMouseButtonPressedPreEvent<'
         if mx >= gx && mx < gx + PER_LINE as f32 * STEP && my >= gy && my < gy + ROWS_SHOWN as f32 * STEP {
             let (col, row) = (((mx - gx) / STEP) as usize, ((my - gy) / STEP) as usize);
             let k = (book.scroll + row) * PER_LINE + col;
-            let count = book.entries.get(book.selected).map_or(0, |e| e.morphs.len());
+            let count = picked(book, &slots).map_or(0, |e| e.morphs.len());
             if k < count {
                 book.morph = k;
             }
@@ -905,7 +996,7 @@ pub fn scrolled(host: &dyn ClientHost, screen: &ScreenView<'_>, scroll: f64) -> 
                 let last = items::pages().len().div_ceil(PER_ROW).saturating_sub(GRID_ROWS);
                 step(&mut book.item_scroll, scroll, last);
             } else {
-                let last = grid_rows(&book.entries).saturating_sub(GRID_ROWS);
+                let last = grid_rows(&slots(&book.entries)).saturating_sub(GRID_ROWS);
                 step(&mut book.grid_scroll, scroll, last);
             }
             return true;
@@ -913,14 +1004,14 @@ pub fn scrolled(host: &dyn ClientHost, screen: &ScreenView<'_>, scroll: f64) -> 
         if !(mx >= x && mx < x + PAGE && my >= y && my < y + HEIGHT) {
             return true;
         }
+        let slots = slots(&book.entries);
+        let entry = picked(book, &slots);
         let has_swatches = book.tab == Tab::Creatures
-            && book
-                .entries
-                .get(book.selected)
+            && entry
                 .and_then(|e| species(&e.species))
                 .is_some_and(|s| s.scheme.is_some());
         if has_swatches && my >= y + SWATCHES_TOP {
-            let count = book.entries.get(book.selected).map_or(0, |e| e.morphs.len());
+            let count = entry.map_or(0, |e| e.morphs.len());
             let last = rows(count).saturating_sub(ROWS_SHOWN);
             step(&mut book.scroll, scroll, last);
         } else {

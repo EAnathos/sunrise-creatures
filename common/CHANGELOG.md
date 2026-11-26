@@ -2,6 +2,12 @@
 
 Each version's section says what changed in it (`cargo creature release` needs one before it tags the version).
 
+## 0.4.1
+
+- The bestiary shows every installed species: how many were met of how many ("Species met: 12 / 99"), and the ones not
+  met yet as a grey shadow of their spawn egg; picked, one not met yet shows only its name, its rarity and a question
+  mark turning in place of the creature.
+
 ## 0.4.0
 
 - What the series keeps about each creature lives in `creature::state` (`EntityMap`, `EntitySet`), which the library

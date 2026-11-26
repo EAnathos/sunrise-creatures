@@ -148,6 +148,11 @@ pub fn species_of(id: &str) -> Option<&'static Species> {
     species(id)
 }
 
+/// Every registered species, in the order registered (copied out of the lock).
+fn all_species() -> Vec<&'static Species> {
+    SPECIES.locked().clone()
+}
+
 fn species(id: &str) -> Option<&'static Species> {
     SPECIES.locked().iter().copied().find(|s| s.id == id)
 }
