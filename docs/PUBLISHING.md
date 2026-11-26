@@ -108,12 +108,17 @@ and it is shown with the next version.
 
 ## The collection
 
-The collection is maintained in sunrise-mods' `registry/collections/<id>/` (`collection.toml` names its member
-projects, alongside an icon). The library and the mods are listed in the registry (the Elephant once its first release is merged). The Sunrise Creatures
-collection (`4pggl9jF`) is present in the signed index; registry maintainers added it in [#325](https://github.com/sunrise-org/sunrise-mods/pull/325),
-temporarily removed it in [#329](https://github.com/sunrise-org/sunrise-mods/pull/329) while expecting our collection
-PR to merge, then restored it in [#330](https://github.com/sunrise-org/sunrise-mods/pull/330). Our duplicate PR
-[#328](https://github.com/sunrise-org/sunrise-mods/pull/328) was closed without merging.
+The Sunrise Creatures collection (`4pggl9jF`) groups the series' projects in the registry's Discover under one card.
+It is ours to curate: the registry takes a change to it only from the account that owns every member (Sunrise's guide,
+[Group your mods into a collection](https://playsunrise.net/docs/collections)). Its files are kept here, in
+`collection/` (`collection.toml`: its name, summary, description and members by project ID; `icon.png`). A new module,
+once registered (its project ID in sunrise-mods' `registry/repositories/1449407242.toml`), is added as a
+`[[member]]` and the description mentions it; then, in `collection/`, `cargo sunrise-mod collection --check` checks it
+with the registry's rules, and `cargo sunrise-mod collection` pushes it to the branch `collection-4pggl9jF` of our fork
+of sunrise-mods and prints the link that opens its pull request. A maintainer merges it. History: the registry's
+maintainers made it ([#325](https://github.com/sunrise-org/sunrise-mods/pull/325), restored by
+[#330](https://github.com/sunrise-org/sunrise-mods/pull/330) after [#329](https://github.com/sunrise-org/sunrise-mods/pull/329));
+the Magma Golem and the Elephant are the first members we add.
 
 ## Updates and takedowns
 
