@@ -21,8 +21,8 @@ const MINED_NEAR: f64 = 4.0;
 /// The fist slam: in `SLAM_REACH` blocks, its arm raised for `SLAM_WINDUP` ticks, then down; one every `SLAM_EVERY`
 /// ticks. Its damage is its attack damage; the struck burn for `BURN` ticks.
 const SLAM_REACH: f64 = 4.5;
-pub(crate) const SLAM_WINDUP: i32 = 12;
-const SLAM_EVERY: i32 = 40;
+pub(crate) const SLAM_WINDUP: i32 = 6;
+const SLAM_EVERY: i32 = 30;
 const BURN: i32 = 100;
 /// The ground pound: players within `POUND_NEAR` blocks, both arms raised for `POUND_WINDUP` ticks (the warning), then
 /// a shockwave of `POUND_DAMAGE` throwing them up and back, fire left around; one every `POUND_EVERY` ticks.
@@ -61,7 +61,7 @@ const BLOCKED: i32 = 8;
 const STILL: f64 = 0.03;
 /// The leap: a target `LEAP_FROM` to `LEAP_TO` blocks away across (never nearer), a crouch of `LEAP_WINDUP` ticks, then a spring of
 /// `LEAP_UP` blocks a tick up (more for a target up to `LEAP_RISE` blocks higher), at most `LEAP_FASTEST` across,
-/// landing `LEAP_SHORT` blocks short of it; at most `LEAP_AIRTIME` ticks in the air. Its landing hurts the players
+/// steered in the air to come down on it; at most `LEAP_AIRTIME` ticks in the air. Its landing hurts the players
 /// within `LEAP_REACH` blocks by `LEAP_DAMAGE`, throwing them `LEAP_BACK` across and `LEAP_THROW` up. One every
 /// `LEAP_EVERY` ticks.
 const LEAP_FROM: f64 = 9.0;
@@ -69,15 +69,14 @@ const LEAP_TO: f64 = 18.0;
 pub(crate) const LEAP_WINDUP: i32 = 14;
 const LEAP_UP: f64 = 0.9;
 const LEAP_RISE: f64 = 6.0;
-const LEAP_FASTEST: f64 = 1.6;
-const LEAP_SHORT: f64 = 1.5;
+const LEAP_FASTEST: f64 = 2.0;
 const LEAP_AIRTIME: i32 = 60;
 const LEAP_REACH: f64 = 4.0;
 const LEAP_DAMAGE: f32 = 10.0;
 const LEAP_BACK: f64 = 1.0;
 const LEAP_THROW: f64 = 0.5;
 const LEAP_EVERY: i32 = 300;
-/// Healing in lava: health a tick (2 a second).
+/// Healing in lava or fire: health a tick (2 a second).
 const LAVA_HEAL: f32 = 0.1;
 /// Enraged under this share of its health: faster (its speed times `RAGE_SPEED`), its attacks' wind-ups shorter, and
 /// each ground pound sheds 1 or 2 small magma cubes.
@@ -334,10 +333,11 @@ pub(crate) fn tick(host: &mut dyn ServerHost, dimension: &str, id: u32) {
         }
         Mode::Awake => fight(host, dimension, id, &mut g, at, level),
     }
-    // Lava heals it; snow and water crust it.
-    if e.is_in_lava(&*host) == Some(true) && health < max {
+    // Lava and fire heal it; snow and water crust it.
+    let in_lava = e.is_in_lava(&*host) == Some(true);
+    if (in_lava || in_fire(&*host, level, at)) && health < max {
         living.heal(host, LAVA_HEAL);
-        if (level.game_time(&*host).unwrap_or(0)) % 40 == 0 {
+        if in_lava && level.game_time(&*host).unwrap_or(0) % 40 == 0 {
             sound(host, level, at, HISS, 0.8, 0.8);
             for player in creature::bestiary::players_near(&*host, dimension, at) {
                 creature::bestiary::learn(host, player, GOLEM, LAVA_FACT);
@@ -363,6 +363,14 @@ pub(crate) fn tick(host: &mut dyn ServerHost, dimension: &str, id: u32) {
     g.enraged = enraged || (g.enraged && g.mode == Mode::Awake);
     bar(host, id, &g, at, health / max.max(1.0));
     GOLEMS.locked().insert(id, g);
+}
+
+/// Whether fire burns in the blocks it stands in (its 3 × 3 footprint, at its feet and a block up): any fire, soul
+/// fire, a campfire.
+fn in_fire(host: &dyn ServerHost, level: LevelRef, at: [f64; 3]) -> bool {
+    let ground = creature::territory::Ground::new(host, level);
+    let (x, y, z) = (at[0].floor() as i32, at[1].floor() as i32, at[2].floor() as i32);
+    (-1..=1).any(|dx| (-1..=1).any(|dz| (0..=1).any(|dy| ground.block([x + dx, y + dy, z + dz]).contains("fire"))))
 }
 
 /// Its movement speed made `times` its base.
@@ -445,6 +453,11 @@ fn fight(host: &mut dyn ServerHost, dimension: &str, id: u32, g: &mut Golem, at:
                 g.aloft = 0;
                 g.leap = LEAP_EVERY;
             } else {
+                // It bends its fall toward where its target is now.
+                if let (Some((_, p)), Some(v)) = (target, e.velocity(&*host)) {
+                    let [vx, vz] = steer(at, v, p);
+                    e.set_velocity(host, [vx, v[1], vz]);
+                }
                 g.aloft += 1;
                 g.attack = Attack::Leap(t + 1);
             }
@@ -551,22 +564,41 @@ fn chase(host: &mut dyn ServerHost, g: &mut Golem, e: EntityRef, m: MobRef, at: 
 }
 
 /// The velocity that throws it from `from` onto `to`: up by `LEAP_UP` (more for a higher target), across as far as its
-/// flight carries it (vanilla's: gravity 0.08 and drag 0.98 down, drag 0.91 across), landing just short.
+/// flight carries it (vanilla's: gravity 0.08 and drag 0.98 down, drag 0.91 across).
 fn leap_velocity(from: [f64; 3], to: [f64; 3]) -> [f64; 3] {
     let rise = (to[1] - from[1]).clamp(0.0, LEAP_RISE);
     let up = LEAP_UP + rise * 0.06;
-    // Its time in the air, until it is back down to its target's height.
-    let (mut y, mut vy, mut ticks) = (0.0, up, 0);
-    while ticks < 100 && (vy > 0.0 || y > rise) {
+    let [vx, vz] = toward(from, to, airtime(from[1], up, from[1] + rise));
+    [vx, up, vz]
+}
+
+/// In the air at `at` with velocity `v`: the velocity across that brings it down on `to`, wherever its target went.
+fn steer(at: [f64; 3], v: [f64; 3], to: [f64; 3]) -> [f64; 2] {
+    match airtime(at[1], v[1], to[1]) {
+        0 => [v[0], v[2]],
+        ticks => toward(at, to, ticks),
+    }
+}
+
+/// The ticks until something at height `y` rising at `vy` blocks a tick is back down to height `floor` (none if it is
+/// already falling below it).
+fn airtime(mut y: f64, mut vy: f64, floor: f64) -> i32 {
+    let mut ticks = 0;
+    while ticks < LEAP_AIRTIME && (vy > 0.0 || y > floor) {
         y += vy;
         vy = (vy - 0.08) * 0.98;
         ticks += 1;
     }
+    ticks
+}
+
+/// The velocity across that carries it from `from` to `to` in `ticks` (drag 0.91 a tick), at most `LEAP_FASTEST`.
+fn toward(from: [f64; 3], to: [f64; 3], ticks: i32) -> [f64; 2] {
     let (dx, dz) = (to[0] - from[0], to[2] - from[2]);
     let across = dx.hypot(dz).max(0.01);
-    let carried = (1.0 - 0.91f64.powi(ticks)) / 0.09;
-    let speed = ((across - LEAP_SHORT).max(0.0) / carried).min(LEAP_FASTEST);
-    [dx / across * speed, up, dz / across * speed]
+    let carried = (1.0 - 0.91f64.powi(ticks.max(1))) / 0.09;
+    let speed = (across / carried).min(LEAP_FASTEST);
+    [dx / across * speed, dz / across * speed]
 }
 
 /// Its landing: the players within `LEAP_REACH` hurt and thrown up and back, the ground shaking.
@@ -831,14 +863,32 @@ mod tests {
     }
 
     #[test]
-    fn its_leap_lands_just_short_of_its_target() {
-        for across in [6.0, 10.0, 14.0] {
+    fn its_leap_comes_down_on_its_target() {
+        for across in [9.0, 13.0, 18.0] {
             let v = leap_velocity([0.0; 3], [across, 0.0, 0.0]);
             let landed = lands(v);
-            assert!(
-                (landed - (across - LEAP_SHORT)).abs() < 0.6,
-                "{across}: landed at {landed}"
-            );
+            assert!((landed - across).abs() < 0.6, "{across}: landed at {landed}");
         }
+    }
+
+    #[test]
+    fn steered_in_the_air_it_lands_on_a_target_that_ran() {
+        let mut to = [12.0, 0.0, 0.0];
+        let (mut at, mut v) = ([0.0; 3], leap_velocity([0.0; 3], to));
+        loop {
+            // The target runs sideways at a sprint; the golem steers each tick, as `fight` does.
+            to[2] += 0.28;
+            for k in 0..3 {
+                at[k] += v[k];
+            }
+            v = [v[0] * 0.91, (v[1] - 0.08) * 0.98, v[2] * 0.91];
+            if v[1] < 0.0 && at[1] <= 0.0 {
+                break;
+            }
+            let [vx, vz] = steer(at, v, to);
+            v = [vx, v[1], vz];
+        }
+        let missed = (at[0] - to[0]).hypot(at[2] - to[2]);
+        assert!(missed < 1.5, "missed by {missed}");
     }
 }

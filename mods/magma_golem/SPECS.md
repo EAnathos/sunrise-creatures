@@ -23,7 +23,7 @@ Tried in game: it spawns in the Nether; the rest is being tried, its numbers the
   (straight at its target over steps up to 2 blocks, jumping when a wall holds it; a path round when the target is
   far above or below or the straight way stops bringing it nearer; the nearest player in its sight when the game
   gives it no target); the fist slam, the ground pound (fire left around, small magma cubes
-  shed enraged), the leap, the magma glob (`glob.rs`, the library's lobbed projectile, its blast and fire); it heals in lava, is enraged under half health (faster, shorter wind-ups), crusted by 5
+  shed enraged), the leap, the magma glob (`glob.rs`, the library's lobbed projectile, its blast and fire); it heals in lava and fire, is enraged under half health (faster, shorter wind-ups), crusted by 5
   snowballs within 4 seconds or a splash water bottle (slowed, double damage taken) and lies down again after
   2 minutes without a target, its health restored. Its spawning (`spawn.rs`): in the Nether's basalt deltas and wastes
   near lava, on a floor with room for it, never within 256 blocks of another (where each appeared is saved with the
@@ -70,12 +70,12 @@ Tried in game: it spawns in the Nether; the rest is being tried, its numbers the
   floor with room for it (3 × 6 × 3), never within 256 blocks of another. It never despawns.
 - **Fighting** (a mini-boss, its boss bar while awake): 250 health, armor 10, no knockback, immune to fire and lava.
   Heavy steps, yet it runs at its target (a little faster than a walking player); it wades through lava and **heals
-  in lava** (2 health a second).
+  in lava and fire** (2 health a second).
   - **Fist slam**: in reach (4 blocks), 14 damage and sets on fire.
   - **Ground pound**: when players are within 6 blocks, both fists on the ground: a shockwave (8 damage, thrown up and
     back, set on fire), fire left around it.
   - **Leap**: a player 9 to 18 blocks away (never nearer), once every 15 seconds at most: it crouches and springs,
-    landing just short of them; its landing hurts the players within 4 blocks (10 damage, thrown up and back). It
+    bending its fall toward them in the air to come down on them; its landing hurts the players within 4 blocks (10 damage, thrown up and back). It
     takes no fall damage.
   - **Magma glob**: at range (12 to 24 blocks, while it can't leap), it tears a glob of magma (a block wide) from its
     body, holds it overhead, and throws it fast on a slight arc (6 damage, sets on fire, a small blast and fire where
@@ -100,7 +100,7 @@ ticks, slow and heavy, the ground shaking under it (dust and rock particles, a d
   fists shifting on the ground.
 - **Walking**: heavy steps, one leg then the other with the knee bending, the body rolling from side to side and
   dipping on each footfall; the arms swing opposite the legs, its fists brushing the ground like an ape's.
-- **Fist slam**: one arm rises high behind it (0.6 s), then smashes down in front (0.15 s), the body following the
+- **Fist slam**: one arm rises high behind it (0.3 s), then smashes down in front, the body following the
   blow; it straightens again.
 - **Ground pound**: both arms rise over its head (1 s, the warning), the jaw opens, both fists come down together, the
   body dropping with them.
