@@ -1,0 +1,9 @@
+{
+  "template": "minecraft:wandering_trader_spawn_egg",
+  "components": {
+    "minecraft:item_model": "magma_golem:magma_golem_spawn_egg",
+    "minecraft:item_name": {
+      "translate": "item.magma_golem.magma_golem_spawn_egg"
+    }
+  }
+}

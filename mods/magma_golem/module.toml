@@ -1,6 +1,8 @@
 # Magma Golem's description for the repository's tools (docs/ARCHITECTURE.md); not shipped in the mod.
 id = "magma_golem"
 name = "Magma Golem"
-status = "planned"
-# Its items in the series' creative tab, in order (none until implementation starts).
-creative = []
+status = "prototype"
+# Its items in the series' creative tab, in order.
+creative = ["magma_golem:magma_golem_spawn_egg"]
+# Its Rust is built on Sunrise's mod_api.
+ported = true

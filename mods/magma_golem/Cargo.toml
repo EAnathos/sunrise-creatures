@@ -1,0 +1,13 @@
+[package]
+name = "mod-magma_golem"
+# The module's version is its sunrise-mod.toml's (`cargo creature bump`): the crate's stays 0.0.0.
+version = "0.0.0"
+edition = "2024"
+# The repository's own files stay out of the package (Sunrise packs a folder as `cargo package` does): the tools'
+# module.toml, the spec, the Blockbench and sound sources, the registry page's pictures (they travel in its page
+# bundle).
+exclude = ["module.toml", "SPECS.md", "sources/", "page/"]
+
+[dependencies]
+# The pinned SDK's API crate, fetched into .sunrise/sdk/ by any `cargo sunrise-mod` command.
+sunrise-mod-api = { path = ".sunrise/sdk/api/crates/sunrise-mod-api" }

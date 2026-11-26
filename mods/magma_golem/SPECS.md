@@ -10,7 +10,14 @@ found, not summoned, fought with a boss bar, and cooled with snow.
 
 ## 0. Status
 
-Planned: the spec and the model, no code yet.
+In development (0.1.0, not released), step 1 of 5: the magma golem as an entity (`magma_golem:magma_golem`, its spawn
+egg), 3 × 6 blocks, 250 health, armour 10, no knockback, immune to fire and lava; drawn with its model and texture,
+walking with its heavy stride, breathing at rest, its head following what it looks at; its guide page (very rare,
+the Nether's basalt deltas and wastes); its drops (magma cream and magma blocks). It strolls and looks about: it
+neither sleeps nor fights yet. Not tried in game yet.
+
+- **Its spawn egg's texture is a placeholder** (`assets/magma_golem/textures/item/magma_golem_spawn_egg.png`: the
+  Cyclops's egg recoloured in rock and magma), to be replaced by a drawing of its own.
 
 - **The model** (`assets/models/magma_golem.bbmodel`, pictures in docs/models/): our own design, about 6 blocks
   tall, built from boulders of dark grey-brown rock split by glowing orange seams, lava showing at the belly, the
@@ -21,8 +28,10 @@ Planned: the spec and the model, no code yet.
   animations (§2.1): `body` (at the hips), `head` (the neck), `jaw`, `arm_*` (the shoulders), `forearm_*` (the
   elbows), `fist_*` (the wrists), `leg_*` (the hips), `shin_*` (the knees).
 
-Next: the code, on Sunrise, and the Cyclops's throw (aim, wind-up) moved to the library with it, beside the library's
-projectiles (common/SPECS.md §3.9).
+Next, in this order: (2) dormant and waking, the boss bar, the fist slam, lying down again, healing in lava; (3) the
+ground pound, the magma glob (with the Cyclops's throw, aim and wind-up, moved to the library beside its projectiles,
+common/SPECS.md §3.9), enraged under half health; (4) cooled by snow and water; (5) its spawning in the Nether, the
+magma heart and the molten pickaxe, its sounds, the seams drawn full-bright and its light.
 
 ## 1. Technical context
 
