@@ -41,16 +41,18 @@ Found, not filed: check the tracker and the newest Nightly first.
 
 ## Moving the pin
 
-1. Pick the Nightly (`sunrise-launcher versions`) and its commit: the newest, or the first with a fix we wait for
-   (`git log <old>..<new>` in the Sunrise sources). `cargo sunrise-mod update --sunrise <commit>` in a module moves its
-   pin and lists the API items it uses that changed.
-2. Set the commit in every `sunrise-mod.toml` (`[native]`), CI's `SUNRISE_REV` and CONTRIBUTING's `REV`, and install
-   `sunrise-stage` at it (CONTRIBUTING.md; `cargo sunrise-mod` is the newest signed tool, whatever the pin);
-   `cargo creature native-check`
-   fetches the new SDK by itself (it compares `target/sunrise-sdk/sdk.json` with the library's pin).
-3. Install that Nightly and keep the instance on it (`sunrise-launcher install <nightly>`,
-   `sunrise-launcher instance version creature-dev <nightly>`), or `cargo creature install` refuses the mods.
-4. `cargo creature check`, `cargo creature install`; drop the workarounds it fixes, update the tables; test in game.
+1. Pick the build and its commit: the newest Nightly or Dev build (`sunrise-launcher versions`, or the `nightly`
+   and `dev-*` releases of sunrise-org/sunrise), or the first with a fix we wait for (`git log <old>..<new>` in the
+   Sunrise sources).
+2. `cargo creature pin <commit>` (without a commit: the current Nightly). Sunrise's `cargo sunrise-mod pin` repins
+   the library and lists the API items it uses that changed; the tool then writes its `[native]` in every module, CI's
+   `SUNRISE_REV` and CONTRIBUTING's `REV`. Install `sunrise-stage` at it (CONTRIBUTING.md; `cargo sunrise-mod` is
+   the newest signed tool, whatever the pin); `cargo creature native-check` fetches the new SDK by itself (it compares
+   `target/sunrise-sdk/sdk.json` with the library's pin) and shows what fails to build.
+3. Install that build and keep the instance on it (`sunrise-launcher install <build>`,
+   `sunrise-launcher instance version <instance> <build>`), or `cargo creature install` refuses the mods.
+4. `cargo creature check`, `cargo creature install`; drop the workarounds it fixes, update the tables and this page's
+   pin line; test in game.
 5. A released package is made for the build it pins (the registry accepts a release only for a build Sunrise
    published, and offers it for the builds it fits): the modules reach players on the new pin with new versions
-   (docs/PUBLISHING.md).
+   (`cargo creature bump`, docs/PUBLISHING.md).

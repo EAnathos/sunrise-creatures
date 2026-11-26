@@ -74,6 +74,7 @@ The modules are **pinned** to one Sunrise build, the same for every module (`[na
 | `cargo creature install [--instance <name>] [mod...]` | Builds and installs, then runs the instance's native build |
 | `cargo creature pages [module...]` | Writes the published modules' release files in their folders: `page.toml` (from `[registry]` and the README), `page/` (the pictures), `icon.png` ([docs/PUBLISHING.md](docs/PUBLISHING.md)) |
 | `cargo creature bump <patch\|minor\|major> <module...\|all>` | A new version of each module: its `sunrise-mod.toml` raised, a `CHANGELOG.md` section to write, its release files again ([docs/PUBLISHING.md](docs/PUBLISHING.md)) |
+| `cargo creature pin [commit]` | Moves the whole series to another Sunrise build (the current Nightly by default): Sunrise's `cargo sunrise-mod pin` on the library, which reports what of the API changed, then its `[native]` in every module, CI's `SUNRISE_REV` and the `REV` above ([docs/SUNRISE-ISSUES.md](docs/SUNRISE-ISSUES.md), "Moving the pin") |
 | `cargo creature release [module...]` | Checks each published module's new version as the registry's release workflow will (`cargo sunrise-mod check --release`), tags it `<id>/v<version>` and prints the pushes ([docs/PUBLISHING.md](docs/PUBLISHING.md)) |
 
 ## Before committing
