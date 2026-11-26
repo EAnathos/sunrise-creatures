@@ -124,15 +124,7 @@ pub fn tick(host: &mut dyn ServerHost, entity: u32) {
                 );
             }
         }
-        level.play_sound(
-            host,
-            crate::golem::HISS,
-            at,
-            SoundSource::Hostile,
-            1.2,
-            0.8,
-            None,
-        );
+        level.play_sound(host, crate::golem::HISS, at, SoundSource::Hostile, 1.2, 0.8, None);
     }
     e.discard(host);
 }
