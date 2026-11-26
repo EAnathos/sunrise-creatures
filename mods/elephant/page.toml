@@ -51,13 +51,16 @@ The artwork (models, textures, icons, pictures) is the author's, all rights rese
 categories = ["mobs", "transportation", "storage"]
 
 [[screenshots]]
-path = "page/1-elephant-elephant-front.png"
+path = "page/1-elephant.jpg"
 
 [[screenshots]]
-path = "page/2-elephant-elephant-back.png"
+path = "page/2-elephant-elephant-front.png"
 
 [[screenshots]]
-path = "page/3-elephant-juvenile-front.png"
+path = "page/3-elephant-elephant-back.png"
 
 [[screenshots]]
-path = "page/4-elephant-baby-front.png"
+path = "page/4-elephant-juvenile-front.png"
+
+[[screenshots]]
+path = "page/5-elephant-baby-front.png"

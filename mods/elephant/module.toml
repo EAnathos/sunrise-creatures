@@ -14,6 +14,7 @@ summary = "A savanna elephant to tame with sugar cane, ride with a friend, load 
 categories = ["mobs", "transportation", "storage"]
 icon = "elephant"
 screenshots = [
+  "mods/elephant/page/1-elephant.jpg",
   "docs/models/elephant-elephant-front.png",
   "docs/models/elephant-elephant-back.png",
   "docs/models/elephant-juvenile-front.png",

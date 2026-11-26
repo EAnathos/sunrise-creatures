@@ -10,9 +10,9 @@ future mod; Elephant will not require that mod.
 
 ## 0. Status
 
-Released (0.1.0). Tried in game: its taming, riding and chests, breeding and growth, and its drops work; its size,
-its walk, its swimming, its steps, its screen's names and the trumpet were redone after and are to be tried again. Its
-page shows its models' pictures: an in-game picture comes with a later version.
+Released (0.1.0), everything of §2 to §6 tried in game and validated: its spawning, size and walk, its charge, its
+swimming and steps, taming and following, the saddle, the blanket and two riders, the chests and its screen, breeding
+and growth, its drops and the trumpet.
 
 - **Step 1**: the elephant as an entity (`elephant:elephant`, its spawn egg), 4.4 × 5.2 blocks, its model drawn at
   twice its size (tried in game: at its model's size it was too small; hit where its trunk and tail reach too: the
@@ -75,8 +75,6 @@ Not tried in game yet.
   and legs and its first small tusks. Used from 10 to 20 minutes.
 - All three models share the elephant's 64 × 64 texture. The baby and juvenile models have no visible saddle blanket or
   chests; only adults can be ridden or equipped.
-
-Next: trying again what was redone (above), an in-game picture for its page.
 
 ## 1. Technical context
 

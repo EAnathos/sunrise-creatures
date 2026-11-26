@@ -55,6 +55,10 @@ shepherd, shy fairies, scorpions, spirits of living lightning, jellyfish, flying
     <td width="50%"><img src="mods/magma_golem/page/1-magma_golem.jpg" alt="A magma golem raising its arms among the fires of a Nether forest"><br><sub>A magma golem awake in the Nether</sub></td>
     <td width="50%"><img src="mods/magma_golem/page/2-molten_pickaxe.jpg" alt="A smithing table turning a netherite pickaxe and a magma heart into the molten pickaxe"><br><sub>The molten pickaxe, made with its magma heart</sub></td>
   </tr>
+  <tr>
+    <td width="50%"><img src="mods/elephant/page/1-elephant.jpg" alt="An elephant with a pair of chests on its flank on a savanna by a river"><br><sub>An elephant packed with chests</sub></td>
+    <td width="50%"></td>
+  </tr>
 </table>
 
 ## The mods
