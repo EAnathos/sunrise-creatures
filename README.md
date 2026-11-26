@@ -51,6 +51,10 @@ shepherd, shy fairies, scorpions, spirits of living lightning, jellyfish, flying
     <td width="50%"><img src="mods/dung_beetles/page/1-dung_beetles.jpg" alt="A dung beetle rolling its ball by a cow in a pasture"><br><sub>A dung beetle rolling its ball by the herd</sub></td>
     <td width="50%"><img src="mods/sporelins/page/1-sporelins.jpg" alt="A red and two brown sporelins among mushrooms on podzol"><br><sub>Sporelins among the mushrooms</sub></td>
   </tr>
+  <tr>
+    <td width="50%"><img src="mods/magma_golem/page/1-magma_golem.jpg" alt="A magma golem raising its arms among the fires of a Nether forest"><br><sub>A magma golem awake in the Nether</sub></td>
+    <td width="50%"><img src="mods/magma_golem/page/2-molten_pickaxe.jpg" alt="A smithing table turning a netherite pickaxe and a magma heart into the molten pickaxe"><br><sub>The molten pickaxe, made with its magma heart</sub></td>
+  </tr>
 </table>
 
 ## The mods
@@ -72,6 +76,7 @@ shepherd, shy fairies, scorpions, spirits of living lightning, jellyfish, flying
 | ![](docs/models/phasmids-stick_insect-front.png) | [Phasmids](mods/phasmids/README.md) | Stick and leaf insects hiding in the trees as twigs and leaves: spot them, and settle them on your own tree |
 | ![](docs/models/dung_beetles-dung_beetle-front.png) | [Dung Beetles](mods/dung_beetles/README.md) | Beetles that follow the herds and roll dung balls under the stars, turning worn pastures back into grass |
 | ![](docs/models/sporelins-sporelin-front.png) | [Sporelins](mods/sporelins/README.md) | Shy mushroom sprites that hide as mushrooms; befriend one with a mushroom and it tends a patch and makes you stew |
+| ![](docs/models/magma_golem-magma_golem-front.png) | [Magma Golem](mods/magma_golem/README.md) | A six-block giant of living magma asleep in the Nether: a mini-boss that slams, leaps and throws magma, cooled with snow; its heart makes a pickaxe that smelts ores |
 | ![](common/assets/creature/textures/item/guide.png) | [Vanilla Bestiary](mods/vanilla_bestiary/README.md) | Minecraft's own creatures in the creature guide's bestiary, found out as you meet them |
 
 Every mod needs **[Sunrise Creatures](common/README.md)**, the library: it adds the glass jar, the creature guide and
@@ -82,8 +87,6 @@ the "Sunrise Creatures" creative tab, where all the series' items are.
 
 - [Living Flowers](mods/living_flowers/README.md): every small and tall vanilla flower come alive, to ambush you or
   guard you.
-- [Magma Golem](mods/magma_golem/README.md): a six-block giant of living magma asleep in the Nether, a mini-boss to
-  cool with snow.
 - [Toucan](mods/toucan/README.md): a tropical bird with a colourful bill, tamed with melon slices.
 - [Elephant](mods/elephant/README.md): a two-rider savanna elephant with variable stats, breeding and growing young;
   a dyeable saddle blanket, a double chest on each flank and fear of mice from a future optional mod.

@@ -19,7 +19,7 @@ on it.
 | Living Flowers | `mods/living_flowers/` | `living_flowers` | planned | [mods/living_flowers/SPECS.md](../mods/living_flowers/SPECS.md) |
 | Storm Spirits | `mods/storm_spirits/` | `storm_spirits` | playable | [mods/storm_spirits/SPECS.md](../mods/storm_spirits/SPECS.md) |
 | Jellyfish | `mods/jellyfish/` | `jellyfish` | playable | [mods/jellyfish/SPECS.md](../mods/jellyfish/SPECS.md) |
-| Magma Golem | `mods/magma_golem/` | `magma_golem` | prototype (in development) | [mods/magma_golem/SPECS.md](../mods/magma_golem/SPECS.md) |
+| Magma Golem | `mods/magma_golem/` | `magma_golem` | playable | [mods/magma_golem/SPECS.md](../mods/magma_golem/SPECS.md) |
 | Fairies | `mods/fairies/` | `fairies` | playable | [mods/fairies/SPECS.md](../mods/fairies/SPECS.md) |
 | Seagulls | `mods/seagulls/` | `seagulls` | playable | [mods/seagulls/SPECS.md](../mods/seagulls/SPECS.md) |
 | Flying Fish | `mods/flying_fish/` | `flying_fish` | playable | [mods/flying_fish/SPECS.md](../mods/flying_fish/SPECS.md) |

@@ -180,7 +180,7 @@ launched with a velocity and flown with its own gravity until it reaches its tar
 long; the mod reads how it ended and does what its projectile does there. One with no target finds what its box meets
 on its own (`hits`). Users: **Cyclops** (its boulder, `cyclops:boulder`, hurled at a target on an arc, which tears up
 the blocks where it lands) and **Scorpions** (the thrown scorpion dagger, mods/scorpions/SPECS.md §5); the **Magma
-Golem** (planned) for its magma glob (mods/magma_golem/SPECS.md §2).
+Golem** for its magma glob (mods/magma_golem/SPECS.md §2).
 
 ### 3.10 Water creatures (`creature::aquatic`) ✅
 
