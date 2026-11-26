@@ -728,6 +728,7 @@ impl Hooks for Vulture {
             let id = event.entity;
             water_escape(host, id);
             ride::read(&*host, id);
+            creature::stats::tick(host, id, &state::STATS, |host| state::legacy(host, id));
             creature::body::tick(host, id, || {
                 vec![
                     Box::new(Sync),

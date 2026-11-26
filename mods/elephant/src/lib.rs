@@ -10,6 +10,7 @@
 
 mod charge;
 mod model;
+mod tame;
 // The young stages' models: drawn once elephants grow (SPECS §4).
 #[allow(dead_code)]
 mod model_baby;
@@ -18,7 +19,7 @@ mod model_juvenile;
 
 use std::sync::Arc;
 
-use creature::bestiary::Species;
+use creature::bestiary::{Fact, Species};
 use mod_api::{
     BlockEntityDrawContext, EntityInteractEvent, EntityJoinLevelEvent, EntityRenderState, EntityRenderer,
     EntityTickPostEvent, Flow, GoalSpec, Hooks, Host, HostSide, InteractionResult, MobSpawnPlacementCheckEvent,
@@ -42,9 +43,16 @@ const OUTLINE: creature::pick::Outline = creature::pick::Outline {
     height: 2.7,
     ..creature::pick::Outline::DEFAULT
 };
-/// Its health and pace, as its content file sets them (SPECS §2: each elephant's own come with its stats).
+/// Its health and pace, as its content file sets them, until its own stats are rolled (SPECS §2).
 const HEALTH: f64 = 50.0;
 const SPEED: f64 = 0.16;
+/// Its own stats (SPECS §2, the library's `creature::stats`): its maximum health, and its walking speed's share.
+const STATS: creature::stats::Ranges = creature::stats::Ranges {
+    health: (40.0, 60.0),
+    pace: (0.8, 1.2),
+    walk: Some(SPEED),
+    ..creature::stats::Ranges::DEFAULT
+};
 /// Its knockback resistance: a heavy beast barely pushed.
 const KNOCKBACK_RESISTANCE: f64 = 0.8;
 
@@ -57,8 +65,12 @@ const STEEP: i32 = 1;
 static BESTIARY: Species = Species {
     id: ELEPHANT,
     biomes: BIOMES,
-    wild: |_| true,
-    facts: &[],
+    wild: |id| creature::friend::of(id).is_none(),
+    facts: &[Fact {
+        id: tame::TAMED_FACT,
+        item: "minecraft:sugar_cane",
+        key: "bestiary.elephant.tamed",
+    }],
     icon: EGG,
     scheme: None,
     rarity: creature::bestiary::Rarity::Uncommon,
@@ -253,9 +265,31 @@ impl Hooks for Elephant {
         Flow::Continue
     }
 
-    /// Right-click: nothing yet (no trading screen, which its template would open), on both sides.
-    fn entity_interact(&self, _: HostSide, event: &mut EntityInteractEvent<'_>) -> Option<InteractionResult> {
-        (event.kind == ELEPHANT).then_some(InteractionResult::Consume)
+    /// Right-click (never its template's trading screen), on both sides: on the server, its owner's (`tame`).
+    fn entity_interact(&self, host: HostSide, event: &mut EntityInteractEvent<'_>) -> Option<InteractionResult> {
+        if event.kind != ELEPHANT {
+            return None;
+        }
+        let host = match host {
+            HostSide::Client(client) => {
+                let name_tag = event
+                    .stack
+                    .is_some_and(|s| creature::hand::is(&*client, s, "minecraft:name_tag"));
+                return (!name_tag).then_some(InteractionResult::Consume);
+            }
+            HostSide::Server(host) => host,
+        };
+        let item = event
+            .stack
+            .filter(|s| s.count() > 0)
+            .map(|s| creature::hand::id(&*host, s));
+        if item.as_deref() == Some("minecraft:name_tag") {
+            return None;
+        }
+        if let (Some(player), Ok(id)) = (host.players().acting_player(), u32::try_from(event.entity)) {
+            tame::interact(host, id, player, event.hand, item.as_deref());
+        }
+        Some(InteractionResult::Consume)
     }
 
     /// It comes out only on open, about flat ground (SPECS §2).
@@ -271,8 +305,19 @@ impl Hooks for Elephant {
                 return;
             }
             let id = event.entity;
-            creature::body::tick(host, id, || vec![Box::new(charge::Charge::default())]);
+            creature::friend::tick(host, id);
+            creature::stats::tick(host, id, &STATS, |_| None);
+            tame::look_for_food(&*host, id);
+            creature::body::tick(host, id, || {
+                vec![
+                    Box::new(charge::Charge::default()),
+                    Box::new(tame::Stay),
+                    Box::new(tame::Eat),
+                    Box::new(creature::friend::Follow::new(&tame::FOLLOWING)),
+                ]
+            });
             charge::strike(host, id);
+            tame::eat(host, id);
             creature::sounds::play_queued(host, id, SoundSource::Neutral);
         });
     }

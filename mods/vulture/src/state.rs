@@ -21,13 +21,6 @@ use creature::state::{EntityMap, EntitySet};
 use creature::sync::Locked;
 use mod_api::{AttachmentCodec, AttachmentError, AttachmentType, Compound, Holder, LevelRef, ServerHost, Tag};
 
-fn set_stats(m: &mut Body, current: &mut Saved, health: f32, pace: f32) {
-    m.max_health = health;
-    m.health = m.health.min(health);
-    current.health = health;
-    current.pace = pace;
-}
-
 /// The raw meats it eats from the ground (SPECS §4); a thrown raw chicken may tame it (§5). Cooked meat is ignored.
 pub const MEATS: [&str; 5] = [
     TAMING_FOOD,
@@ -61,14 +54,19 @@ pub struct Saved {
     pub chests: u8,
     /// Ticks: negative while a baby (grows up at 0), positive while it may not breed again (SPECS §8).
     pub age: i32,
-    /// Its stats (SPECS §2): max health, and its flight speed as a share of the base speed; 0 until rolled.
+    /// Its stats as a save from before kept them (SPECS §2): they live in the library's `creature:stats` now
+    /// (`creature::stats`), where `legacy` moves them once; read only, never written.
     pub health: f32,
     pub pace: f32,
 }
 
-/// The stats' ranges (SPECS §2).
-pub const HEALTH: (f32, f32) = (16.0, 30.0);
-pub const PACE: (f32, f32) = (0.6, 1.2);
+/// Its stats' ranges (SPECS §2): its pace is its flight speed's share (`pace`), its walking speed its kind's.
+pub const STATS: creature::stats::Ranges = creature::stats::Ranges {
+    health: (16.0, 30.0),
+    pace: (0.6, 1.2),
+    walk: None,
+    ..creature::stats::Ranges::DEFAULT
+};
 /// A baby grows up in 20 minutes; parents wait 5 minutes before breeding again (SPECS §8).
 pub const BABY_AGE: i32 = -24_000;
 pub const BREED_PAUSE: i32 = 6_000;
@@ -95,8 +93,6 @@ static STATE: AttachmentType<Saved> = AttachmentType {
             data.insert("Harness".into(), Tag::Byte(i8::from(s.harness)));
             data.insert("Chests".into(), Tag::Byte(s.chests as i8));
             data.insert("Age".into(), Tag::Int(s.age));
-            data.insert("Health".into(), Tag::Float(s.health.to_bits()));
-            data.insert("Pace".into(), Tag::Float(s.pace.to_bits()));
             Ok(data)
         },
         // `Owner` and `Sitting`: only in a save from before the owner moved to `creature:friend` (`save` moves it).
@@ -151,8 +147,6 @@ struct Shared {
     pending: Vec<Change>,
     /// Ticks of love left (SPECS §8).
     love: i32,
-    /// Its stats were rolled or loaded.
-    rolled: bool,
     /// Its dimension, from the tick hook.
     dimension: String,
     /// Whether it may breed now, for a partner's goal.
@@ -171,6 +165,7 @@ struct Shared {
 pub struct Birth {
     pub at: [f64; 3],
     pub baby: Saved,
+    pub stats: creature::stats::Stats,
 }
 
 static BIRTHS: Mutex<Vec<Birth>> = Mutex::new(Vec::new());
@@ -184,13 +179,8 @@ pub fn in_love(id: u32) -> bool {
     SHARED.locked().get(&id).is_some_and(|s| s.in_love)
 }
 
-/// Rolls a stat between `range`'s ends from `roll` (0 to 1).
-pub fn stat(range: (f32, f32), roll: f32) -> f32 {
-    range.0 + (range.1 - range.0) * roll
-}
-
 /// From the breeding goal: a baby of `a` and `b` (SPECS §8): tamed to `a`'s owner; each stat the average of both
-/// parents' and a fresh roll's, like a horse's.
+/// parents' and a fresh roll's, like a horse's (`creature::stats::inherit`).
 pub fn breed(a: &Body, b: u32, rolls: [f32; 2]) {
     {
         let mut bred = BRED.locked();
@@ -200,19 +190,18 @@ pub fn breed(a: &Body, b: u32, rolls: [f32; 2]) {
         bred.insert(a.id);
         bred.insert(b);
     }
-    let other = saved(b);
     let mine = saved(a.id);
-    let mix = |x: f32, y: f32, range: (f32, f32), roll: f32| (x + y + stat(range, roll)) / 3.0;
+    let parent = |id: u32| creature::stats::of(id).unwrap_or_else(|| creature::stats::roll(&STATS, [0.5, 0.5]));
+    let stats = creature::stats::inherit(&STATS, parent(a.id), parent(b), rolls);
     let baby = Saved {
         owner: mine.owner,
         age: BABY_AGE,
-        health: mix(mine.health, other.health, HEALTH, rolls[0]),
-        pace: mix(mine.pace, other.pace, PACE, rolls[1]),
         ..Saved::default()
     };
     BIRTHS.locked().push(Birth {
         at: [a.position.x, a.position.y, a.position.z],
         baby,
+        stats,
     });
 }
 
@@ -225,18 +214,23 @@ pub fn births(host: &mut dyn ServerHost, dimension: &str) {
                 creature::friend::befriend(host, id, creature::friend::uuid(owner));
             }
             let _ = STATE.set(host, Holder::Entity(id), birth.baby);
+            creature::stats::set(host, id, birth.stats);
         }
     }
 }
 
-/// Its flight speed as a share of the base speed.
+/// Its flight speed as a share of the base speed (its stats', `creature::stats`).
 pub fn pace(id: u32) -> f64 {
-    SHARED.locked().get(&id).map_or(1.0, |s| {
-        if s.current.pace > 0.0 {
-            f64::from(s.current.pace)
-        } else {
-            1.0
-        }
+    creature::stats::pace(id)
+}
+
+/// From `creature::stats::tick`, for a vulture with no stats there yet: those a save from before kept in
+/// `vulture:state`, moved over once.
+pub fn legacy(host: &mut dyn ServerHost, id: u32) -> Option<creature::stats::Stats> {
+    let saved = STATE.get_existing(host, Holder::Entity(id)).ok().flatten()?;
+    (saved.pace > 0.0).then_some(creature::stats::Stats {
+        health: saved.health,
+        pace: saved.pace,
     })
 }
 
@@ -398,22 +392,8 @@ pub fn sync(m: &mut Body, ridden: bool, fighting: bool) -> bool {
     let mut map = SHARED.locked();
     let shared = map.entry(m.id).or_default();
     if let Some(saved) = shared.loaded.take() {
-        let (health, pace) = (saved.health, saved.pace);
         shared.harness = saved.harness;
         shared.current = saved;
-        if pace > 0.0 {
-            set_stats(m, &mut shared.current, health, pace);
-            shared.rolled = true;
-        }
-    }
-    // A vulture seen for the first time (a wild spawn, an egg): its stats are rolled once.
-    if shared.read && !shared.rolled {
-        let health = stat(HEALTH, m.random.next_float());
-        let pace = stat(PACE, m.random.next_float());
-        set_stats(m, &mut shared.current, health, pace);
-        m.health = m.max_health;
-        shared.rolled = true;
-        shared.dirty = true;
     }
     // Its age: a baby grows towards 0, a breeding pause runs down to 0.
     let age = &mut shared.current.age;
@@ -682,12 +662,5 @@ mod tests {
         with(id, |s| s.chests = saved(id).chests + 1);
         assert_eq!(saved(id).chests, 1);
         creature::state::forget(id);
-    }
-
-    #[test]
-    fn a_stat_rolls_within_its_range() {
-        assert_eq!(stat(HEALTH, 0.0), HEALTH.0);
-        assert_eq!(stat(HEALTH, 1.0), HEALTH.1);
-        assert_eq!(stat(PACE, 0.5), (PACE.0 + PACE.1) / 2.0);
     }
 }

@@ -5,4 +5,5 @@ Each version's section says what changed in it (`cargo creature release` needs o
 ## 0.1.0
 
 - First version, in development: the elephant, roaming the savannas in small herds, drawn with its own model and
-  animated; it charges whoever hits it. Its spawn egg and its page in the creature guide.
+  animated; it charges whoever hits it; its own stats; tamed with thrown sugar cane, it follows its owner or
+  stays, and a hay bale heals it. Its spawn egg and its page in the creature guide.

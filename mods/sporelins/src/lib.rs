@@ -229,7 +229,7 @@ fn tick(host: &mut dyn ServerHost, dimension: &str, id: u32) {
         vec![
             Box::new(life::Startle::default()),
             Box::new(life::Hide::default()),
-            Box::new(life::Follow::default()),
+            Box::new(creature::friend::Follow::new(&life::FOLLOWING)),
             Box::new(life::Plant::default()),
             Box::new(life::Stroll::default()),
         ]

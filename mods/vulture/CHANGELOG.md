@@ -4,7 +4,9 @@ Each version's section says what changed in it (`cargo creature release` needs o
 
 ## 0.2.6
 
-- Drops vanilla feathers instead of a Vulture-specific item. Needs Sunrise Creatures 0.4.2.
+- Drops vanilla feathers instead of a Vulture-specific item.
+- Its stats (its health and flight speed) are the library's (`creature::stats`, saved as `creature:stats`): a vulture
+  from before keeps its own, moved over once. Needs Sunrise Creatures 0.4.3.
 
 ## 0.2.5
 

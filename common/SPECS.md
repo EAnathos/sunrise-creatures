@@ -268,6 +268,16 @@ nearer. A client knows only the template's box, scaled (sunrise-org/sunrise#1134
 wide before a creature as to its sides. The server checks the blow against its box with vanilla's 3 blocks of leeway,
 so an outline stays within 3 blocks of the box. Users: the Magma Golem.
 
+### 3.18 A creature's own stats (`creature::stats`) ✅
+
+Each creature of a kind with stats rolls its maximum health and its pace (a share of its kind's speed) within its
+kind's ranges (`Ranges`) the first time it is seen, keeps them all its life, saved on it (`creature:stats`), hidden
+from players; a baby's are each the average of both parents' and a fresh roll's (`inherit`), as a horse's. A mod calls
+`stats::tick` from its creature's tick: the first time, its stats are read, or taken from an older save of the mod's
+(`legacy`), or rolled, then applied: its maximum health, and its walking speed for a kind whose pace sets it (`walk`).
+Users: the Vulture (its pace is its flight speed's; its stats were in `vulture:state` before, moved over once), the
+Elephant (its walking speed's).
+
 ## 4. Glass jar and territories ✅
 
 Catching small creatures and settling them in a place they won't leave. Users, the eight current jar mods: **Butterflies**
@@ -336,9 +346,9 @@ Each moves here when a second mod needs it. Until then it stays in the vulture.
 | # | System | Today |
 |---|---|---|
 | 6.1 | **Riding and flight**: mount by right-click, **dynamic ridden flight** (steered by the look, banking into arc turns like a plane, vulture/SPECS.md §6.2), dismount, mount hearts (vanilla's), a saddle | the flight itself (glide, soaring, landing) moved here with the Seagulls ✅ (`creature::flight`, §3.14); riding and the wing poses stay in the mods |
-| 6.2 | **Taming and ownership**: owner on the entity, sit / follow, defend the owner, healing food, only the owner rides | following in flight ✅ in the library (`creature::flight::Follow`, §3.14: the vulture and the seagull); **friends** ✅ in the library (`creature::friend`: the friend's UUID and staying, saved on the creature as `creature:friend`, kept in the glass jar), used by the **Fairies**, the **Seagulls** (befriended with a fish), the **Sporelins** (with a mushroom; following on
-foot, which stays theirs while no other walker follows) and the **Vulture** (its owner and sitting; a save from before, which held them in `vulture:state`, is moved over once, tested in game); defending and riding come with the Living Flowers (planned) |
-| 6.3 | **Babies and growth**: smaller model, growth time, faster when fed | in the vulture |
+| 6.2 | **Taming and ownership**: owner on the entity, sit / follow, defend the owner, healing food, only the owner rides | following in flight ✅ in the library (`creature::flight::Follow`, §3.14: the vulture and the seagull); **friends** ✅ in the library (`creature::friend`: the friend's UUID and staying, saved on the creature as `creature:friend`, kept in the glass jar), used by the **Fairies**, the **Seagulls** (befriended with a fish), the **Sporelins** (with a mushroom), the **Elephant** (with thrown sugar
+cane); **following on foot** ✅ in the library (`creature::friend::Follow`, moved from the Sporelins for the Elephant) and the **Vulture** (its owner and sitting; a save from before, which held them in `vulture:state`, is moved over once, tested in game); defending and riding come with the Living Flowers (planned) |
+| 6.3 | **Babies and growth**: smaller model, growth time, faster when fed; inherited stats | the stats ✅ in the library (`creature::stats`, §3.18, moved for the Elephant); babies and growth in the vulture, to move with the Elephant's |
 | 6.4 | **Ridden special attack**: a key that makes the mount attack (the vulture's talons) | in the vulture |
 
 ## 7. Creature guide book ✅

@@ -7,5 +7,6 @@ distinct baby, juvenile and adult models. Breed and raise it; adults can carry t
 a double chest on each flank. It fears mice from a separate future mod, but does not require it. **Requires**
 [Sunrise Creatures](https://playsunrise.net/mods/creature), the series' library.
 
-Not playable yet: elephants roam the savannas and charge whoever hits them, but can't be tamed, ridden or bred yet.
+Not playable yet: elephants roam the savannas, charge whoever hits them and can be tamed with thrown sugar cane, but
+can't be ridden or bred yet.
 The design and what is done are in [SPECS.md](SPECS.md).

@@ -2,6 +2,12 @@
 
 Each version's section says what changed in it (`cargo creature release` needs one before it tags the version).
 
+## 0.4.3
+
+- `creature::stats`: a creature's own stats (its maximum health and its pace), rolled within its kind's ranges, saved
+  on it (`creature:stats`) and inherited by its babies; moved from the Vulture for the Elephant.
+- `creature::friend::Follow`: following a friend on foot, moved from the Sporelins for the Elephant.
+
 ## 0.4.2
 
 - Creatures' feathers are vanilla `minecraft:feather` items. The guide recipe uses a vanilla feather; the library no longer

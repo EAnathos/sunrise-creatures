@@ -1,5 +1,5 @@
 //! Friends (SPECS §6.2): a creature befriended (or tamed) by a player, who follows them or stays (sits) where it is
-//! told. Users: the fairies, the vulture.
+//! told, following on foot (`Follow`). Users: the fairies, the vulture, the seagulls, the sporelins, the elephant.
 //!
 //! The friend is saved on the entity (`creature:friend`: the player's UUID and whether it stays). The mod's goals read
 //! it through a static map (`of`), filled by `tick` from the mod's `entity_tick_post` (single player, as the
@@ -8,6 +8,7 @@
 
 use mod_api::{AttachmentCodec, AttachmentError, AttachmentType, Compound, Holder, Registrar, ServerHost, Tag};
 
+use crate::body::{Behaviour, Body, Vec3, World, distance};
 use crate::state::EntityMap;
 
 /// Whom a creature is the friend of, and whether it stays where it is.
@@ -150,6 +151,110 @@ pub fn tick(host: &mut dyn ServerHost, entity: u32) {
         }
         Some(_) => {}
     }
+}
+
+/// How a befriended creature follows its friend on foot (SPECS §6.2): from `follow` blocks away it walks to them at
+/// `speed` (a multiplier of its own), stops within `near`, and past `teleport` comes to them at once, as a tamed wolf
+/// does. Users: the Sporelins, the Elephant.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Following {
+    pub follow: f64,
+    pub near: f64,
+    pub teleport: f64,
+    pub speed: f64,
+}
+
+impl Following {
+    /// Its neutral values, for a mod's literal to end with (`..Following::DEFAULT`).
+    pub const DEFAULT: Following = Following {
+        follow: 4.0,
+        near: 2.0,
+        teleport: 24.0,
+        speed: 1.0,
+    };
+}
+
+/// Following its friend on foot (`Following`), unless told to stay.
+#[derive(Debug)]
+pub struct Follow {
+    how: &'static Following,
+    on: bool,
+    ticks: i32,
+}
+
+impl Follow {
+    pub fn new(how: &'static Following) -> Follow {
+        Follow {
+            how,
+            on: false,
+            ticks: 0,
+        }
+    }
+}
+
+/// Where its friend stands, when they are the player near it and alive.
+pub fn friend_near(m: &Body, cx: &World<'_>) -> Option<[f64; 3]> {
+    let f = of(m.id)?;
+    cx.player
+        .as_ref()
+        .filter(|p| p.alive && f.is(p.uuid))
+        .map(|p| p.position.array())
+}
+
+impl Behaviour for Follow {
+    fn can_use(&mut self, m: &mut Body, cx: &World<'_>) -> bool {
+        let following = of(m.id).is_some_and(|f| !f.staying);
+        let Some(at) = friend_near(m, cx).filter(|_| following) else {
+            self.on = false;
+            return false;
+        };
+        let d = distance(at, m.position.array());
+        self.on = if self.on {
+            d > self.how.near
+        } else {
+            d > self.how.follow
+        };
+        self.on
+    }
+    fn tick(&mut self, m: &mut Body, cx: &World<'_>) {
+        let Some(at) = friend_near(m, cx) else {
+            return;
+        };
+        if distance(at, m.position.array()) > self.how.teleport {
+            // Onto ground by them (not in the air by a flying friend, which it would fall from): else it waits.
+            if let Some(p) = ground_by(cx, at) {
+                m.position = Vec3::of(p);
+                m.velocity = Vec3 { x: 0.0, y: 0.0, z: 0.0 };
+                m.fall_distance = 0.0;
+            }
+            return;
+        }
+        self.ticks -= 1;
+        if self.ticks <= 0 {
+            self.ticks = 10;
+            m.walk_to = Some((at, self.how.speed));
+        }
+    }
+    fn stop(&mut self, m: &mut Body, _: &World<'_>) {
+        m.stop_walking = true;
+    }
+}
+
+/// A spot to stand on by `at` (a block next to it, its own top solid, two open blocks over it), up to 3 blocks down.
+fn ground_by(cx: &World<'_>, at: [f64; 3]) -> Option<[f64; 3]> {
+    let open = |p: [i32; 3]| crate::creep::passable(cx, p);
+    let (x, y, z) = (at[0].floor() as i32, at[1].floor() as i32, at[2].floor() as i32);
+    [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1]]
+        .iter()
+        .find_map(|d| {
+            (0..=3).map(|down| y - down).find_map(|y| {
+                let p = [x + d[0], y, z + d[1]];
+                let floor = [p[0], y - 1, p[2]];
+                let solid = !open(floor) && cx.block(floor) != "minecraft:water";
+                (solid && open(p) && open([p[0], y + 1, p[2]]))
+                    .then(|| [f64::from(p[0]) + 0.5, f64::from(y), f64::from(p[2]) + 0.5])
+            })
+        })
 }
 
 #[cfg(test)]

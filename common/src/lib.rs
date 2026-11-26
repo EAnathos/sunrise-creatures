@@ -47,6 +47,7 @@ pub mod projectile;
 mod recipes;
 pub mod sounds;
 pub mod state;
+pub mod stats;
 pub mod sync;
 pub mod territory;
 pub mod touch;
@@ -111,6 +112,7 @@ struct Creature;
 impl Hooks for Creature {
     fn register(&self, r: &mut dyn Registrar, _: &RegistrationContext) {
         colours::declare(r);
+        stats::declare(r);
         particles::declare(r);
         territory::declare(r);
         friend::declare(r);

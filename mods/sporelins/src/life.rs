@@ -12,7 +12,7 @@
 //! (`crate::act`).
 use std::sync::Mutex;
 
-use creature::body::{Behaviour, Body, Vec3, World, distance, flat_distance};
+use creature::body::{Behaviour, Body, World, distance, flat_distance};
 use creature::state::{EntityMap, EntitySet};
 use creature::sync::Locked;
 
@@ -95,15 +95,6 @@ pub(crate) fn tick_shake(id: u32) {
 }
 
 const SHAKE: i32 = 30;
-
-/// Its friend, if the nearest player is its friend and not told to stay: where they are.
-fn friend_near(m: &Body, cx: &World<'_>) -> Option<[f64; 3]> {
-    let f = creature::friend::of(m.id)?;
-    cx.player
-        .as_ref()
-        .filter(|p| p.alive && f.is(p.uuid))
-        .map(|p| p.position.array())
-}
 
 /// The nearest player if they aren't its friend (whom it doesn't hide from).
 fn stranger<'a>(m: &Body, cx: &'a World<'_>) -> Option<&'a creature::body::Player> {
@@ -254,70 +245,15 @@ impl Behaviour for Hide {
     }
 }
 
-/// A spot to stand on by `at` (a block next to it, its own top solid, two open blocks over it), up to 3 blocks down.
-fn ground_by(cx: &World<'_>, at: [f64; 3]) -> Option<[f64; 3]> {
-    let open = |p: [i32; 3]| creature::creep::passable(cx, p);
-    let (x, y, z) = (at[0].floor() as i32, at[1].floor() as i32, at[2].floor() as i32);
-    [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1]]
-        .iter()
-        .find_map(|d| {
-            (0..=3).map(|down| y - down).find_map(|y| {
-                let p = [x + d[0], y, z + d[1]];
-                let floor = [p[0], y - 1, p[2]];
-                let solid = !open(floor) && cx.block(floor) != "minecraft:water";
-                (solid && open(p) && open([p[0], y + 1, p[2]]))
-                    .then(|| [f64::from(p[0]) + 0.5, f64::from(y), f64::from(p[2]) + 0.5])
-            })
-        })
-}
-
-/// Following its friend (SPECS §3): from `FOLLOW` blocks away it waddles to them, stops within `NEAR`, and past
-/// `TELEPORT` comes to them at once, as a tamed wolf does.
-const FOLLOW: f64 = 4.0;
-const NEAR: f64 = 2.0;
-const TELEPORT: f64 = 24.0;
-const FOLLOW_SPEED: f64 = 1.3;
-
-#[derive(Debug, Default)]
-pub(crate) struct Follow {
-    on: bool,
-    ticks: i32,
-}
-
-impl Behaviour for Follow {
-    fn can_use(&mut self, m: &mut Body, cx: &World<'_>) -> bool {
-        let following = creature::friend::of(m.id).is_some_and(|f| !f.staying);
-        let Some(at) = friend_near(m, cx).filter(|_| following) else {
-            self.on = false;
-            return false;
-        };
-        let d = distance(at, m.position.array());
-        self.on = if self.on { d > NEAR } else { d > FOLLOW };
-        self.on
-    }
-    fn tick(&mut self, m: &mut Body, cx: &World<'_>) {
-        let Some(at) = friend_near(m, cx) else {
-            return;
-        };
-        if distance(at, m.position.array()) > TELEPORT {
-            // Onto ground by them (not in the air by a flying friend, which it would fall from): else it waits.
-            if let Some(p) = ground_by(cx, at) {
-                m.position = Vec3::of(p);
-                m.velocity = Vec3 { x: 0.0, y: 0.0, z: 0.0 };
-                m.fall_distance = 0.0;
-            }
-            return;
-        }
-        self.ticks -= 1;
-        if self.ticks <= 0 {
-            self.ticks = 10;
-            m.walk_to = Some((at, FOLLOW_SPEED));
-        }
-    }
-    fn stop(&mut self, m: &mut Body, _: &World<'_>) {
-        m.stop_walking = true;
-    }
-}
+/// Following its friend (SPECS §3), the library's: from 4 blocks away it waddles to them, stops within 2, and past 24
+/// comes to them at once, as a tamed wolf does.
+pub(crate) static FOLLOWING: creature::friend::Following = creature::friend::Following {
+    follow: 4.0,
+    near: 2.0,
+    teleport: 24.0,
+    speed: 1.3,
+    ..creature::friend::Following::DEFAULT
+};
 
 /// Planting (SPECS §2, §3): a mushroom every `PLANT_EVERY` ticks or so (about 5 minutes), next to it (within `BY`
 /// blocks) when wild or following, around where it stays (within `PATCH`) when told to stay.

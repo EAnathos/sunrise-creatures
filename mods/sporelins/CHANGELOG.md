@@ -2,6 +2,11 @@
 
 Each version's section says what changed in it (`cargo creature release` needs one before it tags the version).
 
+## 0.1.4
+
+- Following its friend is the library's (`creature::friend::Follow`, shared with the Elephant), unchanged. Needs
+  Sunrise Creatures 0.4.3.
+
 ## 0.1.3
 
 - What it keeps about each creature lives in the library's `creature::state`, emptied when the creature leaves the

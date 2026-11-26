@@ -5,5 +5,8 @@
   "subtitles.entity.elephant.trumpet": "Elephant trumpets",
   "subtitles.entity.elephant.hurt": "Elephant hurts",
   "subtitles.entity.elephant.death": "Elephant dies",
-  "subtitles.entity.elephant.step": "Heavy footsteps"
+  "subtitles.entity.elephant.step": "Heavy footsteps",
+  "bestiary.elephant.tamed": "Tamed",
+  "elephant.stays": "Your elephant stays here",
+  "elephant.follows": "Your elephant follows you"
 }

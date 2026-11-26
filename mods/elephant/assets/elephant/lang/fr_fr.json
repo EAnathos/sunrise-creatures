@@ -5,5 +5,8 @@
   "subtitles.entity.elephant.trumpet": "Un éléphant barrit",
   "subtitles.entity.elephant.hurt": "Un éléphant est blessé",
   "subtitles.entity.elephant.death": "Un éléphant meurt",
-  "subtitles.entity.elephant.step": "Pas lourds"
+  "subtitles.entity.elephant.step": "Pas lourds",
+  "bestiary.elephant.tamed": "Apprivoisé",
+  "elephant.stays": "Votre éléphant reste ici",
+  "elephant.follows": "Votre éléphant vous suit"
 }
