@@ -19,7 +19,8 @@ redone after:
   library's `creature::pick`); walking one foot at a time (hind left, front left, hind right, front right), each foot
   planted while the body passes over it and swung forward quickly, the body dipping at each footfall; its ears
   fanning with a wide flap now and then, its trunk swaying, its tail flicking, its head nodding; its gear hidden; it
-  walks along the bottom of water rather than floating (it breathes through its trunk) and, moving itself (ridden,
+  swims as a horse does (wading along the bottom where the water is shallower than its eyes; deeper, swimming with its
+  head out, its riders falling off; drowning as any land creature once out of air) and, moving itself (ridden,
   charging, fleeing), hops up a step of one block; its spawning (savanna and savanna plateau, weight 2, groups of 2
   to 4, on open, about flat ground, not in water); its charge (`charge.rs`: hit, it runs at its attacker within 8
   blocks, strikes once for 4 damage and throws them back, then lets them go, 3 seconds before the next); its guide

@@ -26,9 +26,8 @@ use creature::state::EntityMap;
 use mod_api::{
     BlockEntityDrawContext, EntityInteractEvent, EntityJoinLevelEvent, EntityMountEvent, EntityRenderState,
     EntityRenderer, EntityTickPostEvent, Flow, GoalSpec, HitHost, Hooks, Host, HostSide, InteractionResult,
-    LivingBreatheEvent, LivingDeathEvent, LivingDropsEvent, LivingIncomingDamageEvent, LoopContext,
-    MobSpawnPlacementCheckEvent, RegisterEntityRenderersEvent, Registrar, RegistrationContext, ServerHost, SoundSource,
-    SpawnCheck,
+    LivingDeathEvent, LivingDropsEvent, LivingIncomingDamageEvent, MobSpawnPlacementCheckEvent,
+    RegisterEntityRenderersEvent, Registrar, RegistrationContext, ServerHost, SoundSource, SpawnCheck,
 };
 
 pub const ELEPHANT: &str = "elephant:elephant";
@@ -387,6 +386,29 @@ pub(crate) fn hop(m: &mut creature::body::Body, cx: &creature::body::World<'_>, 
 /// Its hop up a step (blocks a tick up: a little over a block).
 const HOP: f64 = 0.5;
 
+/// In water as a horse (SPECS §2): where the water is shallower than its eyes it wades along the bottom; deeper, its
+/// eyes under, it rises (`RISE` a tick, at most `RISE_MOST`) and swims with its head out, and its riders fall off. It
+/// drowns as any land creature once out of air.
+fn swim(host: &mut dyn ServerHost, id: u32) {
+    let Some(e) = host.entity(id) else {
+        return;
+    };
+    let under = e.eye_fluid(&*host).flatten().is_some_and(|f| f.contains("water"));
+    if !under {
+        return;
+    }
+    if e.passengers(&*host).is_some_and(|p| !p.is_empty()) {
+        e.eject_passengers(host);
+    }
+    if let Some(v) = e.velocity(&*host) {
+        e.set_velocity(host, [v[0], (v[1] + RISE).min(RISE_MOST), v[2]]);
+    }
+}
+
+/// How fast it rises in water, its eyes under (blocks a tick, each tick; at most).
+const RISE: f64 = 0.05;
+const RISE_MOST: f64 = 0.25;
+
 /// In love: a heart now and then, as vanilla's animals show.
 fn hearts(host: &mut dyn ServerHost, id: u32) {
     if !creature::growth::in_love(id) {
@@ -501,7 +523,7 @@ impl Hooks for Elephant {
             },
         );
         m.add_goal(host, 7, &GoalSpec::RandomLookAround);
-        // It walks along the bottom rather than floating at the top (SPECS §2), breathing through its trunk.
+        // Not vanilla's floating, which would keep its feet at the top of the water: it swims as a horse does (`swim`).
         let _ = m.remove_goal(host, "float");
         Flow::Continue
     }
@@ -564,13 +586,6 @@ impl Hooks for Elephant {
         Flow::Continue
     }
 
-    /// It breathes through its trunk: deep water never drowns it.
-    fn living_breathe(&self, _: &dyn LoopContext, event: &mut LivingBreatheEvent<'_>) {
-        if event.kind == ELEPHANT {
-            event.can_breathe = true;
-        }
-    }
-
     /// A young one drops nothing (SPECS §5): no meat, no tusk.
     fn living_drops(&self, _: &mut dyn ServerHost, event: &mut LivingDropsEvent<'_>) -> Flow {
         if event.kind == ELEPHANT && creature::growth::is_young(event.entity) {
@@ -623,6 +638,7 @@ impl Hooks for Elephant {
                 ]
             });
             charge::strike(host, id);
+            swim(host, id);
             charge::riders_hit(&*host, id);
             tame::eat(host, id);
             creature::sounds::play_queued(host, id, SoundSource::Neutral);
