@@ -174,6 +174,7 @@ impl Hooks for MagmaGolem {
                 ("minecraft:knockback_resistance".into(), Some(KNOCKBACK_RESISTANCE)),
                 ("minecraft:attack_damage".into(), Some(ATTACK_DAMAGE)),
                 ("minecraft:follow_range".into(), Some(SIGHT)),
+                ("minecraft:step_height".into(), Some(golem::STEP)),
             ],
         );
         let _ = r.modify_entity_attributes(glob::GLOB, vec![("minecraft:attack_damage".into(), Some(glob::DAMAGE))]);
@@ -201,6 +202,8 @@ impl Hooks for MagmaGolem {
         if let Some(living) = host.living(e) {
             let scale = creature::mob::client_box_scale(GOLEM);
             living.set_attribute_base(host, "minecraft:scale", f64::from(scale));
+            // Its steps take a block or two in their stride (`golem::STEP`).
+            living.set_attribute_base(host, "minecraft:step_height", golem::STEP);
         }
         e.set_fire_immunity(host, true);
         let Some(m) = host.mob(e) else {

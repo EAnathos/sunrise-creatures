@@ -2,7 +2,7 @@
 //! projectile of the library's (`creature::projectile`: `magma_golem:magma_glob`, a copy of the wandering trader that
 //! can't be hurt), thrown on an arc toward where the target stood. It hits the first time it comes within reach of its
 //! target (its `minecraft:attack_damage`, `DAMAGE`), sets it on fire, and bursts there, on the ground or against a wall,
-//! or after `LIFE` ticks: a small blast (`BLAST`) of flame and lava, fire on the ground around, and no block broken. Drawn as a small
+//! or after `LIFE` ticks: a small blast (`BLAST`) of flame and lava, fire on the ground around, and no block broken. Drawn as a
 //! magma block tumbling (no model of its own).
 use std::sync::OnceLock;
 
@@ -15,18 +15,18 @@ use mod_api::{
 pub const GLOB: &str = "magma_golem:magma_glob";
 /// Its box.
 pub const SIZE: creature::mob::Size = creature::mob::Size {
-    width: 0.8,
-    height: 0.8,
-    eye_height: 0.4,
+    width: 1.2,
+    height: 1.2,
+    eye_height: 0.6,
 };
 /// What it deals (its `minecraft:attack_damage`), and how long what it hits burns (ticks).
 pub const DAMAGE: f64 = 6.0;
 const BURN: i32 = 100;
 /// Its gravity (blocks per tick, each tick), its speed along the ground (blocks per tick), how close it must come to
-/// its target to hit it (blocks), and how long it may fly (ticks).
-const GRAVITY: f64 = 0.05;
-const SPEED: f64 = 0.8;
-const REACH: f64 = 0.8;
+/// its target to hit it (blocks), and how long it may fly (ticks): fast and flat, a slight arc.
+const GRAVITY: f64 = 0.03;
+const SPEED: f64 = 1.5;
+const REACH: f64 = 1.0;
 const LIFE: i32 = 120;
 /// Its burst: a blast of `BLAST` (a creeper's is 3) breaking no block, and fire on up to `FIRES` of the `SPLASH` spots.
 const BLAST: f32 = 1.0;
@@ -43,16 +43,25 @@ const SPLASH: [(i32, i32); 9] = [
     (-1, 2),
 ];
 
-/// The magma block's key, for the drawing (which has no host to ask): looked up at the first throw (single player).
+/// The magma block's key, for the drawings (which have no host to ask): looked up at the first wind-up (single player).
 static MAGMA_BLOCK: OnceLock<BlockKey> = OnceLock::new();
 
-/// From the golem's fight: a glob lobbed from `from` at what stands at `to` (`target`, an entity id).
-pub fn throw(host: &mut dyn ServerHost, dimension: &str, from: [f64; 3], to: [f64; 3], target: u32) {
+/// From the golem's fight, as it starts tearing a glob off: the drawings' block key, if not known yet.
+pub fn prepare(host: &dyn ServerHost) {
     if MAGMA_BLOCK.get().is_none()
         && let Some(key) = host.block_key("minecraft:magma_block")
     {
         let _ = MAGMA_BLOCK.set(key);
     }
+}
+
+/// The magma block's key, for the golem's drawing of the glob in its hand.
+pub fn magma_block() -> Option<BlockKey> {
+    MAGMA_BLOCK.get().copied()
+}
+
+/// From the golem's fight: a glob lobbed from `from` at what stands at `to` (`target`, an entity id).
+pub fn throw(host: &mut dyn ServerHost, dimension: &str, from: [f64; 3], to: [f64; 3], target: u32) {
     let launch = Launch {
         velocity: projectile::aim(from, to, SPEED, GRAVITY),
         gravity: GRAVITY,
@@ -128,20 +137,20 @@ pub fn tick(host: &mut dyn ServerHost, entity: u32) {
     e.discard(host);
 }
 
-/// Draws a glob: a small magma block tumbling along its flight.
+/// Draws a glob: a magma block tumbling along its flight.
 pub struct Draw;
 
 impl EntityRenderer for Draw {
     fn submit(&self, entity: &EntityRenderState, draw: &mut dyn BlockEntityDrawContext) -> Result<(), String> {
-        let Some(&key) = MAGMA_BLOCK.get() else {
+        let Some(key) = magma_block() else {
             return Ok(());
         };
         let spin = entity.age * 20.0;
         draw.push();
-        draw.translate([0.0, 0.35, 0.0]);
+        draw.translate([0.0, 0.6, 0.0]);
         draw.rotate_about([1.0, 0.0, 0.0], spin, [0.0; 3]);
         draw.rotate_about([0.0, 1.0, 0.0], spin * 0.6, [0.0; 3]);
-        draw.scale([0.6; 3]);
+        draw.scale([1.1; 3]);
         draw.translate([-0.5, -0.5, -0.5]);
         draw.block(key, &[]);
         draw.pop();

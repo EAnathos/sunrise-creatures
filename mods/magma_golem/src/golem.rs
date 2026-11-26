@@ -5,8 +5,8 @@
 //! while without a target. What its drawing needs is kept by its id (`Shown`, single player: the renderer reads it).
 use creature::state::{EntityMap, EntitySet};
 use mod_api::{
-    BlockState, BlockUpdateFlags, BossBarColor, BossBarOverlay, Compound, HostBlockStates, LevelRef, LivingRef,
-    ServerHost, SoundSource, Tag, Text,
+    BlockState, BlockUpdateFlags, BossBarColor, BossBarOverlay, Compound, EntityRef, HostBlockStates, LevelRef,
+    LivingRef, MobRef, ServerHost, SoundSource, Tag, Text,
 };
 
 use crate::{GOLEM, glob};
@@ -35,29 +35,37 @@ const POUND_BACK: f64 = 1.2;
 const POUND_FIRES: usize = 6;
 /// Where its pound lights fires: a ring 3 blocks around it.
 const RING: [(i32, i32); 8] = [(3, 0), (-3, 0), (0, 3), (0, -3), (2, 2), (-2, -2), (2, -2), (-2, 2)];
-/// The magma glob: a target `GLOB_FROM` to `GLOB_TO` blocks away (nearer, it leaps), torn and lifted for `GLOB_WINDUP` ticks, then
-/// lobbed from over its head; one every `GLOB_EVERY` ticks.
+/// The magma glob: a target `GLOB_FROM` to `GLOB_TO` blocks away, torn off and held overhead for `GLOB_WINDUP` ticks,
+/// then thrown from `GLOB_HEIGHT` blocks up at its chest (`GLOB_AIM` over its feet); one every `GLOB_EVERY` ticks.
 const GLOB_FROM: f64 = 12.0;
 const GLOB_TO: f64 = 24.0;
-pub(crate) const GLOB_WINDUP: i32 = 20;
+pub(crate) const GLOB_WINDUP: i32 = 32;
 const GLOB_EVERY: i32 = 80;
-const GLOB_HEIGHT: f64 = 6.2;
-/// Its chase: how fast it walks to its target (a multiplier of its speed), how near it stops, how often it finds a new
-/// path (ticks). Moving less than `STUCK_MOVE` blocks a tick for `STUCK / 2` ticks, it pushes straight on (`PUSH`
-/// blocks a tick); for `STUCK` ticks, it leaps.
-const CHASE: f64 = 1.15;
+const GLOB_HEIGHT: f64 = 8.5;
+const GLOB_AIM: f64 = 1.0;
+/// Its chase: straight at its target at `STRIDE` blocks a tick, turned to face it, over steps up to `STEP` blocks high
+/// (its `minecraft:step_height`), stopping `CLOSE` blocks from it. A target more than `DIRECT_RISE` blocks above or
+/// below, or a straight run that has come no nearer by `PROGRESS` blocks in `STALLED` ticks, and it follows a path
+/// instead for `DETOUR` ticks (a new one every `REPATH`, at `CHASE` times its speed). Held still `BLOCKED` ticks on
+/// the way, it jumps.
+const STRIDE: f64 = 0.22;
+pub(crate) const STEP: f64 = 2.0;
 const CLOSE: f64 = 3.0;
+const DIRECT_RISE: f64 = 3.0;
+const PROGRESS: f64 = 1.0;
+const STALLED: i32 = 30;
+const DETOUR: i32 = 80;
 const REPATH: i32 = 10;
-const STUCK_MOVE: f64 = 0.03;
-const STUCK: i32 = 40;
-const PUSH: f64 = 0.18;
-/// The leap: a target `LEAP_FROM` to `LEAP_TO` blocks away across, a crouch of `LEAP_WINDUP` ticks, then a spring of
+const CHASE: f64 = 1.2;
+const BLOCKED: i32 = 8;
+const STILL: f64 = 0.03;
+/// The leap: a target `LEAP_FROM` to `LEAP_TO` blocks away across (never nearer), a crouch of `LEAP_WINDUP` ticks, then a spring of
 /// `LEAP_UP` blocks a tick up (more for a target up to `LEAP_RISE` blocks higher), at most `LEAP_FASTEST` across,
 /// landing `LEAP_SHORT` blocks short of it; at most `LEAP_AIRTIME` ticks in the air. Its landing hurts the players
 /// within `LEAP_REACH` blocks by `LEAP_DAMAGE`, throwing them `LEAP_BACK` across and `LEAP_THROW` up. One every
 /// `LEAP_EVERY` ticks.
-const LEAP_FROM: f64 = 6.0;
-const LEAP_TO: f64 = 16.0;
+const LEAP_FROM: f64 = 9.0;
+const LEAP_TO: f64 = 18.0;
 pub(crate) const LEAP_WINDUP: i32 = 14;
 const LEAP_UP: f64 = 0.9;
 const LEAP_RISE: f64 = 6.0;
@@ -68,7 +76,7 @@ const LEAP_REACH: f64 = 4.0;
 const LEAP_DAMAGE: f32 = 10.0;
 const LEAP_BACK: f64 = 1.0;
 const LEAP_THROW: f64 = 0.5;
-const LEAP_EVERY: i32 = 120;
+const LEAP_EVERY: i32 = 300;
 /// Healing in lava: health a tick (2 a second).
 const LAVA_HEAL: f32 = 0.1;
 /// Enraged under this share of its health: faster (its speed times `RAGE_SPEED`), its attacks' wind-ups shorter, and
@@ -136,10 +144,14 @@ struct Golem {
     leap: i32,
     /// Ticks in the air since it sprang (0 on the ground).
     aloft: i32,
-    /// Ticks until its next path, where it stood last tick, and the ticks it has hardly moved while chasing.
+    /// Its chase: ticks left following a path (0: straight), until its next path; its nearest to its target on this
+    /// run and the ticks since; where it stood last tick and the ticks it has hardly moved.
+    detour: i32,
     repath: i32,
+    nearest: f64,
+    stalled: i32,
     last: Option<[f64; 3]>,
-    stuck: i32,
+    held: i32,
     enraged: bool,
     /// Its snow hits (the game's tick of each), and the ticks it stays crusted.
     snow: Vec<i64>,
@@ -407,7 +419,7 @@ fn fight(host: &mut dyn ServerHost, dimension: &str, id: u32, g: &mut Golem, at:
         Attack::Glob(t) if t >= pace(GLOB_WINDUP) => {
             if let Some((tid, p)) = target {
                 let from = [at[0], at[1] + GLOB_HEIGHT, at[2]];
-                glob::throw(host, dimension, from, p, tid);
+                glob::throw(host, dimension, from, [p[0], p[1] + GLOB_AIM, p[2]], tid);
             }
             g.attack = Attack::None;
             g.glob = GLOB_EVERY;
@@ -445,7 +457,7 @@ fn fight(host: &mut dyn ServerHost, dimension: &str, id: u32, g: &mut Golem, at:
     }
     let Some((_, p)) = target else {
         g.idle += 1;
-        g.stuck = 0;
+        g.last = None;
         if g.idle >= IDLE && g.attack == Attack::None {
             g.mode = Mode::LyingDown(0);
             m.stop(host);
@@ -466,40 +478,75 @@ fn fight(host: &mut dyn ServerHost, dimension: &str, id: u32, g: &mut Golem, at:
         } else if g.slam == 0 && d <= SLAM_REACH {
             g.attack = Attack::Slam(0);
             m.stop(host);
-        } else if g.leap == 0
-            && grounded
-            && ((LEAP_FROM..=LEAP_TO).contains(&across) || (g.stuck >= STUCK && across > SLAM_REACH))
-        {
+        } else if g.leap == 0 && grounded && (LEAP_FROM..=LEAP_TO).contains(&across) {
             g.attack = Attack::Leap(0);
-            g.stuck = 0;
             m.stop(host);
         } else if g.glob == 0 && (GLOB_FROM..=GLOB_TO).contains(&d) {
             g.attack = Attack::Glob(0);
             m.stop(host);
+            glob::prepare(&*host);
             sound(host, level, at, GRIND, 1.2, 0.7);
         }
     }
     if g.attack != Attack::None || d <= CLOSE {
-        g.stuck = 0;
         g.last = None;
         return;
     }
-    // The chase: a new path every `REPATH` ticks; held back (by its size, a ledge), it pushes straight on.
-    g.repath = (g.repath - 1).max(0);
-    if g.repath == 0 {
-        m.move_to(host, p, CHASE);
-        g.repath = REPATH;
+    chase(host, g, e, m, at, p, across);
+}
+
+/// Its chase (`STRIDE`, `DETOUR`): straight at the target at `p`, `across` blocks off, or along a path when the
+/// straight way fails.
+fn chase(host: &mut dyn ServerHost, g: &mut Golem, e: EntityRef, m: MobRef, at: [f64; 3], p: [f64; 3], across: f64) {
+    let pace = if g.crusted > 0 {
+        0.5
+    } else if g.enraged {
+        RAGE_SPEED
+    } else {
+        1.0
+    };
+    // A new run (after an attack, or none before): its progress counted from here.
+    if g.last.is_none() {
+        g.nearest = across;
+        g.stalled = 0;
     }
+    // No nearer for a while on the straight way: a path round.
+    if across < g.nearest - PROGRESS {
+        g.nearest = across;
+        g.stalled = 0;
+    } else {
+        g.stalled += 1;
+    }
+    if g.detour == 0 && ((p[1] - at[1]).abs() > DIRECT_RISE || g.stalled >= STALLED) {
+        g.detour = DETOUR;
+        g.repath = 0;
+    }
+    if g.detour > 0 {
+        g.detour -= 1;
+        g.repath = (g.repath - 1).max(0);
+        if g.repath == 0 {
+            m.move_to(host, p, CHASE * pace);
+            g.repath = REPATH;
+        }
+        if g.detour == 0 {
+            // Back to the straight way, its progress counted afresh.
+            g.nearest = across;
+            g.stalled = 0;
+            m.stop(host);
+        }
+    } else if let Some(v) = e.velocity(&*host) {
+        let (dx, dz) = ((p[0] - at[0]) / across.max(0.01), (p[2] - at[2]) / across.max(0.01));
+        let stride = STRIDE * pace;
+        e.set_velocity(host, [dx * stride, v[1], dz * stride]);
+        e.set_rotation(host, creature::flight::heading_of(dx, dz), 0.0);
+    }
+    // Held still on the way (a wall its steps don't take): it jumps.
     let moved = g.last.map_or(1.0, |l| (at[0] - l[0]).hypot(at[2] - l[2]));
     g.last = Some(at);
-    g.stuck = if moved < STUCK_MOVE { g.stuck + 1 } else { 0 };
-    if g.stuck >= STUCK / 2
-        && grounded
-        && let Some(v) = e.velocity(&*host)
-    {
-        let push = PUSH * if g.enraged { RAGE_SPEED } else { 1.0 };
-        let (dx, dz) = ((p[0] - at[0]) / across.max(0.01), (p[2] - at[2]) / across.max(0.01));
-        e.set_velocity(host, [dx * push, v[1], dz * push]);
+    g.held = if moved < STILL { g.held + 1 } else { 0 };
+    if g.held >= BLOCKED && e.on_ground(&*host) == Some(true) {
+        m.jump(host);
+        g.held = 0;
     }
 }
 

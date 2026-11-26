@@ -108,6 +108,33 @@ pub fn draw_layer(
     tint: u32,
     inflate: f32,
 ) {
+    walk(draw, part, texture, pose, shown, tint, inflate, &mut |_, _| {});
+}
+
+/// `draw`, then `attach` called after each group's cubes with that group's name, in its posed space (blocks, from the
+/// model's origin): what a creature holds follows its hand (`attach` draws it on `"fist_left"`).
+pub fn draw_attached(
+    draw: &mut dyn BlockEntityDrawContext,
+    part: &Part,
+    texture: &'static str,
+    pose: &dyn Fn(&str) -> [f32; 3],
+    tint: u32,
+    attach: &mut dyn FnMut(&str, &mut dyn BlockEntityDrawContext),
+) {
+    walk(draw, part, texture, pose, &|_| true, tint, 0.0, attach);
+}
+
+#[allow(clippy::too_many_arguments)]
+fn walk(
+    draw: &mut dyn BlockEntityDrawContext,
+    part: &Part,
+    texture: &'static str,
+    pose: &dyn Fn(&str) -> [f32; 3],
+    shown: &dyn Fn(&str) -> bool,
+    tint: u32,
+    inflate: f32,
+    attach: &mut dyn FnMut(&str, &mut dyn BlockEntityDrawContext),
+) {
     if !shown(part.name) {
         return;
     }
@@ -129,8 +156,9 @@ pub fn draw_layer(
         let to = cube.to.map(|v| v + inflate);
         draw.cube(from, to, faces, tint);
     }
+    attach(part.name, draw);
     for child in part.children {
-        draw_layer(draw, child, texture, pose, shown, tint, inflate);
+        walk(draw, child, texture, pose, shown, tint, inflate, attach);
     }
     draw.pop();
 }

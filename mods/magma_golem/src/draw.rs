@@ -1,10 +1,10 @@
 //! Its drawing (SPECS §2.1): its model posed from its render state and what its tick shows of it (`golem::shown`,
 //! single player), then its seams drawn full-bright over it (`GLOW`, the texture's glowing pixels alone): pulsing
-//! slowly asleep, its eyes dark; blazing enraged; gone dark crusted.
+//! slowly asleep, its eyes dark; blazing enraged; gone dark crusted. The glob it is about to throw is drawn in its fist.
 use mod_api::{BlockEntityDrawContext, EntityRenderState, EntityRenderer};
 
 use crate::golem::{self, Attack, Mode, Shown};
-use crate::{TEXTURE, model};
+use crate::{TEXTURE, glob, model};
 
 /// Its texture's glowing pixels (the seams, the lava, the eyes, the maw), drawn full-bright over it.
 const GLOW: &str = "magma_golem:entity/magma_golem/magma_golem_glow";
@@ -15,8 +15,14 @@ const GLOW_AWAKE: u32 = 0xFFD8D8D8;
 const GLOW_RAGE: u32 = 0xFFFFFFFF;
 /// How far the mound sinks into a crouch (blocks): its folded legs no longer hold it up.
 const MOUND_DROP: f32 = 1.6;
-/// How much larger its seams are drawn than its rock.
-const GLOW_OVER: f32 = 1.003;
+/// How much larger its seams are drawn than its rock (texels each side), so the two don't fight for the same pixels.
+const GLOW_OVER: f32 = 0.05;
+/// The glob in its hand: where (blocks, in its fist's space: beyond its knuckles, on top once raised), how big at the
+/// most (a block's width), how far into the wind-up it is torn off whole and its arm is up.
+const HELD_AT: [f32; 3] = [-25.0 / 16.0, -0.3, 3.0 / 16.0];
+const HELD_SIZE: f32 = 1.1;
+const TORN: f32 = 0.4;
+const RAISED: f32 = 0.6;
 
 /// What its pose reads of a frame: its walk's progress and speed, its head's turn and pitch (degrees), its age (ticks).
 #[derive(Clone, Copy, Debug, Default)]
@@ -130,10 +136,15 @@ fn attack(name: &str, shown: &Shown) -> [f32; 3] {
         (Attack::Pound(_), "arm_left" | "arm_right") => [-170.0 * t, 0.0, 0.0],
         (Attack::Pound(_), "jaw") => [25.0 * t, 0.0, 0.0],
         (Attack::Pound(_), "head") => [-15.0 * t, 0.0, 0.0],
-        (Attack::Glob(_), "arm_left") => [-175.0 * t, 0.0, -15.0 * t],
-        (Attack::Glob(_), "forearm_left") => [-30.0 * t, 0.0, 0.0],
+        (Attack::Glob(_), "arm_left") => [-175.0 * up(t), 0.0, -15.0 * up(t)],
+        (Attack::Glob(_), "forearm_left") => [-30.0 * up(t), 0.0, 0.0],
         _ => [0.0; 3],
     }
+}
+
+/// How far its arm is up, `t` into its glob's wind-up: up at `RAISED`, then held there.
+fn up(t: f32) -> f32 {
+    (t / RAISED).min(1.0)
 }
 
 /// Its leap: crouched `Some(t)` of the way, or in the air (`None`).
@@ -194,7 +205,24 @@ impl EntityRenderer for Draw {
         draw.translate([0.0, -MOUND_DROP * curled(shown.mode) - crouch_drop(&shown), 0.0]);
         let pose = |part: &str| pose(part, &now, &shown);
         let tint = creature::model::tint(mob);
-        creature::model::draw_shown(draw, &model::MAGMA_GOLEM, TEXTURE, &pose, &|_| true, tint);
+        // The glob it is about to throw, in its left fist: torn off, growing, then lifted overhead.
+        let held = match (shown.attack, glob::magma_block()) {
+            (Attack::Glob(_), Some(key)) => windup(shown.attack).map(|(t, _)| (key, (t / TORN).min(1.0))),
+            _ => None,
+        };
+        creature::model::draw_attached(draw, &model::MAGMA_GOLEM, TEXTURE, &pose, tint, &mut |part, draw| {
+            if let Some((key, grown)) = held
+                && part == "fist_left"
+            {
+                draw.push();
+                draw.translate(HELD_AT);
+                draw.rotate_about([0.0, 1.0, 0.0], now.age * 6.0, [0.0; 3]);
+                draw.scale([HELD_SIZE * (0.3 + 0.7 * grown); 3]);
+                draw.translate([-0.5, -0.5, -0.5]);
+                draw.block(key, &[]);
+                draw.pop();
+            }
+        });
         // Its seams: dark crusted; asleep a slow pulse and its eyes shut.
         let asleep = shown.mode == Mode::Dormant;
         if !shown.crusted {
@@ -208,10 +236,8 @@ impl EntityRenderer for Draw {
                 GLOW_AWAKE
             };
             draw.set_light(FULL_BRIGHT);
-            // A hair larger than the rock it lies on, so the two don't fight for the same pixels.
-            draw.scale([GLOW_OVER; 3]);
             let lit = |part: &str| !(asleep && part.starts_with("eye_"));
-            creature::model::draw_shown(draw, &model::MAGMA_GOLEM, GLOW, &pose, &lit, colour);
+            creature::model::draw_layer(draw, &model::MAGMA_GOLEM, GLOW, &pose, &lit, colour, GLOW_OVER);
         }
         draw.pop();
         Ok(())

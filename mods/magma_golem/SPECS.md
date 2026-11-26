@@ -20,8 +20,9 @@ Tried in game: it spawns in the Nether; the rest is being tried, its numbers the
   dark, brighter enraged, dark crusted; its light (the library's coloured light, `creature::glow`: seen only, it
   lights no block). Its sleep and fight (`golem.rs`): it wakes when a player comes within 6 blocks, hits it or mines
   within 4 blocks of it; its boss bar (the players within 48 blocks; bars left by a closed game are swept); its chase
-  (a new path every half second, the nearest player in its sight when the game gives it no target, pushing straight
-  on when its size or a ledge holds it back); the fist slam, the ground pound (fire left around, small magma cubes
+  (straight at its target over steps up to 2 blocks, jumping when a wall holds it; a path round when the target is
+  far above or below or the straight way stops bringing it nearer; the nearest player in its sight when the game
+  gives it no target); the fist slam, the ground pound (fire left around, small magma cubes
   shed enraged), the leap, the magma glob (`glob.rs`, the library's lobbed projectile, its blast and fire); it heals in lava, is enraged under half health (faster, shorter wind-ups), crusted by 5
   snowballs within 4 seconds or a splash water bottle (slowed, double damage taken) and lies down again after
   2 minutes without a target, its health restored. Its spawning (`spawn.rs`): in the Nether's basalt deltas and wastes
@@ -73,10 +74,12 @@ Tried in game: it spawns in the Nether; the rest is being tried, its numbers the
   - **Fist slam**: in reach (4 blocks), 14 damage and sets on fire.
   - **Ground pound**: when players are within 6 blocks, both fists on the ground: a shockwave (8 damage, thrown up and
     back, set on fire), fire left around it.
-  - **Leap**: a player 6 to 16 blocks away, or one it can't walk to: it crouches and springs, landing just short of
-    them; its landing hurts the players within 4 blocks (10 damage, thrown up and back). It takes no fall damage.
-  - **Magma glob**: at range (12 to 24 blocks, while it can't leap), it tears a glob of magma from its body and lobs
-    it on an arc (6 damage, sets on fire, a small blast and fire where it lands, breaks no block).
+  - **Leap**: a player 9 to 18 blocks away (never nearer), once every 15 seconds at most: it crouches and springs,
+    landing just short of them; its landing hurts the players within 4 blocks (10 damage, thrown up and back). It
+    takes no fall damage.
+  - **Magma glob**: at range (12 to 24 blocks, while it can't leap), it tears a glob of magma (a block wide) from its
+    body, holds it overhead, and throws it fast on a slight arc (6 damage, sets on fire, a small blast and fire where
+    it lands, breaks no block).
   - **Enraged** under half health: its cracks blaze brighter, it moves faster, and each ground pound sheds 1 or 2
     small magma cubes.
 - **Cooled by snow**: snowballs hurt it (3 damage) and a few in a row (5 within 4 seconds) **crust it over**: its cracks
@@ -101,8 +104,8 @@ ticks, slow and heavy, the ground shaking under it (dust and rock particles, a d
   blow; it straightens again.
 - **Ground pound**: both arms rise over its head (1 s, the warning), the jaw opens, both fists come down together, the
   body dropping with them.
-- **Magma glob**: one hand tears a glob from the opposite shoulder, lifts it over the head and lobs it (the library's
-  throw timing, common/SPECS.md §3.9).
+- **Magma glob**: one hand tears a glob from its body (the glob growing in its fist), lifts it over the head and holds
+  it there (1.6 s in all), then throws it.
 - **Leap**: a crouch (0.7 s, the body sinking, the arms swung back), then in the air the arms thrown up and the legs
   tucked, the jaw open; it lands on its feet.
 - **Hurt**: a short flinch back, the head jerking.
