@@ -35,3 +35,11 @@ grass to do the same by hand, or put it in a composter, where it always adds a l
 Catch one with the series' glass jar and let it out among at least 3 grazing animals (within 8 blocks): it settles in
 that pasture, follows the herd there, buries its balls there and never wanders off. With the herd gone, it is free
 again.
+
+## Licence
+
+Required Notice: Copyright (c) 2026 EAnathos (https://github.com/EAnathos/sunrise-creatures)
+
+The code is under the [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0).
+The artwork (models, textures, icons, pictures) is the author's, all rights reserved, under the terms of
+[LICENSE-ART.md](https://github.com/EAnathos/sunrise-creatures/blob/main/LICENSE-ART.md). The sounds are CC0.

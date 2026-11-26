@@ -126,8 +126,8 @@ common/                 the library
                         its registry page)
   CHANGELOG.md          its versions' changes
   SPECS.md, README.md
-  page.toml, page/,     a published module's release files (its registry page, its pictures, its icon, the
-  icon.png, LICENSE*    licences), written by `cargo creature pages`; Cargo.lock, committed
+  page.toml, page/,     a published module's release files (its registry page, its pictures, its icon), written
+  icon.png              by `cargo creature pages`; Cargo.lock, committed
   sunrise-mod.toml      the package (id, version, [native] pins); with Cargo.toml (crate `mod-creature`, reached as
   Cargo.toml, src/      `creature`), src/, assets/creature/, data/creature/ (blocks, items, tab in data/creature/sunrise/)
   assets/, data/

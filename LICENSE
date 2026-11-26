@@ -4,8 +4,8 @@ Required Notice: Copyright (c) 2026 EAnathos (https://github.com/EAnathos/sunris
 
 The code, data and text of this repository (the Rust sources, the tools, the data and language files, the
 documentation) are licensed under the PolyForm Noncommercial License 1.0.0, below: you may use, change, fork and
-share them for any noncommercial purpose, keeping this licence and the Required Notice line above with every copy
-(which credits the author).
+share them for any noncommercial purpose, keeping this licence (or its URL, below) and the Required Notice line above
+with every copy (which credits the author).
 
 The artwork is not covered by this licence: the models, the textures, the icons, the pictures and the code generated
 from the models are the author's, all rights reserved, under the terms of LICENSE-ART.md. A fork may not use them.

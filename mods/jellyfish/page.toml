@@ -29,6 +29,14 @@ Use a water bucket on a jellyfish to catch it, then use the bucket on a block to
 aquarium: it keeps its kind and never wanders off for good. Out of water a jellyfish flops and dries out within a
 minute. Jellyfish drop jelly, which crafts into slime balls, and glow jellies glow jelly, which crafts into glow ink
 sacs.
+
+## Licence
+
+Required Notice: Copyright (c) 2026 EAnathos (https://github.com/EAnathos/sunrise-creatures)
+
+The code is under the [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0).
+The artwork (models, textures, icons, pictures) is the author's, all rights reserved, under the terms of
+[LICENSE-ART.md](https://github.com/EAnathos/sunrise-creatures/blob/main/LICENSE-ART.md). The sounds are CC0.
 """
 categories = ["mobs", "decoration"]
 

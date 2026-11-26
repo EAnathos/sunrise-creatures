@@ -31,3 +31,11 @@ it walks to the trunk and climbs back up to the canopy. A stick insect drops a s
 
 Catch one with the series' glass jar and let it out on the leaves or the trunk of a tree of yours (one with at least 10
 leaves): it settles in that tree.
+
+## Licence
+
+Required Notice: Copyright (c) 2026 EAnathos (https://github.com/EAnathos/sunrise-creatures)
+
+The code is under the [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0).
+The artwork (models, textures, icons, pictures) is the author's, all rights reserved, under the terms of
+[LICENSE-ART.md](https://github.com/EAnathos/sunrise-creatures/blob/main/LICENSE-ART.md). The sounds are CC0.

@@ -33,3 +33,11 @@ fish, and in the flying fish's oceans now and then a flying fish.
 
 Seagulls drop seagull feathers, which make arrows, a brush or a book and quill as a feather does, and raw seagull,
 which cooks in a furnace, a smoker or on a campfire.
+
+## Licence
+
+Required Notice: Copyright (c) 2026 EAnathos (https://github.com/EAnathos/sunrise-creatures)
+
+The code is under the [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0).
+The artwork (models, textures, icons, pictures) is the author's, all rights reserved, under the terms of
+[LICENSE-ART.md](https://github.com/EAnathos/sunrise-creatures/blob/main/LICENSE-ART.md). The sounds are CC0.

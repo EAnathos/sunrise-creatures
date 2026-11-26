@@ -8,8 +8,11 @@
 //! `cargo creature pages` and checked by `cargo creature check`:
 //! - `page.toml`: `[registry]`'s summary and categories, the README as the description (`description`), its pictures;
 //! - `page/`: the pictures, `[registry]`'s screenshots in their order (`<n>-<name>.png|.jpg`);
-//! - `icon.png`: its icon (`icon.rs`), on its page and in the game's Mods screen;
-//! - `LICENSE` and `LICENSE-ART.md`: the code's licence and the artwork's, copies of the repository's.
+//! - `icon.png`: its icon (`icon.rs`), on its page and in the game's Mods screen.
+//!
+//! The licences travel in its README instead of copies of the repository's files: it ends with `LICENCE`, the code's
+//! Required Notice and the links to its licence and the artwork's (PolyForm Noncommercial asks only that a copy comes
+//! with those terms or their URL, and the Required Notice), which the package carries and the page shows.
 //!
 //! Its `Cargo.lock` is committed too, as Cargo writes it.
 //!
@@ -105,6 +108,21 @@ pub fn stale(m: &Module) -> crate::Result<Vec<String>> {
             .iter()
             .map(|p| format!("{}: not a listed picture, run `cargo creature pages`", rel(p))),
     );
+    let readme = m.dir.join("README.md");
+    if !std::fs::read_to_string(&readme).is_ok_and(|t| t.trim_end().ends_with(LICENCE.trim_end())) {
+        out.push(format!(
+            "{}: doesn't end with the series' licence section (`release::LICENCE`)",
+            rel(&readme)
+        ));
+    }
+    for copy in ["LICENSE", "LICENSE-ART.md"] {
+        if m.dir.join(copy).exists() {
+            out.push(format!(
+                "{}: not needed, the README carries the licences",
+                rel(&m.dir.join(copy))
+            ));
+        }
+    }
     if m.native().is_some() && !m.dir.join("Cargo.lock").is_file() {
         out.push(format!(
             "{}: missing (a native release carries its lock: `cargo generate-lockfile` there)",
@@ -113,6 +131,17 @@ pub fn stale(m: &Module) -> crate::Result<Vec<String>> {
     }
     Ok(out)
 }
+
+/// How every published module's README ends: the licences, which its package carries (as the README) and its page
+/// shows. The Required Notice stays a plain line, as PolyForm Noncommercial asks.
+pub const LICENCE: &str = "## Licence
+
+Required Notice: Copyright (c) 2026 EAnathos (https://github.com/EAnathos/sunrise-creatures)
+
+The code is under the [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0).
+The artwork (models, textures, icons, pictures) is the author's, all rights reserved, under the terms of
+[LICENSE-ART.md](https://github.com/EAnathos/sunrise-creatures/blob/main/LICENSE-ART.md). The sounds are CC0.
+";
 
 /// The files in `page/` that aren't among `files`.
 fn unlisted(m: &Module, files: &[(PathBuf, Vec<u8>)]) -> Vec<PathBuf> {
@@ -145,11 +174,8 @@ pub fn files(m: &Module) -> crate::Result<Vec<(PathBuf, Vec<u8>)>> {
     files.extend(pictures.into_iter().map(|(n, bytes)| (PathBuf::from(n), bytes)));
     let icon = crate::root().join(format!("target/icons/{}.png", m.id));
     crate::icon::make(&m.id, &registry.icon, &icon)?;
-    let read = |p: &Path| std::fs::read(p).map_err(|e| format!("{}: {e}", p.display()));
-    files.push((PathBuf::from("icon.png"), read(&icon)?));
-    for licence in ["LICENSE", "LICENSE-ART.md"] {
-        files.push((PathBuf::from(licence), read(&crate::root().join(licence))?));
-    }
+    let bytes = std::fs::read(&icon).map_err(|e| format!("{}: {e}", icon.display()))?;
+    files.push((PathBuf::from("icon.png"), bytes));
     Ok(files)
 }
 

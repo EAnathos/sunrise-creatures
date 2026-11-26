@@ -175,7 +175,7 @@ fn module(m: &Module, mods: &[Module], revision: &(String, String), errors: &mut
         ));
     }
     // A published module: its release files up to date (its page as the registry checks it, its pictures, icon,
-    // licences, lock), a changelog for its version, and the workflow its release tag runs.
+    // licence section, lock), a changelog for its version, and the workflow its release tag runs.
     if m.registry.is_some() {
         match crate::release::stale(m) {
             Ok(problems) => problems.into_iter().for_each(&mut push),

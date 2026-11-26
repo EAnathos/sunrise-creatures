@@ -8,8 +8,11 @@ registered by its package folder (`common`, `mods/<id>`; the repository's regist
 [MOD-POLICY.md](https://github.com/sunrise-org/sunrise-mods/blob/main/MOD-POLICY.md): the right to publish everything
 in it under its licence, no Minecraft game files (our packages hold only our own namespaces), nothing hidden. Ours:
 the code under PolyForm Noncommercial 1.0.0, the artwork the author's under its own terms, the sounds CC0; the
-manifests' `license` is `PolyForm-Noncommercial-1.0.0 AND LicenseRef-SunriseCreatures-Art`, and each package carries
-`LICENSE` and `LICENSE-ART.md`.
+manifests' `license` is `PolyForm-Noncommercial-1.0.0 AND LicenseRef-SunriseCreatures-Art`. The registry asks for
+nothing more, and PolyForm Noncommercial only that a copy comes with its terms or their URL and the Required Notice:
+so each published module's README, which its package carries and its page shows, ends with the series' licence section
+(the Required Notice and the two licences' links, `tools/src/release.rs`, `LICENCE`; `cargo creature check` holds it),
+rather than copies of `LICENSE` and `LICENSE-ART.md` in every folder.
 
 ## How a release works
 
@@ -43,8 +46,9 @@ Everything the workflow needs is committed in the module's folder:
 - **Its release files**, written from those by `cargo creature pages` (never by hand; `cargo creature check` fails
   when one is stale): `page.toml` (the summary, the categories, the pictures, and the README as the description: its
   title and its image lines left out, its links made absolute at the version's tag; a 0.x version's page opens with a
-  "Beta" line, the series being in beta until 1.0), `page/<n>-<name>.png|.jpg` (the pictures), `icon.png` (its page's
-  and the game's Mods screen's), `LICENSE` and `LICENSE-ART.md` (copies of the repository's).
+  "Beta" line, the series being in beta until 1.0), `page/<n>-<name>.png|.jpg` (the pictures) and `icon.png` (its
+  page's and the game's Mods screen's).
+- **`README.md`** ending with the series' licence section (above).
 - **`Cargo.lock`**, committed: a native release carries it, and a stale one fails the registry's scan. Cargo writes it
   (`cargo generate-lockfile` in the folder, once `cargo sunrise-mod check` has fetched the SDK).
 - **`sunrise-mod.toml`**: its `name`, `version`, `authors`, `license`, `description`, `homepage` and `issues`, its

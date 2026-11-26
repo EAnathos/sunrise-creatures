@@ -48,3 +48,11 @@ It always flies forward and goes where you look, banking into its turns.
 
 Its sounds are made from [CC0](https://creativecommons.org/publicdomain/zero/1.0/) recordings from
 [freesound.org](https://freesound.org) (hissing geese, wings, a vulture imitation).
+
+## Licence
+
+Required Notice: Copyright (c) 2026 EAnathos (https://github.com/EAnathos/sunrise-creatures)
+
+The code is under the [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0).
+The artwork (models, textures, icons, pictures) is the author's, all rights reserved, under the terms of
+[LICENSE-ART.md](https://github.com/EAnathos/sunrise-creatures/blob/main/LICENSE-ART.md). The sounds are CC0.

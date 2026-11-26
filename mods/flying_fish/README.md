@@ -30,3 +30,11 @@ Use a water bucket on a flying fish to catch it, then use the bucket on a block 
 its kind and never wanders off for good. A flying fish that lands on the shore flops and dries out within 30 seconds:
 pick it up with a right-click. Flying fish drop raw flying fish, which cook in a furnace, a smoker or on a campfire. Fishing with a rod in
 lukewarm and warm oceans brings some up too, and cats and ocelots take them as they take cod.
+
+## Licence
+
+Required Notice: Copyright (c) 2026 EAnathos (https://github.com/EAnathos/sunrise-creatures)
+
+The code is under the [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0).
+The artwork (models, textures, icons, pictures) is the author's, all rights reserved, under the terms of
+[LICENSE-ART.md](https://github.com/EAnathos/sunrise-creatures/blob/main/LICENSE-ART.md). The sounds are CC0.

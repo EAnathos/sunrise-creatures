@@ -69,8 +69,8 @@ only). How the port went is in the history (`git show 2c09384:docs/SUNRISE-PORT.
 - Publishing: each finished module is a project on Sunrise's registry, registered by its folder (`[registry]` in its
   `module.toml`, its README as the page, its `CHANGELOG.md`). A release is a tag `<id>/v<version>`: the registry's
   shared workflow (`.github/workflows/sunrise-release-<id>.yml`, never edited by hand) builds the folder as committed,
-  so its release files (`page.toml`, `page/`, `icon.png`, the licences: `cargo creature pages`) and its `Cargo.lock`
-  are committed. `cargo creature release` checks and tags; tags are pushed one at a time, the library's first and the
+  so its release files (`page.toml`, `page/`, `icon.png`: `cargo creature pages`) and its `Cargo.lock` are committed;
+  its README ends with the series' licence section (no copies of the licence files). `cargo creature release` checks and tags; tags are pushed one at a time, the library's first and the
   mods' once it is listed (they build against it from the registry). The steps: `docs/PUBLISHING.md`. A released
   version never changes: a change is a new version.
 - The README's banner and panels (`docs/media/`) are hand-made images: nothing regenerates them.

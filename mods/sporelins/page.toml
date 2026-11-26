@@ -28,6 +28,14 @@ Fed a mushroom of its colour, it heals.
 - **Mushroom stew**: give it an empty bowl and it hands back a mushroom stew, once a day; asked again the same day, it
   shakes its cap.
 - **A night light**: at night the spots of its cap glow softly.
+
+## Licence
+
+Required Notice: Copyright (c) 2026 EAnathos (https://github.com/EAnathos/sunrise-creatures)
+
+The code is under the [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0).
+The artwork (models, textures, icons, pictures) is the author's, all rights reserved, under the terms of
+[LICENSE-ART.md](https://github.com/EAnathos/sunrise-creatures/blob/main/LICENSE-ART.md). The sounds are CC0.
 """
 categories = ["mobs"]
 

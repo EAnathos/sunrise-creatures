@@ -23,3 +23,11 @@ or a trident in it hurts twice as much and leaves him dazed for a moment.
 - Sometimes **his club**: a slow, heavy wooden weapon that hits hard and throws back. You can also make one from 4
   logs and a stick.
 - Some leather.
+
+## Licence
+
+Required Notice: Copyright (c) 2026 EAnathos (https://github.com/EAnathos/sunrise-creatures)
+
+The code is under the [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0).
+The artwork (models, textures, icons, pictures) is the author's, all rights reserved, under the terms of
+[LICENSE-ART.md](https://github.com/EAnathos/sunrise-creatures/blob/main/LICENSE-ART.md). The sounds are CC0.
