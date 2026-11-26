@@ -67,6 +67,11 @@ pub fn clinging(id: u32) -> bool {
     CLINGING.locked().contains_key(&id)
 }
 
+/// From a renderer: whether the creature it draws clings to a side, as the server showed it (`crate::shown`).
+pub fn shown_clinging(entity: &mod_api::EntityRenderState) -> bool {
+    crate::shown::flag(entity, "creature:clinging")
+}
+
 /// It no longer clings (it let go, or it is gone).
 pub fn let_go(id: u32) {
     CLINGING.locked().remove(&id);

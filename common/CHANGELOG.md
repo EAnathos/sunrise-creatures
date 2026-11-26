@@ -9,6 +9,9 @@ Each version's section says what changed in it (`cargo creature release` needs o
 - Each settings struct the mods build (`Creeping`, `Soaring`, `Light`, `Species`, `Spawning`...) has a `DEFAULT`, for
   their literals to end with `..Type::DEFAULT`: a field added later no longer breaks the mods built before it.
 - The licences are in the README (its last section) rather than as copies of `LICENSE` and `LICENSE-ART.md`.
+- What a renderer shows goes through `creature::shown`, an attachment synced to every client (`register`, `get`,
+  `flag`; `colours::shown_look`, `flight::shown_flapping`, `creep::shown_clinging`): the way to multiplayer, where a
+  client of another computer can't read the server's state.
 
 ## 0.3.5
 

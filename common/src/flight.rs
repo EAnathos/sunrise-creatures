@@ -232,6 +232,11 @@ pub fn forget(id: u32) {
     FLAPPING.locked().remove(&id);
 }
 
+/// From a renderer: whether the flier it draws beats its wings, as the server showed it (`crate::shown`).
+pub fn shown_flapping(entity: &mod_api::EntityRenderState) -> bool {
+    crate::shown::flag(entity, "creature:flapping")
+}
+
 pub fn flapping(id: u32) -> bool {
     FLAPPING.locked().contains_key(&id)
 }

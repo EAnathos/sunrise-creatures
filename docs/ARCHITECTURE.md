@@ -180,3 +180,23 @@ tools/                  the Rust build tools (`cargo creature ...`), shared by e
 4. `cargo creature install <mod>`.
 
 Nothing else in the repository changes: the tools find modules by their `module.toml`.
+
+## 8. Multiplayer
+
+The series is played and tested in single player. Its main limit there: the server's state (`creature::state`) and
+the renderers share statics by entity id, which works only when the server and the client are one process. A
+renderer has no host, but Sunrise hands it the entity's synced attachments (`EntityRenderState::attachments`), so
+what it shows goes through `creature::shown` (`common/src/shown.rs`): one synced attachment of a few integers by key,
+which the server writes at our creatures' ticks when a value changes, and which every client that sees the creature
+reads. In single player the game's own server syncs to its own client the same way, so playing alone tries it.
+
+A module registers each value its renderer needs (`shown::register(key, kinds, fn(u32) -> i32)`, in its `register`)
+and its renderer reads it (`shown::get`, `shown::flag`; the library's `colours::shown_look`,
+`flight::shown_flapping`, `creep::shown_clinging`). A renderer never reads a server static.
+
+Done: the mechanism, the library's own values (a look, a wing beat, clinging), the Phasmids. To do, each mod's
+renderer reads moved to `shown` (about 90 reads, listed by `grep -n "entity.id" mods/*/src`), then a time a
+renderer computes from an `Instant` (the cyclops's raised club) made a tick count from the creature's age; the lights
+around glowing creatures (`creature::glow`, which the client's `visuals` draws from positions the server noted)
+taken from the client's own entities; and a test with two players.
+

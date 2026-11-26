@@ -118,6 +118,34 @@ pub fn look(entity: u32) -> Option<Look> {
     LOOKS.locked().get(&entity).copied().or(*PREVIEW.locked())
 }
 
+/// From the library's `register`: a creature's look is shown to the clients (`crate::shown`), each index plus one (0:
+/// none yet).
+pub fn show() {
+    crate::shown::register("creature:base", &[], |id| look_index(id, |l| l.base));
+    crate::shown::register("creature:pattern", &[], |id| look_index(id, |l| l.pattern));
+    crate::shown::register("creature:pattern_colour", &[], |id| {
+        look_index(id, |l| l.pattern_colour)
+    });
+}
+
+fn look_index(id: u32, index: fn(&Look) -> usize) -> i32 {
+    LOOKS.locked().get(&id).map_or(0, |l| index(l) as i32 + 1)
+}
+
+/// From a renderer: the look of the creature it draws, as the server showed it (`crate::shown`); a creature drawn in a
+/// screen (the book's) in the look the book shows (`set_preview`). None before its look is known.
+pub fn shown_look(entity: &mod_api::EntityRenderState) -> Option<Look> {
+    if entity.id == crate::model::IN_A_SCREEN {
+        return *PREVIEW.locked();
+    }
+    let index = |key: &str| usize::try_from(crate::shown::get(entity, key) - 1).ok();
+    Some(Look {
+        base: index("creature:base")?,
+        pattern: index("creature:pattern").unwrap_or(0),
+        pattern_colour: index("creature:pattern_colour").unwrap_or(0),
+    })
+}
+
 /// The look the book shows its creature in.
 static PREVIEW: Mutex<Option<Look>> = Mutex::new(None);
 
