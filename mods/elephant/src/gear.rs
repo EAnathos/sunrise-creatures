@@ -157,6 +157,10 @@ pub(crate) fn interact(host: &mut dyn ServerHost, id: u32, player: PlayerRef, ha
             creature::hand::use_one(host, player, hand);
         }
     };
+    // Only a grown elephant is fitted or ridden (SPECS §3).
+    if creature::growth::is_young(id) {
+        return false;
+    }
     if mine && player.entity().is_shift_key_down(&*host).unwrap_or(false) {
         creature::pack::open(host, player.uuid(), id, &SCREENS, GEAR_PAGE, MenuReplace::CloseFirst);
         return true;

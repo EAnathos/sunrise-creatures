@@ -72,6 +72,18 @@ pub fn pick(host: &dyn ClientHost, event: &mut ClientPickEvent<'_>) {
         let (Some(at), Some(yaw)) = (e.position(host), e.body_yaw(host)) else {
             continue;
         };
+        // A young one's outline is as much smaller as its box (its `minecraft:scale` over its client box's).
+        let kind = e.kind(host).map(|k| k.id(host)).unwrap_or_default();
+        let base = f64::from(crate::mob::client_box_scale(&kind));
+        let scale = host
+            .living(e)
+            .and_then(|l| l.attribute_value(host, "minecraft:scale"))
+            .map_or(1.0, |s| s / base);
+        let outline = Outline {
+            side: outline.side * scale,
+            depth: outline.depth * scale,
+            height: outline.height * scale,
+        };
         if let Some(t) = enter(origin, look, at, yaw, outline)
             && t < best
         {

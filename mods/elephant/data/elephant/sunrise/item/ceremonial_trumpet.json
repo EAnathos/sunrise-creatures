@@ -1,0 +1,18 @@
+{
+  "template": "minecraft:goat_horn",
+  "rarity": "uncommon",
+  "components": {
+    "minecraft:item_model": "elephant:ceremonial_trumpet",
+    "minecraft:item_name": {
+      "translate": "item.elephant.ceremonial_trumpet"
+    },
+    "minecraft:instrument": {
+      "sound_event": "elephant:entity.elephant.trumpet",
+      "use_duration": 3.0,
+      "range": 64.0,
+      "description": {
+        "translate": "instrument.elephant.trumpet"
+      }
+    }
+  }
+}

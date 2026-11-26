@@ -8,8 +8,9 @@
 //!   near them; teleports past 32 blocks.
 //! - What hurts its owner, and what its owner attacks, becomes its target (as vanilla's wolf: the mod's damage hook,
 //!   `crate::defend`).
-//! - `Mate` (SPECS §8): fed rotten flesh by its owner (`interaction.rs`), a grown vulture is in love for 30 s; it walks to
-//!   another tamed vulture in love and, once close, they have a baby (born tamed, `state::breed`) and wait 5 minutes.
+//! - Breeding (SPECS §8): fed rotten flesh by its owner (`interaction.rs`), a grown vulture is in love for 30 s; it walks
+//!   to another tamed vulture in love and, once close, they have a baby (born tamed) and wait 5 minutes: the library's
+//!   `creature::growth::Mate` (`state::BREEDING`).
 use creature::body::{Behaviour, Body, World};
 
 use creature::flight::Following;
@@ -40,7 +41,7 @@ fn free(m: &Body, cx: &World<'_>) -> bool {
 /// Following its owner: free, not sitting, not on a lead (the lead leads it), and not a chick (a juvenile does).
 fn may_follow(m: &Body, cx: &World<'_>) -> bool {
     let s = state::saved(m.id);
-    free(m, cx) && !s.sitting && !state::leashed(m.id) && !state::chick(s.age)
+    free(m, cx) && !s.sitting && !state::leashed(m.id) && !state::chick(m.id)
 }
 
 #[derive(Debug, Default)]
@@ -128,84 +129,3 @@ pub static FOLLOWING: Following = Following {
     lands_on_water: false,
     ..Following::DEFAULT
 };
-
-/// How close two vultures in love must come to breed, in blocks.
-const MATE_RANGE: f64 = 2.5;
-/// How far it looks for a partner.
-const MATE_SEARCH: f64 = 8.0;
-
-#[derive(Debug, Default)]
-pub struct Mate {
-    partner: Option<u32>,
-    /// Bred already this time (a baby once per pair, whatever the ticks left of it).
-    bred: bool,
-}
-
-impl Mate {
-    /// The nearest other tamed vulture in love.
-    fn find(m: &Body, cx: &World<'_>) -> Option<u32> {
-        let host = cx.host();
-        let r = MATE_SEARCH;
-        let (x, y, z) = (m.position.x, m.position.y, m.position.z);
-        cx.ground
-            .level
-            .entities_in(host, [x - r, y - r, z - r], [x + r, y + r, z + r])
-            .unwrap_or_default()
-            .into_iter()
-            .filter(|e| e.id() != m.id && e.kind(host).is_some_and(|k| k.id(host) == crate::KIND))
-            .filter(|e| state::in_love(e.id()) && state::saved(e.id()).owner.is_some())
-            .filter_map(|e| Some((e.id(), e.position(host)?)))
-            .map(|(id, at)| (id, (at[0] - x).powi(2) + (at[2] - z).powi(2)))
-            .min_by(|a, b| a.1.total_cmp(&b.1))
-            .map(|(id, _)| id)
-    }
-}
-
-impl Behaviour for Mate {
-    fn can_use(&mut self, m: &mut Body, cx: &World<'_>) -> bool {
-        let s = state::saved(m.id);
-        if !(s.owner.is_some() && state::love(m.id) > 0 && s.age == 0 && free(m, cx)) {
-            if self.partner.take().is_some() {
-                self.bred = false;
-            }
-            return false;
-        }
-        if self.partner.is_none() {
-            self.partner = Self::find(m, cx);
-            self.bred = false;
-        }
-        self.partner.is_some()
-    }
-    fn stop(&mut self, m: &mut Body, _: &World<'_>) {
-        self.partner = None;
-        m.stop_walking = true;
-    }
-    fn tick(&mut self, m: &mut Body, cx: &World<'_>) {
-        let Some(partner) = self.partner else {
-            return;
-        };
-        let Some(at) = cx.host().entity(partner).and_then(|e| e.position(cx.host())) else {
-            self.partner = None;
-            return;
-        };
-        m.look_at = Some(at);
-        let d2 = (at[0] - m.position.x).powi(2) + (at[2] - m.position.z).powi(2);
-        if d2 > MATE_RANGE * MATE_RANGE {
-            m.walk_to = Some((at, FOOD_PACE));
-            return;
-        }
-        // Both see each other close; the one with the smaller id brings the baby, both wait.
-        if self.bred {
-            return;
-        }
-        self.bred = true;
-        if m.id < partner {
-            let rolls = [m.random.next_float(), m.random.next_float()];
-            state::breed(m, partner, rolls);
-            particles(m, "minecraft:heart");
-        }
-        state::end_love(m.id);
-        state::with(m.id, |s| s.age = state::BREED_PAUSE);
-        state::touch(m.id);
-    }
-}

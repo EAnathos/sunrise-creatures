@@ -3,7 +3,7 @@
 //! - `vulture:vulture` copies the wandering trader: the library takes its goals off; it strolls, looks at players and
 //!   turns on whoever hurts it with vanilla's goals (added when it joins), and everything else it does runs from its
 //!   server tick (the library's `body`): `Sync` (its state, `state.rs`), `Fly` (ridden), `tame::Sit`,
-//!   `wild::DiveAttack`, `tame::Mate`, `tame::Eat`, then following its owner and soaring (the library's
+//!   `wild::DiveAttack`, the library's `creature::growth::Mate`, `tame::Eat`, then following its owner and soaring (the library's
 //!   `creature::flight::Follow` and `Soar`, as `tame::FOLLOWING` and `wild::SOARING` say).
 //! - Mounting: a right-click on it by its owner, once it wears a saddle (`interaction.rs`, `EntityRef::start_riding`),
 //!   or `/ride`. Its rider's keys are heard by the server (`ride.rs`, `player_input`); sneaking descends in the air,
@@ -248,8 +248,7 @@ impl Behaviour for Sync {
             );
         }
         // In love: hearts now and then, as vanilla's animals show (SPECS §8).
-        let love = state::love(m.id);
-        if love > 0 && love % 10 == 0 {
+        if creature::growth::in_love(m.id) && m.age % 10 == 0 {
             particles(
                 m.id,
                 "minecraft:heart",
@@ -710,13 +709,14 @@ impl Hooks for Vulture {
             creature::ride::read(&*host, id);
             screen::migrate(host, id);
             creature::stats::tick(host, id, &state::STATS, |host| state::legacy(host, id));
+            creature::growth::tick(host, id, |host| state::legacy_age(host, id));
             creature::body::tick(host, id, || {
                 vec![
                     Box::new(Sync),
                     Box::new(Fly::default()),
                     Box::new(tame::Sit),
                     Box::new(wild::DiveAttack::default()),
-                    Box::new(tame::Mate::default()),
+                    Box::new(creature::growth::Mate::new(&state::BREEDING)),
                     Box::new(tame::Eat::default()),
                     Box::new(creature::flight::Follow::new(&tame::FOLLOWING, &WINGS)),
                     Box::new(creature::flight::Soar::new(&wild::SOARING, &WINGS)),
@@ -733,7 +733,7 @@ impl Hooks for Vulture {
                 }
             }
             talons::carry(host, id);
-            state::births(host, event.dimension);
+            creature::growth::births(host, event.dimension, &state::BREEDING);
             for player in state::take_taming_seen() {
                 creature::bestiary::learn(host, player, KIND, TAME_FACT);
             }

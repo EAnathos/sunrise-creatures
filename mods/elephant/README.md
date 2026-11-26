@@ -7,6 +7,6 @@ distinct baby, juvenile and adult models. Breed and raise it; adults can carry t
 a double chest on each flank. It fears mice from a separate future mod, but does not require it. **Requires**
 [Sunrise Creatures](https://playsunrise.net/mods/creature), the series' library.
 
-Not playable yet: elephants roam the savannas, charge whoever hits them, can be tamed with thrown sugar cane, saddled,
-dyed, ridden by two and loaded with two chests a flank, but can't be bred yet.
+Not tried in game yet: everything is in (taming, riding, chests, breeding, drops, the trumpet), still to be played
+and balanced.
 The design and what is done are in [SPECS.md](SPECS.md).

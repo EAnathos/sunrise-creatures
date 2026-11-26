@@ -1,0 +1,10 @@
+{
+  "template": "minecraft:prismarine_shard",
+  "rarity": "uncommon",
+  "components": {
+    "minecraft:item_model": "elephant:ivory_tusk",
+    "minecraft:item_name": {
+      "translate": "item.elephant.ivory_tusk"
+    }
+  }
+}

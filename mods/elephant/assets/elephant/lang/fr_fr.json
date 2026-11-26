@@ -19,5 +19,13 @@
   "elephant.two_chests": "Il faut deux coffres, une paire par côté",
   "container.elephant.elephant": "Éléphant",
   "container.elephant.left": "Coffres de gauche",
-  "container.elephant.right": "Coffres de droite"
+  "container.elephant.right": "Coffres de droite",
+  "bestiary.elephant.bred": "Élevé",
+  "bestiary.elephant.raised": "Grandi",
+  "bestiary.elephant.item.ceremonial_trumpet.use": "Sonne le barrissement d'un éléphant ; de nouveau après 3 secondes",
+  "item.elephant.raw_elephant": "Éléphant cru",
+  "item.elephant.cooked_elephant": "Éléphant cuit",
+  "item.elephant.ivory_tusk": "Défense d'ivoire",
+  "item.elephant.ceremonial_trumpet": "Trompe cérémonielle",
+  "instrument.elephant.trumpet": "Appel de l'éléphant"
 }

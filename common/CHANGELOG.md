@@ -11,6 +11,9 @@ Each version's section says what changed in it (`cargo creature release` needs o
   for any of the series' creatures), moved from the Vulture for the Elephant.
 - `creature::pack`: a creature's packs (its storage, saved as `creature:pack`) and its owner's screen, in pages a mod
   describes (`Screens`), every vanilla click of a chest's slots handled; moved from the Vulture for the Elephant.
+- `creature::growth`: babies, growth and breeding (a creature's age, saved as `creature:age`; love; `Mate`; the babies
+  born tamed with inherited stats); moved from the Vulture for the Elephant.
+- `creature::pick`: a young creature's outline shrinks with its box.
 - `creature::anger::provoke`: a creature set on someone who didn't hit it (whoever hit its rider: the Elephant).
 
 ## 0.4.2

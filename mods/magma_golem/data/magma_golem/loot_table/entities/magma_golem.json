@@ -16,9 +16,9 @@
         {
           "type": "minecraft:item",
           "name": "minecraft:magma_cream",
-          "functions": [
+          "modifier": [
             {
-              "function": "minecraft:set_count",
+              "type": "minecraft:set_count",
               "count": {
                 "type": "minecraft:uniform",
                 "min": 4,
@@ -35,9 +35,9 @@
         {
           "type": "minecraft:item",
           "name": "minecraft:magma_block",
-          "functions": [
+          "modifier": [
             {
-              "function": "minecraft:set_count",
+              "type": "minecraft:set_count",
               "count": {
                 "type": "minecraft:uniform",
                 "min": 2,
@@ -48,5 +48,6 @@
         }
       ]
     }
-  ]
+  ],
+  "random_sequence": "magma_golem:entities/magma_golem"
 }

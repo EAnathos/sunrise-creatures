@@ -19,5 +19,13 @@
   "elephant.two_chests": "It takes two chests, one pair a side",
   "container.elephant.elephant": "Elephant",
   "container.elephant.left": "Left chests",
-  "container.elephant.right": "Right chests"
+  "container.elephant.right": "Right chests",
+  "bestiary.elephant.bred": "Bred",
+  "bestiary.elephant.raised": "Raised",
+  "bestiary.elephant.item.ceremonial_trumpet.use": "Plays an elephant's trumpet; again after 3 seconds",
+  "item.elephant.raw_elephant": "Raw Elephant",
+  "item.elephant.cooked_elephant": "Cooked Elephant",
+  "item.elephant.ivory_tusk": "Ivory Tusk",
+  "item.elephant.ceremonial_trumpet": "Ceremonial Trumpet",
+  "instrument.elephant.trumpet": "Elephant's Call"
 }

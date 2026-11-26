@@ -17,7 +17,7 @@
 use std::sync::Mutex;
 
 use creature::body::Body;
-use creature::state::{EntityMap, EntitySet};
+use creature::state::EntityMap;
 use creature::sync::Locked;
 use mod_api::{AttachmentCodec, AttachmentError, AttachmentType, Compound, Holder, LevelRef, ServerHost, Tag};
 
@@ -52,7 +52,8 @@ pub struct Saved {
     pub harness: bool,
     /// 0, 1 or 2 chests (SPECS §6.3).
     pub chests: u8,
-    /// Ticks: negative while a baby (grows up at 0), positive while it may not breed again (SPECS §8).
+    /// Its age as a save from before kept it (SPECS §8): it lives in the library's `creature:age` now
+    /// (`creature::growth`), where `legacy_age` moves it once; read only, never written.
     pub age: i32,
     /// Its stats as a save from before kept them (SPECS §2): they live in the library's `creature:stats` now
     /// (`creature::stats`), where `legacy` moves them once; read only, never written.
@@ -67,9 +68,21 @@ pub const STATS: creature::stats::Ranges = creature::stats::Ranges {
     walk: None,
     ..creature::stats::Ranges::DEFAULT
 };
-/// A baby grows up in 20 minutes; parents wait 5 minutes before breeding again (SPECS §8).
-pub const BABY_AGE: i32 = -24_000;
-pub const BREED_PAUSE: i32 = 6_000;
+/// Breeding and growth (SPECS §8), the library's (`creature::growth`): a baby grows up in 20 minutes (a raw meat a
+/// minute sooner); parents wait 5 minutes before breeding again; love lasts 30 s; partners meet within 2.5 blocks, found
+/// within 8, walked to at its food's pace.
+pub static BREEDING: creature::growth::Breeding = creature::growth::Breeding {
+    kind: "vulture:vulture",
+    young: 24_000,
+    pause: 6_000,
+    love: 600,
+    meal: 1_200,
+    search: 8.0,
+    near: 2.5,
+    pace: 1.2,
+    stats: Some(&STATS),
+    ..creature::growth::Breeding::DEFAULT
+};
 
 fn float(data: &Compound, key: &str) -> f32 {
     match data.get(&key.into()) {
@@ -92,7 +105,6 @@ static STATE: AttachmentType<Saved> = AttachmentType {
             let mut data = Compound::new();
             data.insert("Harness".into(), Tag::Byte(i8::from(s.harness)));
             data.insert("Chests".into(), Tag::Byte(s.chests as i8));
-            data.insert("Age".into(), Tag::Int(s.age));
             Ok(data)
         },
         // `Owner` and `Sitting`: only in a save from before the owner moved to `creature:friend` (`save` moves it).
@@ -145,12 +157,8 @@ struct Shared {
     scan: u8,
     /// Changes asked by the hooks.
     pending: Vec<Change>,
-    /// Ticks of love left (SPECS §8).
-    love: i32,
     /// Its dimension, from the tick hook.
     dimension: String,
-    /// Whether it may breed now, for a partner's goal.
-    in_love: bool,
     /// Whether it is on a lead, for the right-click.
     leashed: bool,
     look: Look,
@@ -160,63 +168,11 @@ struct Shared {
     hurt: bool,
 }
 
-/// A baby to bring into the world (from the breeding goal, for the tick hook to summon).
-#[derive(Clone, Debug)]
-pub struct Birth {
-    pub at: [f64; 3],
-    pub baby: Saved,
-    pub stats: creature::stats::Stats,
-}
-
-static BIRTHS: Mutex<Vec<Birth>> = Mutex::new(Vec::new());
-
-/// Vultures that have had their baby this time, until they are out of love: one baby per pair, whichever of the two
-/// goals gets there first.
-static BRED: EntitySet = EntitySet::new();
-
-/// Whether vulture `id` is in love (another vulture's breeding goal asks).
-pub fn in_love(id: u32) -> bool {
-    SHARED.locked().get(&id).is_some_and(|s| s.in_love)
-}
-
-/// From the breeding goal: a baby of `a` and `b` (SPECS §8): tamed to `a`'s owner; each stat the average of both
-/// parents' and a fresh roll's, like a horse's (`creature::stats::inherit`).
-pub fn breed(a: &Body, b: u32, rolls: [f32; 2]) {
-    {
-        let mut bred = BRED.locked();
-        if bred.contains(&a.id) || bred.contains(&b) {
-            return;
-        }
-        bred.insert(a.id);
-        bred.insert(b);
-    }
-    let mine = saved(a.id);
-    let parent = |id: u32| creature::stats::of(id).unwrap_or_else(|| creature::stats::roll(&STATS, [0.5, 0.5]));
-    let stats = creature::stats::inherit(&STATS, parent(a.id), parent(b), rolls);
-    let baby = Saved {
-        owner: mine.owner,
-        age: BABY_AGE,
-        ..Saved::default()
-    };
-    BIRTHS.locked().push(Birth {
-        at: [a.position.x, a.position.y, a.position.z],
-        baby,
-        stats,
-    });
-}
-
-/// From `entity_tick_post`: summons the babies waiting to be born, with their state.
-pub fn births(host: &mut dyn ServerHost, dimension: &str) {
-    let births = std::mem::take(&mut *BIRTHS.locked());
-    for birth in births {
-        if let Some(id) = host.summon(dimension, "vulture:vulture", birth.at, Compound::new()) {
-            if let Some(owner) = birth.baby.owner {
-                creature::friend::befriend(host, id, creature::friend::uuid(owner));
-            }
-            let _ = STATE.set(host, Holder::Entity(id), birth.baby);
-            creature::stats::set(host, id, birth.stats);
-        }
-    }
+/// From `creature::growth::tick`, for a vulture with no age there yet: the one a save from before kept in
+/// `vulture:state`, moved over once.
+pub fn legacy_age(host: &mut dyn ServerHost, id: u32) -> Option<i32> {
+    let saved = STATE.get_existing(host, Holder::Entity(id)).ok().flatten()?;
+    (saved.age != 0).then_some(saved.age)
 }
 
 /// Its flight speed as a share of the base speed (its stats', `creature::stats`).
@@ -255,10 +211,8 @@ pub enum Change {
     Unleash,
 }
 
-/// What raw meat heals, and how much older it makes a baby (ticks); how long love lasts.
+/// What raw meat heals.
 const HEAL: f32 = 4.0;
-const GROW: i32 = 1200;
-const LOVE: i32 = 600;
 
 /// Its state as last handed over by the goal.
 pub fn saved(id: u32) -> Saved {
@@ -279,10 +233,9 @@ pub fn request(id: u32, change: Change) {
         Change::RemoveHarness => shared.current.harness = false,
         Change::AddChest => shared.current.chests = (shared.current.chests + 1).min(2),
         Change::RemoveChest => shared.current.chests = shared.current.chests.saturating_sub(1),
-        Change::InLove => shared.in_love = true,
         Change::Leash => shared.leashed = true,
         Change::Unleash => shared.leashed = false,
-        Change::Grow | Change::Heal => {}
+        Change::InLove | Change::Grow | Change::Heal => {}
     }
 }
 
@@ -356,34 +309,12 @@ pub fn with(id: u32, change: impl FnOnce(&mut Saved)) {
     SHARED.locked().entry(id).or_default().current = current;
 }
 
-/// Ticks of love it has left.
-pub fn love(id: u32) -> i32 {
-    SHARED.locked().get(&id).map_or(0, |s| s.love)
-}
-
-/// Its love over (it bred).
-pub fn end_love(id: u32) {
-    if let Some(s) = SHARED.locked().get_mut(&id) {
-        s.love = 0;
-        s.in_love = false;
-    }
-}
-
 /// A baby is a chick until this share of its growth, then a juvenile (SPECS §8): only a juvenile follows its owner.
 pub const JUVENILE: f32 = 0.5;
 
-/// Whether a vulture of this `age` is still a chick.
-pub fn chick(age: i32) -> bool {
-    growth(age) < JUVENILE
-}
-
-/// How far a baby of this `age` has grown (0 at birth, 1 grown up); a breeding pause (positive) is grown up.
-fn growth(age: i32) -> f32 {
-    if age < 0 {
-        (1.0 - age as f32 / BABY_AGE as f32).clamp(0.0, 1.0)
-    } else {
-        1.0
-    }
+/// Whether vulture `id` is still a chick.
+pub fn chick(id: u32) -> bool {
+    creature::growth::growth(id, &BREEDING) < JUVENILE
 }
 
 /// From its first behaviour, every tick: applies a state just loaded and the changes the hooks asked, counts its age
@@ -395,29 +326,17 @@ pub fn sync(m: &mut Body, ridden: bool, fighting: bool) -> bool {
         shared.harness = saved.harness;
         shared.current = saved;
     }
-    // Its age: a baby grows towards 0, a breeding pause runs down to 0.
-    let age = &mut shared.current.age;
-    *age -= age.signum();
-    if shared.love > 0 {
-        shared.love -= 1;
-    }
-    shared.in_love = shared.love > 0;
-    if !shared.in_love {
-        BRED.locked().remove(&m.id);
-    }
     let mut fed = false;
     for change in std::mem::take(&mut shared.pending) {
-        let c = &mut shared.current;
         match change {
             // Already in `current` (`request`).
             Change::ToggleSit | Change::AddChest | Change::RemoveChest => {}
             Change::PutHarness => shared.harness = true,
             Change::RemoveHarness => shared.harness = false,
-            Change::InLove => shared.love = LOVE,
-            Change::Grow => {
-                c.age = (c.age + GROW).min(-1);
-                fed = true;
+            Change::InLove => {
+                creature::growth::fall_in_love(m.id, &BREEDING);
             }
+            Change::Grow => fed |= creature::growth::feed_young(m.id, &BREEDING),
             Change::Heal => m.health = (m.health + HEAL).min(m.max_health),
             Change::Leash => shared.leashed = true,
             Change::Unleash => shared.leashed = false,
@@ -425,13 +344,10 @@ pub fn sync(m: &mut Body, ridden: bool, fighting: bool) -> bool {
     }
     shared.current.harness = shared.harness;
     let now = shared.current.clone();
-    if now.age.rem_euclid(1200) == 0 {
-        shared.dirty = true;
-    }
     shared.look = Look {
         harness: now.harness,
         chests: now.chests,
-        growth: growth(now.age),
+        growth: creature::growth::growth(m.id, &BREEDING),
         sitting: now.sitting && m.on_ground,
         striking: fighting,
         ate_at: shared.look.ate_at,
@@ -614,15 +530,6 @@ mod tests {
         let again = (codec.decode)(&written).unwrap();
         assert_eq!(again.chests, 2);
         assert_eq!(again.owner, None);
-    }
-
-    #[test]
-    fn a_baby_grows_from_chick_to_juvenile_to_grown() {
-        assert!(chick(BABY_AGE));
-        assert!(!chick(BABY_AGE / 4), "three quarters grown: a juvenile");
-        assert_eq!(growth(0), 1.0);
-        assert_eq!(growth(BREED_PAUSE), 1.0, "a breeding pause is grown up");
-        assert!((growth(BABY_AGE / 2) - 0.5).abs() < 1e-6);
     }
 
     #[test]

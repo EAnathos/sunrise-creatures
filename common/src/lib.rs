@@ -34,6 +34,7 @@ pub mod flutter;
 pub mod food;
 pub mod friend;
 pub mod glow;
+pub mod growth;
 mod guide;
 pub mod hand;
 pub mod items;
@@ -116,6 +117,7 @@ impl Hooks for Creature {
         colours::declare(r);
         stats::declare(r);
         pack::declare(r);
+        growth::declare(r);
         particles::declare(r);
         territory::declare(r);
         friend::declare(r);

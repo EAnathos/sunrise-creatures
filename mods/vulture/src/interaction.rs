@@ -73,12 +73,14 @@ pub fn clicked(host: &mut dyn ServerHost, id: u32, event: &EntityInteractEvent<'
         screen::ask(host, player, id);
         return;
     }
-    let baby = saved.age < 0;
+    let baby = creature::growth::is_young(id);
     let hurt = state::hurt(id);
     let change = match held.as_str() {
         SADDLE if !saved.harness && !baby => Some(Change::PutHarness),
         "minecraft:chest" if saved.harness && saved.chests < 2 => Some(Change::AddChest),
-        "minecraft:rotten_flesh" if saved.age == 0 && !state::in_love(id) => Some(Change::InLove),
+        "minecraft:rotten_flesh" if creature::growth::age(id) == 0 && !creature::growth::in_love(id) => {
+            Some(Change::InLove)
+        }
         meat if RAW_MEATS.contains(&meat) && baby => Some(Change::Grow),
         meat if RAW_MEATS.contains(&meat) && hurt => Some(Change::Heal),
         _ => None,

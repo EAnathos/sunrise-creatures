@@ -2,30 +2,31 @@
 //!
 //! An elephant is a copy of the wandering trader (its behaviour is all goals) with its own 2.2 × 2.6 block box, drawn
 //! with its own model (`model.rs`, from `sources/models/elephant.bbmodel`; the baby's and the juvenile's beside it,
-//! for its young stages). In development (SPECS §0): it roams the savannas in small herds, walks with a heavy
-//! four-legged gait, its ears, trunk and tail swaying, and charges whoever hits it (`charge.rs`).
+//! for its young stages, `Stage`). It roams the savannas in small herds, walks with a heavy four-legged gait, its ears,
+//! trunk and tail swaying, charges whoever hits it or its riders (`charge.rs`) and flees mice (`flee.rs`); tamed with
+//! sugar cane, it follows or stays, breeds and grows up with hay (`tame.rs`); saddled and packed, it carries two riders
+//! and two chests a flank (`gear.rs`).
 // The library's settings are built with `..Type::DEFAULT` even when every field is given: a field the library adds
 // later then takes its default (docs/CONVENTIONS.md, "Library structs").
 #![allow(clippy::needless_update)]
 
 mod charge;
+mod flee;
 mod gear;
 mod model;
-mod tame;
-// The young stages' models: drawn once elephants grow (SPECS §4).
-#[allow(dead_code)]
 mod model_baby;
-#[allow(dead_code)]
 mod model_juvenile;
+mod tame;
 
 use std::sync::Arc;
 
 use creature::bestiary::{Fact, Species};
+use creature::state::EntityMap;
 use mod_api::{
     BlockEntityDrawContext, EntityInteractEvent, EntityJoinLevelEvent, EntityMountEvent, EntityRenderState,
     EntityRenderer, EntityTickPostEvent, Flow, GoalSpec, HitHost, Hooks, Host, HostSide, InteractionResult,
-    LivingDeathEvent, LivingIncomingDamageEvent, MobSpawnPlacementCheckEvent, RegisterEntityRenderersEvent, Registrar,
-    RegistrationContext, ServerHost, SoundSource, SpawnCheck,
+    LivingDeathEvent, LivingDropsEvent, LivingIncomingDamageEvent, MobSpawnPlacementCheckEvent,
+    RegisterEntityRenderersEvent, Registrar, RegistrationContext, ServerHost, SoundSource, SpawnCheck,
 };
 
 pub const ELEPHANT: &str = "elephant:elephant";
@@ -99,6 +100,16 @@ static BESTIARY: Species = Species {
             key: "bestiary.elephant.two_riders",
         },
         Fact {
+            id: tame::BRED_FACT,
+            item: "minecraft:hay_block",
+            key: "bestiary.elephant.bred",
+        },
+        Fact {
+            id: tame::RAISED_FACT,
+            item: "minecraft:hay_block",
+            key: "bestiary.elephant.raised",
+        },
+        Fact {
             id: gear::PACKED_FACT,
             item: "minecraft:chest",
             key: "bestiary.elephant.packed",
@@ -117,6 +128,85 @@ static BESTIARY: Species = Species {
     draw_lift: 0.0,
     ..Species::DEFAULT
 };
+
+/// Its items in the guide's Items tab (common/SPECS.md §7.2).
+static TUSK_PAGE: creature::items::ItemPage = creature::items::ItemPage {
+    item: "elephant:ivory_tusk",
+    dropped_by: &[ELEPHANT],
+    given_by: &[],
+    uses: &[],
+    ..creature::items::ItemPage::DEFAULT
+};
+static TRUMPET_PAGE: creature::items::ItemPage = creature::items::ItemPage {
+    item: "elephant:ceremonial_trumpet",
+    dropped_by: &[],
+    given_by: &[],
+    uses: &[creature::items::Use {
+        icon: "elephant:ceremonial_trumpet",
+        key: "bestiary.elephant.item.ceremonial_trumpet.use",
+    }],
+    ..creature::items::ItemPage::DEFAULT
+};
+static MEAT_PAGE: creature::items::ItemPage = creature::items::ItemPage {
+    item: "elephant:raw_elephant",
+    dropped_by: &[ELEPHANT],
+    given_by: &[],
+    uses: &[],
+    ..creature::items::ItemPage::DEFAULT
+};
+
+/// Its stage of life (SPECS §4): its model, and its box's size against a grown elephant's (as its body is high).
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum Stage {
+    Baby,
+    Juvenile,
+    Adult,
+}
+
+impl Stage {
+    fn of(id: u32) -> Stage {
+        let growth = creature::growth::growth(id, &tame::BREEDING);
+        if growth < tame::JUVENILE {
+            Stage::Baby
+        } else if growth < 1.0 {
+            Stage::Juvenile
+        } else {
+            Stage::Adult
+        }
+    }
+
+    fn model(self) -> &'static creature::model::Part {
+        match self {
+            Stage::Baby => &model_baby::BABY,
+            Stage::Juvenile => &model_juvenile::JUVENILE,
+            Stage::Adult => &model::ELEPHANT,
+        }
+    }
+
+    fn size(self) -> f64 {
+        match self {
+            Stage::Baby => 0.56,
+            Stage::Juvenile => 0.78,
+            Stage::Adult => 1.0,
+        }
+    }
+}
+
+/// Each elephant's stage as its box was last sized.
+static STAGES: EntityMap<u8> = EntityMap::new();
+
+/// From its tick: its box sized to its stage (its `minecraft:scale`: its client box's, times its stage's size), when
+/// its stage changed (or it just joined).
+fn size_to_stage(host: &mut dyn ServerHost, id: u32) {
+    let stage = Stage::of(id);
+    if STAGES.locked().insert(id, stage as u8) == Some(stage as u8) {
+        return;
+    }
+    if let Some(living) = host.entity(id).and_then(|e| host.living(e)) {
+        let scale = f64::from(creature::mob::client_box_scale(ELEPHANT)) * stage.size();
+        living.set_attribute_base(host, "minecraft:scale", scale);
+    }
+}
 
 /// Its drawing in a jar or the book: standing, without its gear.
 fn book_view(draw: &mut dyn BlockEntityDrawContext, _: Option<creature::colours::Look>) {
@@ -193,7 +283,8 @@ impl EntityRenderer for Draw {
         let mob = entity.living.as_ref();
         draw.push();
         creature::model::living_pose(draw, entity);
-        // Its scale is for its client box only (`creature::mob::scale_client_box`): the model keeps its size.
+        // Its scale is for its box only (its client box, `creature::mob::scale_client_box`, and its stage's size): the
+        // model keeps its size, each stage's its own.
         let scale = mob.map_or(1.0, |m| m.scale);
         if scale > 0.0 && scale != 1.0 {
             draw.scale([1.0 / scale; 3]);
@@ -201,9 +292,18 @@ impl EntityRenderer for Draw {
         let now = Frame::of(entity);
         let pose = |part: &str| pose(part, &now);
         let tint = creature::model::tint(mob);
-        creature::model::draw_shown(draw, &model::ELEPHANT, TEXTURE, &pose, &bare, tint);
-        // Its chests, on each flank fitted.
-        let gear = gear::of(entity.id);
+        let stage = if entity.id == creature::model::IN_A_SCREEN {
+            Stage::Adult
+        } else {
+            Stage::of(entity.id)
+        };
+        creature::model::draw_shown(draw, stage.model(), TEXTURE, &pose, &bare, tint);
+        // Its chests, on each flank fitted, and its blanket: a grown elephant's only.
+        let gear = if stage == Stage::Adult {
+            gear::of(entity.id)
+        } else {
+            gear::Gear::default()
+        };
         if gear.left || gear.right {
             let chests = |part: &str| match part {
                 "elephant" => true,
@@ -221,6 +321,21 @@ impl EntityRenderer for Draw {
         }
         draw.pop();
         Ok(())
+    }
+}
+
+/// In love: a heart now and then, as vanilla's animals show.
+fn hearts(host: &mut dyn ServerHost, id: u32) {
+    if !creature::growth::in_love(id) {
+        return;
+    }
+    let Some(e) = host.entity(id) else {
+        return;
+    };
+    if e.tick_count(&*host).is_some_and(|t| t % 10 == 0)
+        && let (Some(at), Some(level)) = (e.position(&*host), e.level(&*host))
+    {
+        creature::particles::puff(host, level, "minecraft:heart", [at[0], at[1] + 2.4, at[2]], 0.6, 1);
     }
 }
 
@@ -272,6 +387,9 @@ impl Hooks for Elephant {
             vec![("minecraft:knockback_resistance".into(), Some(KNOCKBACK_RESISTANCE))],
         );
         creature::bestiary::register(&BESTIARY);
+        creature::bestiary::register_item(&TUSK_PAGE);
+        creature::bestiary::register_item(&TRUMPET_PAGE);
+        creature::bestiary::register_item(&MEAT_PAGE);
     }
 
     fn register_entity_renderers(&self, _: &RegistrationContext, event: &mut RegisterEntityRenderersEvent<'_>) {
@@ -379,6 +497,14 @@ impl Hooks for Elephant {
         Flow::Continue
     }
 
+    /// A young one drops nothing (SPECS §5): no meat, no tusk.
+    fn living_drops(&self, _: &mut dyn ServerHost, event: &mut LivingDropsEvent<'_>) -> Flow {
+        if event.kind == ELEPHANT && creature::growth::is_young(event.entity) {
+            event.drops.clear();
+        }
+        Flow::Continue
+    }
+
     /// Its saddle drops.
     fn living_death(&self, host: &mut dyn ServerHost, event: &mut LivingDeathEvent<'_>) -> Flow {
         if event.kind == ELEPHANT {
@@ -397,13 +523,28 @@ impl Hooks for Elephant {
             gear::tick(host, id);
             creature::ride::read(&*host, id);
             creature::stats::tick(host, id, &STATS, |_| None);
+            if creature::growth::tick(host, id, |_| None) == creature::growth::Grew::Up
+                && let Some(owner) = creature::friend::of(id)
+            {
+                creature::bestiary::learn(host, creature::friend::uuid(owner.uuid), ELEPHANT, tame::RAISED_FACT);
+            }
+            for (_, owner) in creature::growth::births(host, event.dimension, &tame::BREEDING) {
+                if let Some(owner) = owner {
+                    creature::bestiary::learn(host, owner, ELEPHANT, tame::BRED_FACT);
+                }
+            }
+            size_to_stage(host, id);
+            hearts(host, id);
             tame::look_for_food(&*host, id);
+            flee::look(&*host, id);
             creature::body::tick(host, id, || {
                 vec![
                     Box::new(charge::Charge::default()),
+                    Box::new(flee::Flee),
                     Box::new(gear::Ride),
                     Box::new(tame::Stay),
                     Box::new(tame::Eat),
+                    Box::new(creature::growth::Mate::new(&tame::BREEDING)),
                     Box::new(creature::friend::Follow::new(&tame::FOLLOWING)),
                 ]
             });

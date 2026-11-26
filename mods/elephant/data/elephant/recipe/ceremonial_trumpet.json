@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "S  ",
+    " C ",
+    "  T"
+  ],
+  "key": {
+    "S": "minecraft:string",
+    "C": "minecraft:copper_ingot",
+    "T": "elephant:ivory_tusk"
+  },
+  "result": {
+    "id": "elephant:ceremonial_trumpet"
+  }
+}

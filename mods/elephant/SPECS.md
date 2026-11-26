@@ -10,7 +10,8 @@ future mod; Elephant will not require that mod.
 
 ## 0. Status
 
-In development (0.1.0, not released), steps 1 to 4 of 5:
+In development (0.1.0, not released), all five steps written, built and checked (Clippy, unit tests); not tried in
+game yet:
 
 - **Step 1**: the elephant as an entity (`elephant:elephant`, its spawn egg), 2.2 × 2.6 blocks (hit where its trunk and
   tail reach too: the library's `creature::pick`); drawn with its adult model, walking with a four-legged gait
@@ -38,6 +39,16 @@ In development (0.1.0, not released), steps 1 to 4 of 5:
   off and its riders down; staying or following; a chest per fitted side, a click opening that side's page, a
   shift-click taking its chests off with what they hold) and a 6-row page per side. Its saddle, its chests and all
   they hold drop when it dies. The guide's "Packed" and "Both sides".
+- **Step 5**: breeding and growth (the library's `creature::growth`, moved from the Vulture): a hay bale puts a grown,
+  rested tamed elephant in love (or heals it when hurt); two in love meet and have a baby, tamed to the owner, its
+  stats inherited; parents wait 5 minutes. A baby for 10 minutes (the baby model), a juvenile 10 more (the juvenile
+  model), a hay bale a minute sooner; its box and outline as much smaller (`minecraft:scale`); only a grown elephant is
+  fitted or ridden. The guide's "Bred" (at the birth) and "Raised" (as it grows up, for its owner). Its drops: 1 to 3
+  raw elephant (cooked in a furnace, smoker or campfire), an ivory tusk 5% of the time (more with Looting); a young
+  one drops nothing. The ceremonial trumpet (an ivory tusk, a copper ingot and string): a goat horn's instrument of our
+  own, the elephant's trumpet, 3 seconds between calls, no wear. The Items tab: the tusk, the trumpet, the meat. Mice
+  (`mice:mouse`, when the Mice mod is installed): within 8 blocks, it trumpets and flees for 5 seconds, its riders
+  staying on (`flee.rs`). Our own pictures for the meats, the tusk and the trumpet.
 
 Not tried in game yet.
 - **The adult model** (`sources/models/elephant.bbmodel`; [front](../../docs/models/elephant-elephant-front.png) and
@@ -56,8 +67,7 @@ Not tried in game yet.
 - All three models share the elephant's 64 × 64 texture. The baby and juvenile models have no visible saddle blanket or
   chests; only adults can be ridden or equipped.
 
-Next: (5) breeding, the baby and juvenile stages, its drops (meat, the ivory tusk), the ceremonial
-trumpet, the guide's facts and items, fleeing mice.
+Next: trying it all in game (§8), then its release.
 
 ## 1. Technical context
 
@@ -115,8 +125,6 @@ trumpet, the guide's facts and items, fleeing mice.
   young elephant hay bales speeds up growth. Parents have a 5-minute breeding cooldown. Babies inherit their parents'
   stats as described in §2. Only adults can be ridden, following the Vulture's system ([vulture/SPECS.md](../vulture/SPECS.md)
   §2 and §8).
-- The baby and juvenile models are visual stages only; their age transitions, stats and gameplay are specified above
-  and remain to be implemented.
 
 ## 5. Drops and additional mechanics
 

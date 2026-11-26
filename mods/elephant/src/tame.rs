@@ -1,7 +1,7 @@
 //! Taming (SPECS §2, §5): a wild elephant goes to the sugar cane a player throws near it and eats it, each piece one
 //! chance in `TAME_ONE_IN` to tame it for that player (the library's `food` and `friend`, as the Seagulls'). Tamed, it
 //! follows its owner on foot (the library's `friend::Follow`) or stays where it is told (`Stay`), never despawns, and a
-//! hay bale from its owner heals it.
+//! hay bale from its owner heals it, makes a young one grow faster, or puts a grown one in love to breed (`BREEDING`).
 //!
 //! The hook finds the food (`look_for_food`, every `SCAN` ticks: it sees the items on the ground), the `Eat` behaviour
 //! walks to it and eats it (`EATEN`), the hook takes one from the stack and rolls the taming (`eat`). Single player:
@@ -16,9 +16,28 @@ use crate::ELEPHANT;
 /// What tames it, thrown (SPECS §2), and its chance: one in `TAME_ONE_IN` a piece.
 const TAMING_FOOD: &str = "minecraft:sugar_cane";
 const TAME_ONE_IN: u64 = 4;
-/// What heals a tamed adult (SPECS §5), and how much.
-const HEALING_FOOD: &str = "minecraft:hay_block";
+/// Hay (SPECS §4, §5): it heals a tamed adult (`HEAL`), makes a young one grow faster, and puts a grown, rested one in
+/// love.
+const HAY: &str = "minecraft:hay_block";
 const HEAL: f32 = 10.0;
+
+/// Breeding and growth (SPECS §4, the library's `creature::growth`): a baby for 10 minutes, a juvenile 10 more, a hay
+/// bale a minute sooner; parents wait 5 minutes; love lasts 30 seconds; partners meet within 4 blocks, found within 12.
+pub(crate) static BREEDING: creature::growth::Breeding = creature::growth::Breeding {
+    kind: ELEPHANT,
+    young: 24_000,
+    pause: 6_000,
+    love: 600,
+    meal: 1_200,
+    search: 12.0,
+    near: 4.0,
+    pace: 1.0,
+    stats: Some(&crate::STATS),
+    ..creature::growth::Breeding::DEFAULT
+};
+
+/// A baby is a baby until this share of its growth, then a juvenile (SPECS §4: 10 minutes each).
+pub(crate) const JUVENILE: f32 = 0.5;
 /// How far it sees food (blocks), how often the hook looks (ticks), how near it eats it (blocks from its middle) and
 /// how fast it walks to it (a multiplier of its speed).
 const FOOD_RANGE: f64 = 12.0;
@@ -28,6 +47,8 @@ const FOOD_PACE: f64 = 1.0;
 
 /// Its guide fact (SPECS §6).
 pub(crate) const TAMED_FACT: &str = "tamed";
+pub(crate) const BRED_FACT: &str = "bred";
+pub(crate) const RAISED_FACT: &str = "raised";
 
 /// Following its owner on foot (the library's): from 6 blocks away, stopping within 3, and past 24 at once.
 pub(crate) static FOLLOWING: creature::friend::Following = creature::friend::Following {
@@ -168,7 +189,7 @@ pub(crate) fn interact(host: &mut dyn ServerHost, id: u32, player: PlayerRef, ha
         return false;
     };
     match item {
-        Some(HEALING_FOOD) => {
+        Some(HAY) => {
             let Some(living) = host.living(e) else {
                 return false;
             };
@@ -176,23 +197,24 @@ pub(crate) fn interact(host: &mut dyn ServerHost, id: u32, player: PlayerRef, ha
                 living.health(&*host).unwrap_or(0.0),
                 living.max_health(&*host).unwrap_or(0.0),
             );
-            if health >= most {
+            // Young, it grows faster; hurt, it heals; else, grown and rested, it falls in love.
+            let (fed, particle) = if creature::growth::is_young(id) {
+                (creature::growth::feed_young(id, &BREEDING), "minecraft:happy_villager")
+            } else if health < most {
+                let _ = living.set_health(host, (health + HEAL).min(most));
+                (true, "minecraft:happy_villager")
+            } else {
+                (creature::growth::fall_in_love(id, &BREEDING), "minecraft:heart")
+            };
+            if !fed {
                 return false;
             }
             if !player.has_infinite_materials(&*host).unwrap_or(false) {
                 creature::hand::use_one(host, player, hand);
             }
-            let _ = living.set_health(host, (health + HEAL).min(most));
             creature::sounds::queue(id, "minecraft:entity.generic.eat", 1.0, 0.7);
             if let (Some(at), Some(level)) = (e.position(&*host), e.level(&*host)) {
-                creature::particles::puff(
-                    host,
-                    level,
-                    "minecraft:happy_villager",
-                    [at[0], at[1] + 2.0, at[2]],
-                    0.8,
-                    8,
-                );
+                creature::particles::puff(host, level, particle, [at[0], at[1] + 2.0, at[2]], 0.8, 8);
             }
             true
         }
