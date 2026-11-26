@@ -77,6 +77,7 @@ shepherd, shy fairies, scorpions, spirits of living lightning, jellyfish, flying
 | ![](docs/models/dung_beetles-dung_beetle-front.png) | [Dung Beetles](mods/dung_beetles/README.md) | Beetles that follow the herds and roll dung balls under the stars, turning worn pastures back into grass |
 | ![](docs/models/sporelins-sporelin-front.png) | [Sporelins](mods/sporelins/README.md) | Shy mushroom sprites that hide as mushrooms; befriend one with a mushroom and it tends a patch and makes you stew |
 | ![](docs/models/magma_golem-magma_golem-front.png) | [Magma Golem](mods/magma_golem/README.md) | A six-block giant of living magma asleep in the Nether: a mini-boss that slams, leaps and throws magma, cooled with snow; its heart makes a pickaxe that smelts ores |
+| ![](docs/models/elephant-elephant-front.png) | [Elephant](mods/elephant/README.md) | A savanna elephant you tame with sugar cane, ride with a friend, load with two chests a flank, breed and raise from baby to adult |
 | ![](common/assets/creature/textures/item/guide.png) | [Vanilla Bestiary](mods/vanilla_bestiary/README.md) | Minecraft's own creatures in the creature guide's bestiary, found out as you meet them |
 
 Every mod needs **[Sunrise Creatures](common/README.md)**, the library: it adds the glass jar, the creature guide and
@@ -88,8 +89,6 @@ the "Sunrise Creatures" creative tab, where all the series' items are.
 - [Living Flowers](mods/living_flowers/README.md): every small and tall vanilla flower come alive, to ambush you or
   guard you.
 - [Toucan](mods/toucan/README.md): a tropical bird with a colourful bill, tamed with melon slices.
-- [Elephant](mods/elephant/README.md): a two-rider savanna elephant with variable stats, breeding and growing young;
-  a dyeable saddle blanket, a double chest on each flank and fear of mice from a future optional mod.
 - [Mice](mods/mice/README.md): small, peaceful field mice with no capture, taming, feeding or breeding in v1; cats hunt
   them, and they drop mouse meat.
 - [Blackbirds](mods/blackbirds/README.md): Eurasian blackbirds of woods, meadows and gardens that hop on the grass,

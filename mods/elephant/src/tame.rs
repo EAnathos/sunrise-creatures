@@ -50,11 +50,12 @@ pub(crate) const TAMED_FACT: &str = "tamed";
 pub(crate) const BRED_FACT: &str = "bred";
 pub(crate) const RAISED_FACT: &str = "raised";
 
-/// Following its owner on foot (the library's): from 9 blocks away, stopping within 5, and past 24 at once.
+/// Following its owner on foot (the library's): from 9 blocks away, stopping within 5, always walking.
 pub(crate) static FOLLOWING: creature::friend::Following = creature::friend::Following {
     follow: 9.0,
     near: 5.0,
-    teleport: 24.0,
+    // It walks to its owner, however far: never brought to them at once.
+    teleport: f64::INFINITY,
     speed: 1.1,
     ..creature::friend::Following::DEFAULT
 };

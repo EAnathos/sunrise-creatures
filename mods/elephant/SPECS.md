@@ -10,9 +10,9 @@ future mod; Elephant will not require that mod.
 
 ## 0. Status
 
-In development (0.1.0, not released), all five steps written, built and checked (Clippy, unit tests). Tried in game:
-its taming, riding and chests, breeding and growth, and its drops work; the size, the walk and the trumpet were
-redone after:
+Released (0.1.0). Tried in game: its taming, riding and chests, breeding and growth, and its drops work; its size,
+its walk, its swimming, its steps, its screen's names and the trumpet were redone after and are to be tried again. Its
+page shows its models' pictures: an in-game picture comes with a later version.
 
 - **Step 1**: the elephant as an entity (`elephant:elephant`, its spawn egg), 4.4 × 5.2 blocks, its model drawn at
   twice its size (tried in game: at its model's size it was too small; hit where its trunk and tail reach too: the
@@ -29,7 +29,8 @@ redone after:
 - **Step 2**: its own stats (the library's `creature::stats`, moved from the Vulture: 40 to 60 health, 0.8 to 1.2 times
   its speed); taming (`tame.rs`: sugar cane a player throws near it, eaten, one chance in four a piece, hearts or
   smoke; the guide's "Tamed"); tamed, it follows its owner on foot (the library's `friend::Follow`, moved from the
-  Sporelins) or stays on an empty-handed right-click, never despawns, and a hay bale from its owner heals 10 health.
+  Sporelins: it always walks, never brought to its owner at once) or stays on an empty-handed right-click, never
+  despawns, and a hay bale from its owner heals 10 health.
 - **Step 3** (`gear.rs`): its owner fits a vanilla saddle, drawn as its blanket (the `saddle` group in
   `elephant_saddle.png`'s neutral colours), dyed in place with any of the 16 dyes (saved on it, `elephant:gear`);
   saddled, an empty-handed right-click gets on: its owner in front (whoever sat there moving behind), another player
@@ -75,7 +76,7 @@ Not tried in game yet.
 - All three models share the elephant's 64 × 64 texture. The baby and juvenile models have no visible saddle blanket or
   chests; only adults can be ridden or equipped.
 
-Next: trying it all in game (§8), then its release.
+Next: trying again what was redone (above), an in-game picture for its page.
 
 ## 1. Technical context
 

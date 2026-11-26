@@ -155,7 +155,7 @@ pub fn tick(host: &mut dyn ServerHost, entity: u32) {
 
 /// How a befriended creature follows its friend on foot (SPECS §6.2): from `follow` blocks away it walks to them at
 /// `speed` (a multiplier of its own), stops within `near`, and past `teleport` comes to them at once, as a tamed wolf
-/// does. Users: the Sporelins, the Elephant.
+/// does (never with an infinite `teleport`: the elephant always walks). Users: the Sporelins, the Elephant.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Following {
     pub follow: f64,

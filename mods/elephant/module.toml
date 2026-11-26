@@ -1,8 +1,21 @@
 # Elephant's description for the repository's tools (docs/ARCHITECTURE.md); not shipped in the mod.
 id = "elephant"
 name = "Elephant"
-status = "prototype"
+status = "playable"
 # Its items in the series' creative tab, in order.
 creative = ["elephant:elephant_spawn_egg", "elephant:ivory_tusk", "elephant:ceremonial_trumpet", "elephant:raw_elephant", "elephant:cooked_elephant"]
 # Its Rust is built on Sunrise's mod_api.
 ported = true
+
+# Its page in Sunrise's registry (`cargo creature release`, docs/PUBLISHING.md): with its manifest's name, authors and
+# licence, and its README as the description.
+[registry]
+summary = "A savanna elephant to tame with sugar cane, ride with a friend, load with two chests a flank, breed and raise."
+categories = ["mobs", "transportation", "storage"]
+icon = "elephant"
+screenshots = [
+  "docs/models/elephant-elephant-front.png",
+  "docs/models/elephant-elephant-back.png",
+  "docs/models/elephant-juvenile-front.png",
+  "docs/models/elephant-baby-front.png",
+]
