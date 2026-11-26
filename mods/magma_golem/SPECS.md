@@ -10,9 +10,8 @@ found, not summoned, fought with a boss bar, and cooled with snow.
 
 ## 0. Status
 
-In development (0.1.0, not released): everything of §2 to §5 is written, built, checked (Clippy, unit tests) and
-tried in game: its spawning, sleep, chase, attacks, healing, items and drawings are validated; its numbers below are
-the ones tried.
+Released (0.1.0): everything of §2 to §5 is written, built, checked (Clippy, unit tests) and tried in game: its
+spawning, sleep, chase, attacks, healing, items and drawings are validated; its numbers below are the ones tried.
 
 - **Done**: the entity (3 × 6 blocks, 250 health, armour 10, no knockback, immune to fire and lava), its drawing
   (`draw.rs`) and every pose of §2.1: the mound, rising with its
@@ -39,7 +38,7 @@ the ones tried.
   attacks' (the ravager's roar, the iron golem's blow, an explosion, lava hissing, basalt breaking).
 - **Its hitbox**: the crosshair finds it by its outline (the library's `creature::pick`, common/SPECS.md §3.17), 4.6
   blocks across its arms, as the client's box is only the trader's scaled (sunrise-org/sunrise#1134).
-- **Left**: its own sounds (§1); then its release.
+- **Left**: its own sounds (§1).
 - **The model** (`sources/models/magma_golem.bbmodel`, pictures in docs/models/): our own design, about 6 blocks
   tall, built from boulders of dark grey-brown rock split by glowing orange seams, lava showing at the belly, the
   chest, the elbows, the wrists and the knees. Hunched forward like an ape: a massive back and huge shoulders rise

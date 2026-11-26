@@ -1,8 +1,21 @@
 # Magma Golem's description for the repository's tools (docs/ARCHITECTURE.md); not shipped in the mod.
 id = "magma_golem"
 name = "Magma Golem"
-status = "prototype"
+status = "playable"
 # Its items in the series' creative tab, in order.
 creative = ["magma_golem:magma_golem_spawn_egg", "magma_golem:magma_heart", "magma_golem:molten_pickaxe"]
 # Its Rust is built on Sunrise's mod_api.
 ported = true
+
+# Its page in Sunrise's registry (`cargo creature release`, docs/PUBLISHING.md): with its manifest's name, authors and
+# licence, and its README as the description.
+[registry]
+summary = "A six-block giant of living magma asleep in the Nether: a mini-boss to wake, cool with snow, and rob of its heart."
+categories = ["mobs", "adventure", "equipment"]
+icon = "magma_golem"
+screenshots = [
+  "mods/magma_golem/page/1-magma_golem.jpg",
+  "mods/magma_golem/page/2-molten_pickaxe.jpg",
+  "docs/models/magma_golem-magma_golem-front.png",
+  "docs/models/magma_golem-magma_golem-back.png",
+]
