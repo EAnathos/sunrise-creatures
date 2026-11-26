@@ -250,8 +250,8 @@ through leaves as an insect goes through foliage; a solid ceiling ends the crawl
 A creature that doesn't climb (a `climb` of 0) gives up at a wall. `too_tall` says a block is taller than a step (a
 fence, a wall, a gate): the dung beetle's roll and the sporelin's run turn aside at it.
 
-A **tree climber** (`Creep::climber`, the Phasmids) holds on to the side it is on (a trunk, leaves) when it pauses or keeps
-still, its belly to the bark and its middle 0.3 block from it, instead of dropping; under a target more than a block and
+A **tree climber** (`Creep::climber`, the Phasmids) holds on to the bark it is on (a log, leaves), with nothing solid
+under its feet, when it pauses or keeps still, its belly to the bark and its middle 0.3 block from it, instead of dropping; under a target more than a block and
 a half above it with nothing to climb beside it, it first goes to the nearest log within 4 blocks. While it clings its
 renderer draws it upright, head up (`creep::clinging`); broken bark lets it fall. Users: **Ladybugs** (between
 flowers), **Phasmids** (over the canopy and up the trunks, clinging), **Dung Beetles** (about their pasture, no

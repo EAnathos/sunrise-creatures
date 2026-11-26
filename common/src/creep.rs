@@ -87,21 +87,29 @@ fn side_of(solid: impl Fn([i32; 3]) -> bool, cell: [i32; 3], yaw: f32) -> Option
         .find(|d| solid([cell[0] + d[0], cell[1], cell[2] + d[1]]))
 }
 
-/// Holds `m` on the side beside it, if there is one and it isn't on the ground: still, its belly to the bark (its
+/// Holds `m` on the bark (a trunk, leaves) beside it, if there is some and nothing solid is under its feet: still, its belly to the bark (its
 /// middle `CLING_GAP` from it), facing it. Whether it holds on; one that clung and has no side any more (its bark
 /// broken) is let go, to fall.
 pub fn hold_on(m: &mut Body, cx: &World<'_>) -> bool {
-    hold(m, |p| !passable(cx, p))
+    hold(m, |p| is_bark(&cx.block(p)), |p| !passable(cx, p))
+}
+
+/// What a tree climber holds on to: a trunk's bark or leaves (not a wall, a fence or a plant its crawl doesn't know).
+fn is_bark(name: &str) -> bool {
+    is_trunk(name) || name.ends_with("leaves")
 }
 
 /// `hold_on`, the blocks' solidity told by `solid`.
-fn hold(m: &mut Body, solid: impl Fn([i32; 3]) -> bool) -> bool {
+fn hold(m: &mut Body, bark: impl Fn([i32; 3]) -> bool, solid: impl Fn([i32; 3]) -> bool) -> bool {
     let cell = [
         m.position.x.floor() as i32,
         (m.position.y + 0.05).floor() as i32,
         m.position.z.floor() as i32,
     ];
-    let side = (!m.on_ground).then(|| side_of(solid, cell, m.yaw)).flatten();
+    // Only where it would fall: with ground under its feet it stands (and a creature just come out, not yet on the
+    // ground, doesn't take the grass beside it for a trunk).
+    let falls = !m.on_ground && !solid([cell[0], cell[1] - 1, cell[2]]);
+    let side = falls.then(|| side_of(bark, cell, m.yaw)).flatten();
     let Some(d) = side else {
         if CLINGING.locked().remove(&m.id).is_some() {
             m.no_gravity = false;
@@ -401,17 +409,22 @@ mod tests {
         move |p| !bare && p == [1, 1, 0]
     }
 
+    /// The same, with the ground under the cell.
+    fn on_ground(p: [i32; 3]) -> bool {
+        p == [1, 1, 0] || p == [0, 0, 0]
+    }
+
     #[test]
     fn a_climber_holds_on_to_the_bark_belly_to_it_and_lets_go_when_it_is_gone() {
         let mut m = crate::body::tests::body(4_100_000);
         m.position = Vec3 { x: 0.5, y: 1.0, z: 0.5 };
         m.on_ground = false;
-        assert!(hold(&mut m, solid(false)));
+        assert!(hold(&mut m, solid(false), solid(false)));
         assert!(m.no_gravity && clinging(m.id));
         assert!((m.position.x - 0.7).abs() < 1e-9, "its middle 0.3 from the bark");
         assert_eq!(m.yaw, -90.0, "facing east, the bark");
         assert_eq!(side_of(solid(false), [0, 1, 0], m.yaw), Some([1, 0]));
-        assert!(!hold(&mut m, solid(true)));
+        assert!(!hold(&mut m, solid(true), solid(true)));
         assert!(!m.no_gravity && !clinging(m.id), "let go, to fall");
     }
 
@@ -420,7 +433,13 @@ mod tests {
         let mut m = crate::body::tests::body(4_100_010);
         m.position = Vec3 { x: 0.5, y: 1.0, z: 0.5 };
         m.on_ground = true;
-        assert!(!hold(&mut m, solid(false)));
+        assert!(!hold(&mut m, solid(false), solid(false)));
+        assert!(!m.no_gravity && !clinging(m.id));
+        // Just come out, not yet on the ground, but over it: it stands.
+        m.on_ground = false;
+        assert!(!hold(&mut m, solid(false), on_ground));
+        // Beside a plant or a wall rather than bark: nothing to hold on to.
+        assert!(!hold(&mut m, |_| false, solid(false)));
         assert!(!m.no_gravity && !clinging(m.id));
     }
 
