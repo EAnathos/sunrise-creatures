@@ -12,8 +12,6 @@ the creatures share:
   catches their creatures and releases them where you want them to stay. Sneak + right-click places a filled jar on
   display.
 - **The "Sunrise Creatures" creative tab**, with every item of the series.
-- **Feathers**: with the Vulture or the Seagulls installed, their feathers make arrows, a brush and a book and quill
-  as a feather does.
 - Monsters leave the series' creatures alone.
 
 For developers: [SPECS.md](SPECS.md) and [CONTRIBUTING.md](../CONTRIBUTING.md).

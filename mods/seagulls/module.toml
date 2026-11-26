@@ -5,7 +5,6 @@ status = "playable"
 # Its items in the series' creative tab, in order.
 creative = [
   "seagulls:seagull_spawn_egg",
-  "seagulls:feather",
   "seagulls:raw_seagull",
   "seagulls:cooked_seagull",
 ]

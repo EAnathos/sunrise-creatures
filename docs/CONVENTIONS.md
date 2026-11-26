@@ -112,7 +112,7 @@ cargo creature native-check                                                  # C
   larger mob needs more.
 - Sounds: CC0 only (freesound.org, licence checked), sources listed in the module's `sources/sounds.toml`.
 - Recipes: each one has its recipe book advancement (`advancement/recipes/<tab>/<recipe>.json`, unlocked by having
-  one of its ingredients), or the recipe book never shows it. A feather in a recipe is `#creature:feathers`.
+  one of its ingredients), or the recipe book never shows it. A feather in a recipe is `minecraft:feather`.
 
 ## Versions and commits
 

@@ -1,6 +1,6 @@
 id = "seagulls"
 name = "Seagulls"
-version = "0.1.3"
+version = "0.1.4"
 description = "Noisy gulls of the coasts that glide, bob on the waves and steal food from your hands; befriend one with fish and it fishes for you. Needs Sunrise Creatures."
 authors = ["EAnathos"]
 api = "0.2"
@@ -18,4 +18,4 @@ mixins = "e59da9094f0c2fdda6c627fe9eff22dec6a906f0"
 
 # The series' library, reached as the `creature` crate (common/SPECS.md).
 [dependencies]
-creature = "^0.4.0"
+creature = "^0.4.2"

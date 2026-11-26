@@ -2,6 +2,11 @@
 
 Each version's section says what changed in it (`cargo creature release` needs one before it tags the version).
 
+## 0.4.2
+
+- Creatures' feathers are vanilla `minecraft:feather` items. The guide recipe uses a vanilla feather; the library no longer
+  registers custom feather tags or duplicate arrow, brush and book-and-quill recipes.
+
 ## 0.4.1
 
 - The bestiary shows every installed species: how many were met of how many ("Species met: 12 / 99"), and the ones not

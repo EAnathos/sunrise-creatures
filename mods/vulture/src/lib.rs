@@ -121,17 +121,6 @@ const BOOK_SCALE: f32 = 0.33;
 pub const TAME_FACT: &str = "tame";
 pub const BREED_FACT: &str = "breed";
 
-/// Its items in the guide's Items tab (common/SPECS.md §7.2).
-static FEATHER_PAGE: creature::items::ItemPage = creature::items::ItemPage {
-    item: "vulture:feather",
-    dropped_by: &["vulture:vulture"],
-    given_by: &[],
-    uses: &[creature::items::Use {
-        icon: "minecraft:feather",
-        key: "bestiary.vulture.item.feather.use",
-    }],
-    ..creature::items::ItemPage::DEFAULT
-};
 static RAW_PAGE: creature::items::ItemPage = creature::items::ItemPage {
     item: "vulture:raw_vulture",
     dropped_by: &["vulture:vulture"],
@@ -588,7 +577,6 @@ impl Hooks for Vulture {
         let _ = r.register_attachment_type("vulture:state", false);
         screen::declare(r);
         creature::bestiary::register(&BESTIARY);
-        creature::bestiary::register_item(&FEATHER_PAGE);
         creature::bestiary::register_item(&RAW_PAGE);
         creature::bestiary::register_item(&COOKED_PAGE);
         r.register_key_mapping(

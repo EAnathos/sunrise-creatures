@@ -42,7 +42,7 @@ pub fn run() -> crate::Result {
 /// The table's path, its content and its number of recipes, without writing it.
 pub fn render() -> crate::Result<(PathBuf, String, usize)> {
     let all: Vec<_> = std::iter::once(modules::library()?).chain(modules::mods()?).collect();
-    // The series' item tags, by id (`creature:feathers`): their items.
+    // The series' item tags, by id: their items.
     let mut tags: BTreeMap<String, Vec<String>> = BTreeMap::new();
     let mut files = Vec::new();
     for m in &all {
@@ -219,7 +219,7 @@ fn json_files(dir: &Path) -> Vec<PathBuf> {
     out
 }
 
-/// `tags/item/feathers.json` → `feathers`.
+/// `tags/item/example.json` → `example`.
 fn tag_name(root: &Path, file: &Path) -> String {
     let rel = file.strip_prefix(root).unwrap_or(file).with_extension("");
     rel.to_string_lossy().replace('\\', "/")
@@ -242,19 +242,19 @@ mod tests {
     #[test]
     fn lays_out_a_shaped_recipe_with_a_tag() {
         let tags = BTreeMap::from([(
-            "creature:feathers".to_owned(),
-            vec!["minecraft:feather".to_owned(), "vulture:feather".to_owned()],
+            "creature:example".to_owned(),
+            vec!["minecraft:feather".to_owned(), "example:feather".to_owned()],
         )]);
         let r = recipe(
             &json!({"type": "minecraft:crafting_shaped", "pattern": ["X", "#"],
-                "key": {"X": "minecraft:flint", "#": "#creature:feathers"}, "result": {"id": "minecraft:arrow", "count": 4}}),
+                "key": {"X": "minecraft:flint", "#": "#creature:example"}, "result": {"id": "minecraft:arrow", "count": 4}}),
             &tags,
         )
         .unwrap()
         .unwrap();
         assert_eq!(r.station, "Crafting");
         assert_eq!(r.grid[0], vec!["minecraft:flint"]);
-        assert_eq!(r.grid[3], vec!["minecraft:feather", "vulture:feather"]);
+        assert_eq!(r.grid[3], vec!["minecraft:feather", "example:feather"]);
         assert!(r.grid[1].is_empty());
         assert_eq!((r.result.as_str(), r.count), ("minecraft:arrow", 4));
     }

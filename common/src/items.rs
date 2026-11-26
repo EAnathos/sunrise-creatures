@@ -121,8 +121,7 @@ mod tests {
     fn finds_the_recipes_of_an_item_and_what_it_makes() {
         assert!(made_by("cyclops:club").iter().all(|r| r.station == Station::Crafting));
         assert!(used_in("cyclops:cyclops_eye").contains(&"cyclops:shepherds_crook"));
-        // A tag's items count: a vulture feather is a feather in the guide's recipe.
-        assert!(used_in("vulture:feather").contains(&"creature:guide"));
+        assert!(used_in("minecraft:feather").contains(&"creature:guide"));
         assert!(made_by("creature:nothing").is_empty());
     }
 }

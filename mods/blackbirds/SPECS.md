@@ -28,7 +28,7 @@ Next: implement Blackbirds on Sunrise (including CC0 song recordings in `sources
 ## 1. Technical context
 
 - **Mod id**: `blackbirds` ✅. Entity `blackbirds:blackbird` ✅, spawn egg `blackbirds:blackbird_spawn_egg` ✅.
-- **Items**: `blackbirds:feather` ✅, `blackbirds:raw_blackbird` ✅, `blackbirds:cooked_blackbird` ✅.
+- **Items**: `blackbirds:raw_blackbird` ✅, `blackbirds:cooked_blackbird` ✅. Blackbirds drop vanilla feathers.
 - **Dependency**: the series' library `creature` ([common/SPECS.md](../../common/SPECS.md)). No hard dependency on
   Worms (`mods/worms/SPECS.md`): earthworm hunting is optional via `creature::prey::add_hunter` (`common/SPECS.md` §3.7).
 - **Rule of two** (`docs/ARCHITECTURE.md` §3):
@@ -36,8 +36,6 @@ Next: implement Blackbirds on Sunrise (including CC0 song recordings in `sources
     branches, makes short fluttering flights between bushes and trees, lands on leaves and flees from nearby players.
     When both are implemented, the shared perching and short-flight movement either uses or extends `creature::flutter`
     (`common/SPECS.md` §3.5) in the library rather than duplicating it.
-  - **Feathers**: `blackbirds:feather` registers into `creature:feathers` and `creature:mod_feathers` (`common/SPECS.md`
-    §3.8) so it crafts arrows, brushes, books and quills, and the creature guide.
   - **Wild-only prey** (`creature::prey`): hunting wild earthworms while sparing settled garden worms uses a `wild_only`
     option on `creature::prey::Hunter` (default `false` in `Hunter::DEFAULT`) or checks `creature::territory` before
     targeting.
@@ -83,8 +81,7 @@ Next: implement Blackbirds on Sunrise (including CC0 song recordings in `sources
 
 ## 4. Drops and items ✅
 
-- **Feather** (`blackbirds:feather`): drops 0 to 2 feathers (increased by Looting); works in `creature:feathers` and
-  `creature:mod_feathers` (`common/SPECS.md` §3.8).
+- **Feathers**: drops 0 to 2 `minecraft:feather` (increased by Looting).
 - **Meat** (`blackbirds:raw_blackbird`, `blackbirds:cooked_blackbird`): drops 1 raw blackbird (2 hunger with a chance
   of Hunger), replaced by cooked blackbird (6 hunger) if it burns or is killed with a smelting weapon, increased by
   Looting, matching Vulture, Seagulls, Toucan and Mice.
@@ -94,7 +91,7 @@ Next: implement Blackbirds on Sunrise (including CC0 song recordings in `sources
 Uses `creature::bestiary` (`common/SPECS.md` §7):
 
 - Records the biomes where a wild blackbird was met, its rarity (`common`), and both male and female morphs.
-- **Items tab**: lists `blackbirds:feather`, `blackbirds:raw_blackbird` and `blackbirds:cooked_blackbird`.
+- **Items tab**: lists `blackbirds:raw_blackbird` and `blackbirds:cooked_blackbird`.
 - **Facts**:
   - `Song`: heard a blackbird sing at dawn or dusk.
   - `Worm`: saw a blackbird catch a wild earthworm (when Worms is installed).
@@ -120,7 +117,7 @@ Once implemented, test in a survival world with `creature` and `blackbirds` enab
 - Test with Worms enabled: verify blackbirds catch wild earthworms and spare settled garden worms; test with Worms
   disabled to confirm no hard dependency.
 - Confirm vanilla cats and foxes hunt wild blackbirds.
-- Test befriending with thrown sweet berries (stay/follow, singing near friend), feather recipes (`creature:mod_feathers`),
+- Test befriending with thrown sweet berries (stay/follow, singing near friend), vanilla feather drops,
   raw/cooked meat drops and Bestiary morphs and facts.
 
 ## 8. Open questions

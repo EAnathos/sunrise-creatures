@@ -25,7 +25,6 @@ Everything below works and was tested in game, single player, unless said otherw
   installed, and the catch/release/display/name/TNT/piston behavior, are confirmed. The **sand** rule (§4.2, for
   Scorpions) is coded but not yet exercised in game.
 - **Colours and patterns** (§5), used by the butterflies.
-- **Feathers** (§3.8): the feather recipes with a mod's feather (the vulture's, the seagull's).
 - **Glowing creatures' lights** (§3.11, `creature::glow`): the fireflies', the fairies' and the storm spirits' lights,
   sharing the game's 8.
 - **Fighting back** (§3.12, `creature::anger`): the scorpions and the storm spirits.
@@ -165,13 +164,10 @@ walked to its prey: it goes for it itself (its flight), asking which one is its 
 - **Seagulls** (a mod's hunter, `add_hunter`) swoop on gliding flying fish within 16 blocks and snatch them in the air,
   when both mods are installed ✅. Users: **Flying Fish** and **Seagulls** (mods/seagulls/SPECS.md §2).
 
-### 3.8 Feathers (`creature:feathers`) ✅
+### 3.8 Feathers ✅
 
-A mod's own feather works as a feather: the item tag `creature:feathers` lists vanilla's feather and each mod's (as
-`required: false` entries, so a missing mod's is left out), and the guide's recipe (§7) takes any of it ✅. The
-recipes for arrows, the brush and the book and quill with a mod's feather are the library's ✅ (moved from the Vulture
-with the Seagulls): they take the tag `creature:mod_feathers` (the vulture's and the seagull's feathers, not vanilla's,
-whose recipes are vanilla's), with conditions on either mod being installed. Users: **Vulture**, **Seagulls**.
+Creatures use `minecraft:feather` for their drops. Recipes use vanilla feathers directly; the library needs no feather
+items, tags or recipes of its own.
 
 ### 3.9 Thrown things (`creature::projectile`) ✅
 
@@ -406,7 +402,7 @@ What each item of the series is for, so a player knows how to make it and what t
   same recipe in several stations, a slot that takes several items, a tag's, showing each in turn), what drops it (a
   creature's icon: "Dropped by a cyclops"), or what gives it (a befriended fairy's dust); **its uses**, a few lines
   each with an icon ("Held: the farm animals within 12 blocks follow you"); and what it is **used to make** (the
-  results of the recipes it goes into: a vulture feather makes arrows, the brush, the book and quill, the guide).
+  results of the recipes it goes into: a feather makes the guide).
 - **Every item shown from the start** ✅ (unlike the creatures): the tab is a reference to plan a craft, so a player can
   look up the shepherd's crook before meeting a cyclops. Only the items of installed mods are listed.
 - Each mod registers its items' pages (`creature::bestiary::register_item`, `creature::items::ItemPage`) ✅: the item,
@@ -434,7 +430,7 @@ Creative, a test world; `cargo creature install` first.
   bug in §7). `/bestiary reset` empties the book and it still opens. The wheel scrolls a long page (a butterfly's) and
   the icons; the Items tab lists every installed mod's items, each with its recipe.
 - A new world: the creature guide given once; its bestiary pages turn in 3D, list the biomes met, the facts and the
-  rarity; a craft of the guide with a vulture feather.
+  rarity; a craft of the guide with a vanilla feather.
 - Monsters (a zombie, a skeleton) ignore a butterfly, a worm, a vulture.
 - The glass jar, confirmed: it is hidden when no jar mod is installed; catch, release, display and break it; names are
   kept; TNT and pistons leave placed jars alone; flower settling works. Scorpions' sand settling rule still needs an

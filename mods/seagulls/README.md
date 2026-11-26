@@ -31,7 +31,7 @@ fish, and in the flying fish's oceans now and then a flying fish.
 
 ## Feathers and meat
 
-Seagulls drop seagull feathers, which make arrows, a brush or a book and quill as a feather does, and raw seagull,
+Seagulls drop ordinary feathers and raw seagull,
 which cooks in a furnace, a smoker or on a campfire.
 
 ## Licence

@@ -1,9 +1,0 @@
-{
-  "template": "minecraft:feather",
-  "components": {
-    "minecraft:item_model": "vulture:feather",
-    "minecraft:item_name": {
-      "translate": "item.vulture.feather"
-    }
-  }
-}

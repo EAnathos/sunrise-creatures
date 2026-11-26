@@ -11,7 +11,7 @@ Vultures live in deserts, badlands and savannas, where they soar in circles high
 around. In creative: the spawn egg (creative tab "Sunrise Creatures") or `/summon vulture:vulture`.
 
 They are neutral: hit one and it dives at you from the air, with the vultures nearby. They drop feathers and meat (raw,
-or cooked when they burn). A vulture feather crafts arrows, the brush and the book and quill like a feather.
+or cooked when they burn). They also drop ordinary feathers.
 
 ## Taming
 

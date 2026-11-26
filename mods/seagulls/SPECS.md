@@ -21,7 +21,7 @@ the meat, the guide's page and facts, its own sounds.
   built with its wings spread, folded along its back by the pose on the ground and the water, the black tips crossed
   over the tail.
 - The library's side came with it: the vulture's flight (without riding) moved to the library (`creature::flight`,
-  common/SPECS.md §6.1), and so did the feather recipes (§3.8); a mod can add its creature as a hunter of another
+  common/SPECS.md §6.1); a mod can add its creature as a hunter of another
   mod's prey (§3.7).
 - Sunrise gives no hold on a player's fishing bobber (it is no entity a mod finds): its place is guessed from the
   cast (`player_fish`), about 6 blocks ahead along the player's look on the water (sunrise-org/sunrise#6100,
@@ -30,7 +30,7 @@ the meat, the guide's page and facts, its own sounds.
 ## 1. Technical context
 
 - **Mod id**: `seagulls` ✅. Entity `seagulls:seagull`, spawn egg `seagulls:seagull_spawn_egg`, items
-  `seagulls:feather`, `seagulls:raw_seagull`, `seagulls:cooked_seagull` ✅ (§5).
+  `seagulls:raw_seagull`, `seagulls:cooked_seagull` ✅ (§5).
 - Uses from the library: model drawing and sounds (§3.1, §3.2), hitbox size (§3.4), monsters sparing it (§3.4), the
   creature guide's pages (§7), and, moved from the vulture with this mod (rule of two): **flight** (the glide, soaring
   in circles, landing; not riding, §6.1) and **taming and ownership** (§6.2, with the Sporelins).
@@ -54,7 +54,7 @@ the meat, the guide's page and facts, its own sounds.
 - **Hunts flying fish** ✅, when the Flying Fish mod is installed (no requirement either way): over the sea it swoops on a
   gliding flying fish within 16 blocks and snatches it in the air (the library's prey, common/SPECS.md §3.7;
   mods/flying_fish/SPECS.md §3).
-- **Drops** ✅: 0 to 2 seagull feathers and 1 raw seagull (cooked when it burns), §5.
+- **Drops** ✅: 0 to 2 `minecraft:feather` and 1 raw seagull (cooked when it burns), §5.
 
 ## 3. Befriending ✅
 
@@ -79,9 +79,6 @@ fish), "Spot" (fished over its lucky spot), "Boat" (followed your boat).
 
 ## 5. Items ✅
 
-- **Seagull feather** (`seagulls:feather`): white with a grey tip; used as a feather like the vulture's, in arrows, the
-  brush and the book and quill. The recipes are the library's, through the tag `creature:feathers` (common/SPECS.md
-  §3.8), which this mod adds its feather to.
 - **Raw seagull** and **cooked seagull** (`seagulls:raw_seagull`, `seagulls:cooked_seagull`): ordinary meat like the
   vulture's, as a chicken's (their item templates: raw 2 hunger with a chance of Hunger, cooked 6), cooked in a furnace, a smoker or on a campfire.
 

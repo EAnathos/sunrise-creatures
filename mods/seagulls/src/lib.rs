@@ -28,7 +28,6 @@ use mod_api::{
 
 pub const KIND: &str = "seagulls:seagull";
 const EGG: &str = "seagulls:seagull_spawn_egg";
-const FEATHER: &str = "seagulls:feather";
 const RAW: &str = "seagulls:raw_seagull";
 const COOKED: &str = "seagulls:cooked_seagull";
 const TEXTURE: &str = "seagulls:entity/seagull";
@@ -134,17 +133,6 @@ static BESTIARY: Species = Species {
     ..Species::DEFAULT
 };
 
-/// Its items in the guide's Items tab (common/SPECS.md §7.2).
-static FEATHER_PAGE: creature::items::ItemPage = creature::items::ItemPage {
-    item: FEATHER,
-    dropped_by: &[KIND],
-    given_by: &[],
-    uses: &[creature::items::Use {
-        icon: "minecraft:arrow",
-        key: "bestiary.seagulls.item.feather.use",
-    }],
-    ..creature::items::ItemPage::DEFAULT
-};
 static RAW_PAGE: creature::items::ItemPage = creature::items::ItemPage {
     item: RAW,
     dropped_by: &[KIND],
@@ -563,7 +551,6 @@ impl Hooks for Seagulls {
         creature::mob::ours(KIND, SIZE);
         creature::prey::add_hunter("flying_fish:flying_fish", &HUNTER);
         creature::bestiary::register(&BESTIARY);
-        creature::bestiary::register_item(&FEATHER_PAGE);
         creature::bestiary::register_item(&RAW_PAGE);
         creature::bestiary::register_item(&COOKED_PAGE);
     }

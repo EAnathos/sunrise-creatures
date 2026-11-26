@@ -3,7 +3,7 @@
   "category": "misc",
   "ingredients": [
     "minecraft:book",
-    "#creature:feathers",
+    "minecraft:feather",
     "minecraft:leather"
   ],
   "result": {

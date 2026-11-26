@@ -20,8 +20,8 @@ Next: finish the pixel texture, then the code, on Sunrise.
 
 ## 1. Technical context
 
-- **Mod id**: `toucan` ✅. Entity `toucan:toucan`, spawn egg `toucan:toucan_spawn_egg`, and items `toucan:feather`,
-  `toucan:raw_toucan` and `toucan:cooked_toucan`.
+- **Mod id**: `toucan` ✅. Entity `toucan:toucan`, spawn egg `toucan:toucan_spawn_egg`, and items `toucan:raw_toucan`
+  and `toucan:cooked_toucan`.
 - **Dependency**: the series' library `creature` (`common/SPECS.md`).
 - **Languages**: source text in English; in-game text in English and French.
 - **Model**: Blockbench free-format cube model, converted with `cargo creature model toucan` when implementation begins.
@@ -47,14 +47,13 @@ Next: finish the pixel texture, then the code, on Sunrise.
 
 ## 4. Drops and items ✅
 
-- A toucan drops 0–2 `toucan:feather` items and 1 `toucan:raw_toucan`. Looting increases the quantity. The raw meat
+- A toucan drops 0–2 `minecraft:feather` items and 1 `toucan:raw_toucan`. Looting increases the quantity. The raw meat
   drops as `toucan:cooked_toucan` if the toucan burns or is killed with a smelting weapon.
-- The feather works in the library's feather recipes (`creature:feathers`).
 
 ## 5. Bestiary ✅
 
 The page records the biomes where a wild toucan was met. A `Feed` fact reveals the melon slice. Its Items tab lists
-the feather and raw/cooked meat. The page uses the library bestiary described in [common/SPECS.md](../../common/SPECS.md)
+the raw and cooked meat. The page uses the library bestiary described in [common/SPECS.md](../../common/SPECS.md)
 §7.
 
 ## 6. In-game validation
@@ -65,7 +64,7 @@ After implementation, test in a new survival world with the series library and T
 - Check the bill, chest and eye colours from the front and both sides, and readability in the bestiary's 3D view.
 - Observe hopping, short flights, landing and fleeing from players and hostile mobs.
 - Drop melon slices near wild toucans; check the taming chance, ownership, following and staying.
-- Check feather and meat drops, including cooked meat when killed by fire or a smelting weapon.
+- Check vanilla feather and meat drops, including cooked meat when killed by fire or a smelting weapon.
 
 ## 7. Out of scope for v1
 

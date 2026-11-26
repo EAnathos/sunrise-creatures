@@ -3,11 +3,8 @@ use crate::items::{Recipe, Station};
 
 #[rustfmt::skip]
 pub static RECIPES: &[Recipe] = &[
-    Recipe { station: Station::Crafting, grid: [&["minecraft:flint"], &[], &[], &["minecraft:stick"], &[], &[], &["vulture:feather", "seagulls:feather"], &[], &[]], result: "minecraft:arrow", count: 4 },
-    Recipe { station: Station::Crafting, grid: [&["vulture:feather", "seagulls:feather"], &[], &[], &["minecraft:copper_ingot"], &[], &[], &["minecraft:stick"], &[], &[]], result: "minecraft:brush", count: 1 },
     Recipe { station: Station::Crafting, grid: [&[], &["minecraft:oak_slab"], &[], &["minecraft:glass"], &[], &["minecraft:glass"], &["minecraft:glass"], &["minecraft:glass"], &["minecraft:glass"]], result: "creature:glass_jar", count: 2 },
-    Recipe { station: Station::Crafting, grid: [&["minecraft:book"], &["minecraft:feather", "vulture:feather", "seagulls:feather"], &["minecraft:leather"], &[], &[], &[], &[], &[], &[]], result: "creature:guide", count: 1 },
-    Recipe { station: Station::Crafting, grid: [&["minecraft:book"], &["minecraft:ink_sac"], &["vulture:feather", "seagulls:feather"], &[], &[], &[], &[], &[], &[]], result: "minecraft:writable_book", count: 1 },
+    Recipe { station: Station::Crafting, grid: [&["minecraft:book"], &["minecraft:feather"], &["minecraft:leather"], &[], &[], &[], &[], &[], &[]], result: "creature:guide", count: 1 },
     Recipe { station: Station::Crafting, grid: [&["minecraft:paper"], &["butterflies:butterfly_dust"], &[], &[], &[], &[], &[], &[], &[]], result: "butterflies:confetti", count: 8 },
     Recipe { station: Station::Crafting, grid: [&[], &["minecraft:oak_log"], &["minecraft:oak_log"], &[], &["minecraft:oak_log"], &["minecraft:oak_log"], &["minecraft:stick"], &[], &[]], result: "cyclops:club", count: 1 },
     Recipe { station: Station::Crafting, grid: [&[], &["minecraft:stick"], &["minecraft:stick"], &[], &["minecraft:stick"], &["cyclops:cyclops_eye"], &["minecraft:white_wool"], &["minecraft:stick"], &[]], result: "cyclops:shepherds_crook", count: 1 },

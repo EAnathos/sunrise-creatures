@@ -19,8 +19,7 @@ Done and tested in game (single player). What waits for v2 is in §9.
   subtitles.
 - **Wild** (§4): spawns in deserts, badlands and savannas; soars in circles and lands on high ground; walks about and
   looks at players. Neutral: it fights back from the air (it hovers over its target's head, striking, then pulls
-  away), and nearby vultures join in. Drops feathers and meat (raw, or cooked when it burns); a vulture feather crafts
-  arrows, the brush and the book and quill in place of a feather.
+  away), and nearby vultures join in. Drops ordinary `minecraft:feather` items and meat (raw, or cooked when it burns).
 - **Stats** (§2): each rolls its max health and flight speed once.
 - **Taming** (§5): it walks to raw meat thrown on the ground and eats it; a raw chicken tames it one time in four.
 - **Tamed** (§6): sits or follows, flies to its owner and lands near them, defends them. Its owner fits it with a plain
@@ -52,7 +51,7 @@ Left: tuning (flight numbers, taming odds, speeds, the dive attack) as players r
 - **Target**: game 26.3, on the series' pinned Sunrise revision (docs/SUNRISE-ISSUES.md).
 - **Mod id**: `vulture` (ids kept from before the series, so test worlds still load).
 - **Dependency** ✅: the library `creature` (`[dependencies] creature = "^0.3"` in `sunrise-mod.toml`). Entity
-  `vulture:vulture`, items `vulture:feather`, `vulture:raw_vulture`, `vulture:cooked_vulture` (the saddle is vanilla's).
+  `vulture:vulture`, items `vulture:raw_vulture`, `vulture:cooked_vulture` (the saddle is vanilla's).
 - **Multiplayer** ✅: v1 = single player. LAN and the dedicated server come in v2 (for a LAN guest, their own client
   moves the mount, which needs its own work), but server logic is kept apart from rendering from the start.
 - **Languages** ✅: everything in the repository is in English; the game text is translated (`en_us`, `fr_fr`).
@@ -117,7 +116,7 @@ Variant names are simple colour names ✅, so players need not know the species.
 | Biomes ✅ | Desert, badlands, savanna; groups of 1–3 |
 | Wild flight | Slow circles high up, lands on high points |
 | Scavenger | Drawn to meat on the ground and recently dead mobs (~16 blocks) |
-| Drops ✅ | 0–2 **vulture feathers** (a feather in arrows, the brush, the book and quill ✅) + 1–2 **raw vulture meat** (cookable, ordinary meat ✅) |
+| Drops ✅ | 0–2 **`minecraft:feather`** + 1–2 **raw vulture meat** (cookable, ordinary meat ✅) |
 
 ## 5. Taming ✅
 
