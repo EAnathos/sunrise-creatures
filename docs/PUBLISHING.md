@@ -52,6 +52,10 @@ Everything the workflow needs is committed in the module's folder:
   "Beta" line, the series being in beta until 1.0), `page/<n>-<name>.png|.jpg` (the pictures) and `icon.png` (its
   page's and the game's Mods screen's).
 - **`README.md`** ending with the series' licence section (above).
+- **`Cargo.toml`'s `exclude`**: Sunrise packs a module's folder as `cargo package` does (since its tool of
+  2026-11-26), so the repository's own files (`module.toml`, `SPECS.md`, `sources/`, `page/`) are excluded there;
+  `cargo creature check` holds it. The library's 0.4.0 package was made before and carries `module.toml` and
+  `SPECS.md`: harmless, gone with its next version.
 - **`Cargo.lock`**, committed: a native release carries it, and a stale one fails the registry's scan. Cargo writes it
   (`cargo generate-lockfile` in the folder, once `cargo sunrise-mod check` has fetched the SDK).
 - **`sunrise-mod.toml`**: its `name`, `version`, `authors`, `license`, `description`, `homepage` and `issues`, its

@@ -125,6 +125,10 @@ fn native_pins(t: &toml::Table) -> Option<(String, String)> {
 /// only that one), so the crate's never changes.
 pub const CRATE_VERSION: &str = "0.0.0";
 
+/// What every module's crate keeps out of its package: Sunrise packs a folder as `cargo package` does, so the
+/// repository's own files would ship without it.
+const EXCLUDE: &str = "exclude = [\"module.toml\", \"SPECS.md\", \"sources/\", \"page/\"]";
+
 /// The `Cargo.toml` dependency line every module's crate takes the API from.
 const API: &str = "sunrise-mod-api = { path = \".sunrise/sdk/api/crates/sunrise-mod-api\" }";
 
@@ -173,6 +177,12 @@ fn module(m: &Module, mods: &[Module], revision: &(String, String), errors: &mut
         if let Ok(text) = std::fs::read_to_string(&cargo) {
             if !text.contains(API) {
                 push(format!("{}: the API is not the pinned SDK's ({API})", rel(&cargo)));
+            }
+            if !text.contains(EXCLUDE) {
+                push(format!(
+                    "{}: the repository's files aren't kept out of the package ({EXCLUDE})",
+                    rel(&cargo)
+                ));
             }
             // The version is the manifest's alone (`cargo creature bump`); the crate's stays `CRATE_VERSION`.
             let crate_version = text
