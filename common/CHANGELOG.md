@@ -9,6 +9,8 @@ Each version's section says what changed in it (`cargo creature release` needs o
 - `creature::friend::Follow`: following a friend on foot, moved from the Sporelins for the Elephant.
 - `creature::ride`: a ridden creature's rider and the keys they hold (the server's `player_input`, kept by the library
   for any of the series' creatures), moved from the Vulture for the Elephant.
+- `creature::pack`: a creature's packs (its storage, saved as `creature:pack`) and its owner's screen, in pages a mod
+  describes (`Screens`), every vanilla click of a chest's slots handled; moved from the Vulture for the Elephant.
 - `creature::anger::provoke`: a creature set on someone who didn't hit it (whoever hit its rider: the Elephant).
 
 ## 0.4.2

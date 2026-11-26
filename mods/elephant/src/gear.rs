@@ -1,15 +1,18 @@
 //! Its gear and its riders (SPECS §3): a tamed elephant wears no gear until its owner fits a vanilla saddle, drawn as a
 //! woven blanket (the model's `saddle` group, in `elephant_saddle.png`'s neutral colours) and dyed in place with any of
 //! the 16 dyes. Saddled, it carries two riders: its owner in front, who steers (`Ride`), and any player behind, who
-//! rides along. Its saddle drops when it dies.
+//! rides along. Its owner fits two chests together on each flank, a 54-slot pack a side, kept and shown by the
+//! library (`creature::pack`): sneak + right-click opens its screen (`ElephantScreens`). Its saddle, its chests and all
+//! they hold drop when it dies.
 //!
 //! The gear is saved on the elephant (`elephant:gear`), read the first time its tick sees it, and kept here by its id
 //! for the drawing (single player: the renderer reads it).
 use creature::body::{Behaviour, Body, World};
+use creature::pack::{Page, Screens};
 use creature::state::EntityMap;
 use mod_api::{
-    AttachmentCodec, AttachmentError, AttachmentType, Compound, EntityRef, Hand, Holder, PlayerRef, Registrar,
-    ServerHost, Tag, Text,
+    AttachmentCodec, AttachmentError, AttachmentType, Compound, EntityRef, Hand, Holder, MenuReplace, PlayerRef,
+    Registrar, ServerHost, Tag, Text,
 };
 
 use crate::ELEPHANT;
@@ -46,12 +49,30 @@ pub(crate) const SADDLED_FACT: &str = "saddled";
 pub(crate) const COLOURED_FACT: &str = "coloured";
 pub(crate) const RODE_FACT: &str = "rode";
 pub(crate) const TWO_RIDERS_FACT: &str = "two_riders";
+pub(crate) const PACKED_FACT: &str = "packed";
+pub(crate) const BOTH_SIDES_FACT: &str = "both_sides";
 
-/// What it wears: its saddle, and the dye of its blanket (an index in `DYES`).
+const CHEST: &str = "minecraft:chest";
+/// Its packs (SPECS §3): two chests together on each flank, 54 slots a side (the left's first in its storage).
+const PER_SIDE: usize = 54;
+const SIZE: usize = 2 * PER_SIDE;
+/// Its screen's gear page: its saddle, staying or following, a button per side (a click opens that side's page, a
+/// shift-click takes its chests off, with what they hold); then a page per side, its 54 slots.
+const GEAR_PAGE: u8 = 0;
+const LEFT_PAGE: u8 = 1;
+const RIGHT_PAGE: u8 = 2;
+const SADDLE_BUTTON: usize = 0;
+const STAY_BUTTON: usize = 2;
+const LEFT_BUTTON: usize = 6;
+const RIGHT_BUTTON: usize = 7;
+
+/// What it wears: its saddle, the dye of its blanket (an index in `DYES`), and its chests on each flank.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub(crate) struct Gear {
     pub saddle: bool,
     pub dye: Option<u8>,
+    pub left: bool,
+    pub right: bool,
 }
 
 static GEAR: AttachmentType<Gear> = AttachmentType {
@@ -75,6 +96,8 @@ fn encode(g: &Gear) -> Result<Compound, AttachmentError> {
     let mut c = Compound::new();
     c.insert("Saddle".into(), Tag::Byte(i8::from(g.saddle)));
     c.insert("Dye".into(), Tag::Byte(g.dye.map_or(-1, |d| d as i8)));
+    c.insert("Left".into(), Tag::Byte(i8::from(g.left)));
+    c.insert("Right".into(), Tag::Byte(i8::from(g.right)));
     Ok(c)
 }
 
@@ -87,6 +110,8 @@ fn decode(c: &Compound) -> Result<Gear, AttachmentError> {
     Ok(Gear {
         saddle: byte("Saddle") == 1,
         dye: (0..16).contains(&dye).then_some(dye as u8),
+        left: byte("Left") == 1,
+        right: byte("Right") == 1,
     })
 }
 
@@ -132,7 +157,32 @@ pub(crate) fn interact(host: &mut dyn ServerHost, id: u32, player: PlayerRef, ha
             creature::hand::use_one(host, player, hand);
         }
     };
+    if mine && player.entity().is_shift_key_down(&*host).unwrap_or(false) {
+        creature::pack::open(host, player.uuid(), id, &SCREENS, GEAR_PAGE, MenuReplace::CloseFirst);
+        return true;
+    }
     match item {
+        Some(CHEST) if mine && !(gear.left && gear.right) => {
+            let held = creature::hand::held(&*host, player, hand).map_or(0, |s| s.count());
+            if held < 2 && !creative {
+                let _ = player.action_bar(host, Text::translate("elephant.two_chests", vec![]));
+                return true;
+            }
+            use_one(host);
+            use_one(host);
+            let fitted = if gear.left {
+                Gear { right: true, ..gear }
+            } else {
+                Gear { left: true, ..gear }
+            };
+            set(host, id, fitted);
+            creature::sounds::queue(id, "minecraft:entity.donkey.chest", 1.0, 0.8);
+            creature::bestiary::learn(host, player.uuid(), ELEPHANT, PACKED_FACT);
+            if fitted.left && fitted.right {
+                creature::bestiary::learn(host, player.uuid(), ELEPHANT, BOTH_SIDES_FACT);
+            }
+            true
+        }
         Some(SADDLE) if mine && !gear.saddle => {
             use_one(host);
             set(host, id, Gear { saddle: true, ..gear });
@@ -208,19 +258,136 @@ fn two_riders(host: &mut dyn ServerHost, elephant: EntityRef) {
     }
 }
 
-/// From `living_death`: its saddle drops.
+/// From `living_death`: its saddle, its chests and all they hold drop, and its screen closes.
 pub(crate) fn died(host: &mut dyn ServerHost, id: u32) {
-    if !of(id).saddle {
-        return;
-    }
+    let gear = of(id);
     let Some(e) = host.entity(id) else {
         return;
     };
     let (Some(at), Some(level)) = (e.position(&*host), e.level(&*host)) else {
         return;
     };
-    if let Some(stack) = creature::hand::stack(&*host, SADDLE, 1) {
-        creature::hand::drop_stack(host, level, [at[0], at[1] + 1.0, at[2]], stack);
+    let at = [at[0], at[1] + 1.0, at[2]];
+    let chests = 2 * (u32::from(gear.left) + u32::from(gear.right));
+    let stacks = [
+        gear.saddle.then(|| creature::hand::stack(&*host, SADDLE, 1)).flatten(),
+        (chests > 0)
+            .then(|| creature::hand::stack(&*host, CHEST, chests))
+            .flatten(),
+    ];
+    for stack in stacks.into_iter().flatten() {
+        creature::hand::drop_stack(host, level, at, stack);
+    }
+    creature::pack::died(host, id, SIZE, level, at);
+}
+
+/// Its screen (the library's `pack`).
+pub(crate) struct ElephantScreens;
+
+pub(crate) static SCREENS: ElephantScreens = ElephantScreens;
+
+impl Screens for ElephantScreens {
+    fn size(&self) -> usize {
+        SIZE
+    }
+
+    fn page(&self, host: &dyn ServerHost, id: u32, page: u8) -> Option<Page> {
+        let gear = of(id);
+        let item = |name: &str| creature::hand::stack(host, name, 1);
+        let side = |storage: std::ops::Range<usize>, title: &str| Page {
+            rows: 6,
+            title: Text::translate(title, vec![]),
+            buttons: Vec::new(),
+            first: 0,
+            storage: storage.collect(),
+        };
+        match page {
+            GEAR_PAGE => {
+                let staying = creature::friend::of(id).is_some_and(|f| f.staying);
+                let mut buttons = vec![
+                    (SADDLE_BUTTON, if gear.saddle { item(SADDLE) } else { None }),
+                    (
+                        STAY_BUTTON,
+                        item(if staying { "minecraft:lead" } else { "minecraft:feather" }),
+                    ),
+                ];
+                if gear.left {
+                    buttons.push((LEFT_BUTTON, item(CHEST)));
+                }
+                if gear.right {
+                    buttons.push((RIGHT_BUTTON, item(CHEST)));
+                }
+                Some(Page {
+                    rows: 1,
+                    title: Text::translate("container.elephant.elephant", vec![]),
+                    buttons,
+                    first: 0,
+                    storage: Vec::new(),
+                })
+            }
+            LEFT_PAGE if gear.left => Some(side(0..PER_SIDE, "container.elephant.left")),
+            RIGHT_PAGE if gear.right => Some(side(PER_SIDE..SIZE, "container.elephant.right")),
+            _ => None,
+        }
+    }
+
+    /// The gear page's buttons: the saddle taken off (its riders getting off), staying or following, a side's page
+    /// opened, or with a shift-click its chests taken off (given back with what they held).
+    fn button(
+        &self,
+        host: &mut dyn ServerHost,
+        player: PlayerRef,
+        id: u32,
+        _: u8,
+        slot: usize,
+        shift: bool,
+    ) -> Option<u8> {
+        let gear = of(id);
+        match slot {
+            SADDLE_BUTTON if gear.saddle => {
+                if let Some(e) = host.entity(id) {
+                    e.eject_passengers(host);
+                }
+                set(
+                    host,
+                    id,
+                    Gear {
+                        saddle: false,
+                        dye: None,
+                        ..gear
+                    },
+                );
+                if let Some(s) = creature::hand::stack(&*host, SADDLE, 1) {
+                    creature::hand::give(host, player, s);
+                }
+            }
+            STAY_BUTTON => {
+                let staying = creature::friend::of(id).is_some_and(|f| f.staying);
+                creature::friend::set_staying(id, !staying);
+            }
+            LEFT_BUTTON | RIGHT_BUTTON => {
+                let left = slot == LEFT_BUTTON;
+                if !(if left { gear.left } else { gear.right }) {
+                    return Some(GEAR_PAGE);
+                }
+                if !shift {
+                    return Some(if left { LEFT_PAGE } else { RIGHT_PAGE });
+                }
+                let range = if left { 0..PER_SIDE } else { PER_SIDE..SIZE };
+                let taken = creature::pack::take(host, id, SIZE, range);
+                for s in taken.into_iter().chain(creature::hand::stack(&*host, CHEST, 2)) {
+                    creature::hand::give(host, player, s);
+                }
+                let off = if left {
+                    Gear { left: false, ..gear }
+                } else {
+                    Gear { right: false, ..gear }
+                };
+                set(host, id, off);
+            }
+            _ => {}
+        }
+        Some(GEAR_PAGE)
     }
 }
 
@@ -269,6 +436,8 @@ mod tests {
             Gear {
                 saddle: true,
                 dye: Some(14),
+                left: true,
+                right: false,
             },
         ] {
             assert_eq!(decode(&encode(&gear).unwrap()).unwrap(), gear);

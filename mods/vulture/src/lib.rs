@@ -41,9 +41,8 @@ use creature::sync::Locked;
 use mod_api::{
     BlockEntityDrawContext, ClientHost, ClientTickPostEvent, EntityInteractEvent, EntityJoinLevelEvent,
     EntityMountEvent, EntityRenderState, EntityRenderer, EntityTickPostEvent, Flow, GoalSpec, HitHost, Hooks, HostSide,
-    InteractionResult, KeyRegistration, LivingDeathEvent, LivingIncomingDamageEvent, LivingRenderState,
-    MenuClickedEvent, MenuClosedEvent, PayloadCodec, PayloadId, RegisterEntityRenderersEvent, Registrar,
-    RegistrationContext, ServerHost, SoundSource, ToServer,
+    InteractionResult, KeyRegistration, LivingDeathEvent, LivingIncomingDamageEvent, LivingRenderState, PayloadCodec,
+    PayloadId, RegisterEntityRenderersEvent, Registrar, RegistrationContext, ServerHost, SoundSource, ToServer,
 };
 
 pub const KIND: &str = "vulture:vulture";
@@ -678,14 +677,6 @@ impl Hooks for Vulture {
     }
 
     /// Its screen's clicks (`screen.rs`).
-    fn menu_clicked(&self, host: &mut dyn ServerHost, event: &mut MenuClickedEvent) {
-        screen::clicked(host, event);
-    }
-
-    fn menu_closed(&self, _: &mut dyn ServerHost, event: &mut MenuClosedEvent) {
-        screen::closed(event);
-    }
-
     fn living_death(&self, host: &mut dyn ServerHost, event: &mut LivingDeathEvent<'_>) -> Flow {
         if event.kind == KIND {
             screen::died(host, event.entity);
@@ -717,6 +708,7 @@ impl Hooks for Vulture {
             let id = event.entity;
             water_escape(host, id);
             creature::ride::read(&*host, id);
+            screen::migrate(host, id);
             creature::stats::tick(host, id, &state::STATS, |host| state::legacy(host, id));
             creature::body::tick(host, id, || {
                 vec![

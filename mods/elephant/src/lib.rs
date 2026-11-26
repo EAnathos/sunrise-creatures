@@ -98,6 +98,16 @@ static BESTIARY: Species = Species {
             item: "minecraft:player_head",
             key: "bestiary.elephant.two_riders",
         },
+        Fact {
+            id: gear::PACKED_FACT,
+            item: "minecraft:chest",
+            key: "bestiary.elephant.packed",
+        },
+        Fact {
+            id: gear::BOTH_SIDES_FACT,
+            item: "minecraft:chest",
+            key: "bestiary.elephant.both_sides",
+        },
     ],
     icon: EGG,
     scheme: None,
@@ -121,7 +131,7 @@ fn book_view(draw: &mut dyn BlockEntityDrawContext, _: Option<creature::colours:
 }
 const BOOK_SCALE: f32 = 0.3;
 
-/// Its body without its gear: its blanket is drawn on its own, tinted (`Draw`); its chests come with step 4.
+/// Its body without its gear: its blanket is drawn on its own, tinted, and its chests only once fitted (`Draw`).
 fn bare(part: &str) -> bool {
     !matches!(part, "saddle" | "chest_left" | "chest_right")
 }
@@ -192,8 +202,18 @@ impl EntityRenderer for Draw {
         let pose = |part: &str| pose(part, &now);
         let tint = creature::model::tint(mob);
         creature::model::draw_shown(draw, &model::ELEPHANT, TEXTURE, &pose, &bare, tint);
-        // Its blanket, saddled: its neutral texture tinted by its dye.
+        // Its chests, on each flank fitted.
         let gear = gear::of(entity.id);
+        if gear.left || gear.right {
+            let chests = |part: &str| match part {
+                "elephant" => true,
+                "chest_left" => gear.left,
+                "chest_right" => gear.right,
+                _ => false,
+            };
+            creature::model::draw_shown(draw, &model::ELEPHANT, TEXTURE, &pose, &chests, tint);
+        }
+        // Its blanket, saddled: its neutral texture tinted by its dye.
         if gear.saddle {
             let colour = creature::model::multiply(tint, gear::blanket(gear));
             let blanket = |part: &str| matches!(part, "elephant" | "saddle");

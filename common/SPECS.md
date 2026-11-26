@@ -350,6 +350,7 @@ Each moves here when a second mod needs it. Until then it stays in the vulture.
 cane); **following on foot** ✅ in the library (`creature::friend::Follow`, moved from the Sporelins for the Elephant) and the **Vulture** (its owner and sitting; a save from before, which held them in `vulture:state`, is moved over once, tested in game); defending and riding come with the Living Flowers (planned) |
 | 6.3 | **Babies and growth**: smaller model, growth time, faster when fed; inherited stats | the stats ✅ in the library (`creature::stats`, §3.18, moved for the Elephant); babies and growth in the vulture, to move with the Elephant's |
 | 6.4 | **Ridden special attack**: a key that makes the mount attack (the vulture's talons) | in the vulture |
+| 6.5 | **Packs and the equipment screen**: storage carried, saved on the creature; the owner's screen (sneak + right-click), every chest click | ✅ in the library (`creature::pack`, moved for the Elephant: the vulture's one page, the elephant's gear page and a 54-slot page per side) |
 
 ## 7. Creature guide book ✅
 

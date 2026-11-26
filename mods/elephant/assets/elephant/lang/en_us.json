@@ -13,5 +13,11 @@
   "bestiary.elephant.coloured": "Coloured",
   "bestiary.elephant.rode": "Rode",
   "bestiary.elephant.two_riders": "Two riders",
-  "elephant.owner_in_front": "Its owner rides in front: get on once they are on"
+  "elephant.owner_in_front": "Its owner rides in front: get on once they are on",
+  "bestiary.elephant.packed": "Packed",
+  "bestiary.elephant.both_sides": "Both sides",
+  "elephant.two_chests": "It takes two chests, one pair a side",
+  "container.elephant.elephant": "Elephant",
+  "container.elephant.left": "Left chests",
+  "container.elephant.right": "Right chests"
 }

@@ -13,5 +13,11 @@
   "bestiary.elephant.coloured": "Coloré",
   "bestiary.elephant.rode": "Chevauché",
   "bestiary.elephant.two_riders": "À deux",
-  "elephant.owner_in_front": "Son propriétaire monte devant : montez une fois qu'il est installé"
+  "elephant.owner_in_front": "Son propriétaire monte devant : montez une fois qu'il est installé",
+  "bestiary.elephant.packed": "Bâté",
+  "bestiary.elephant.both_sides": "Des deux côtés",
+  "elephant.two_chests": "Il faut deux coffres, une paire par côté",
+  "container.elephant.elephant": "Éléphant",
+  "container.elephant.left": "Coffres de gauche",
+  "container.elephant.right": "Coffres de droite"
 }

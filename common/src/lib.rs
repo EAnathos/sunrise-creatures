@@ -40,6 +40,7 @@ pub mod items;
 pub mod jar;
 pub mod mob;
 pub mod model;
+pub mod pack;
 pub mod particles;
 pub mod pick;
 pub mod prey;
@@ -58,9 +59,9 @@ use mod_api::{
     EntityInteractEvent, EntityJoinLevelEvent, EntityLeaveLevelEvent, EntitySizeEvent, EntityTickListenedEvent,
     EntityTickPostEvent, ExplosionDetonateEvent, Flow, HitHost, Hooks, Host, HostSide, InteractionResult,
     LevelTickPostEvent, LivingBreatheEvent, LivingChangeTargetEvent, LivingIncomingDamageEvent, LoopContext,
-    PlayerInputEvent, PlayerLoggedInEvent, PlayerLoggedOutEvent, RegisterCommandsEvent, Registrar, RegistrationContext,
-    RunModCommandEvent, ScreenMouseButtonPressedPreEvent, ScreenMouseScrolledPreEvent, ScreenRenderPostEvent,
-    ServerHost, TabCompleteEvent, VisualsEvent,
+    MenuClickedEvent, MenuClosedEvent, PlayerInputEvent, PlayerLoggedInEvent, PlayerLoggedOutEvent,
+    RegisterCommandsEvent, Registrar, RegistrationContext, RunModCommandEvent, ScreenMouseButtonPressedPreEvent,
+    ScreenMouseScrolledPreEvent, ScreenRenderPostEvent, ServerHost, TabCompleteEvent, VisualsEvent,
 };
 
 /// The library's items in the guide's Items tab (SPECS §7.2).
@@ -114,6 +115,7 @@ impl Hooks for Creature {
     fn register(&self, r: &mut dyn Registrar, _: &RegistrationContext) {
         colours::declare(r);
         stats::declare(r);
+        pack::declare(r);
         particles::declare(r);
         territory::declare(r);
         friend::declare(r);
@@ -130,6 +132,15 @@ impl Hooks for Creature {
         if let Some(level) = host.level(event.dimension) {
             jar::spare_from_blast(territory::Ground::new(&*host, level), event.blocks);
         }
+    }
+
+    /// A creature's screen (`pack`).
+    fn menu_clicked(&self, host: &mut dyn ServerHost, event: &mut MenuClickedEvent) {
+        pack::clicked(host, event);
+    }
+
+    fn menu_closed(&self, _: &mut dyn ServerHost, event: &mut MenuClosedEvent) {
+        pack::closed(event);
     }
 
     /// The keys of the players riding one of our creatures (`ride`).

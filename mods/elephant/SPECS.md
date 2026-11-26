@@ -10,7 +10,7 @@ future mod; Elephant will not require that mod.
 
 ## 0. Status
 
-In development (0.1.0, not released), steps 1 to 3 of 5:
+In development (0.1.0, not released), steps 1 to 4 of 5:
 
 - **Step 1**: the elephant as an entity (`elephant:elephant`, its spawn egg), 2.2 × 2.6 blocks (hit where its trunk and
   tail reach too: the library's `creature::pick`); drawn with its adult model, walking with a four-legged gait
@@ -32,6 +32,12 @@ In development (0.1.0, not released), steps 1 to 3 of 5:
   forward, back and sideways at its pace, stepping up a block; with another in front, it stands. Whoever hits one of
   its riders is charged as if they hit it (the library's `anger::provoke`). Its saddle drops when it dies. The guide's
   "Saddled", "Coloured", "Rode" and "Two riders".
+- **Step 4** (`gear.rs`, the library's `creature::pack`, moved from the Vulture): its owner fits two chests at once
+  on a flank (holding at least two; the left first), drawn as the `chest_left` and `chest_right` groups, a 54-slot pack
+  a side (`creature:pack`). Its owner's sneak + right-click opens its screen: a gear page (its saddle, a click taking it
+  off and its riders down; staying or following; a chest per fitted side, a click opening that side's page, a
+  shift-click taking its chests off with what they hold) and a 6-row page per side. Its saddle, its chests and all
+  they hold drop when it dies. The guide's "Packed" and "Both sides".
 
 Not tried in game yet.
 - **The adult model** (`sources/models/elephant.bbmodel`; [front](../../docs/models/elephant-elephant-front.png) and
@@ -50,8 +56,7 @@ Not tried in game yet.
 - All three models share the elephant's 64 × 64 texture. The baby and juvenile models have no visible saddle blanket or
   chests; only adults can be ridden or equipped.
 
-Next, in this order: (4) the double chests and the equipment screen (the Vulture's, moved to the library), its
-gear dropped at death; (5) breeding, the baby and juvenile stages, its drops (meat, the ivory tusk), the ceremonial
+Next: (5) breeding, the baby and juvenile stages, its drops (meat, the ivory tusk), the ceremonial
 trumpet, the guide's facts and items, fleeing mice.
 
 ## 1. Technical context
