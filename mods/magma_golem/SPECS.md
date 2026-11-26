@@ -15,8 +15,9 @@ tried in game: its spawning, sleep, chase, attacks, healing, items and drawings 
 the ones tried.
 
 - **Done**: the entity (3 × 6 blocks, 250 health, armour 10, no knockback, immune to fire and lava), its drawing
-  (`draw.rs`) and every pose of §2.1 but the hurt flinch and the death (vanilla's tilt): the mound, rising with its
-  roar, lying down, walking, the fist slam, the ground pound, the glob, the leap, crusted at half pace, the jaw ajar enraged;
+  (`draw.rs`) and every pose of §2.1: the mound, rising with its
+  roar, lying down, walking, the fist slam, the ground pound, the glob, the leap, crusted at half pace, the jaw ajar enraged, the flinch when hurt, the death (on its knees,
+  slumped on its fists, its glow fading, upright rather than vanilla's tip onto its side);
   its seams full-bright over it (`magma_golem_glow.png`, the texture's glowing pixels), pulsing asleep with its eyes
   dark, brighter enraged, dark crusted; its light (the library's coloured light, `creature::glow`: seen only, it
   lights no block). Its sleep and fight (`golem.rs`): it wakes when a player comes within 6 blocks, hits it or mines
@@ -37,7 +38,7 @@ the ones tried.
   attacks' (the ravager's roar, the iron golem's blow, an explosion, lava hissing, basalt breaking).
 - **Its hitbox**: the crosshair finds it by its outline (the library's `creature::pick`, common/SPECS.md §3.17), 4.6
   blocks across its arms, as the client's box is only the trader's scaled (sunrise-org/sunrise#1134).
-- **Left**: the hurt flinch and the death pose (§2.1), its own sounds; then its release.
+- **Left**: its own sounds (§1); then its release.
 - **The model** (`sources/models/magma_golem.bbmodel`, pictures in docs/models/): our own design, about 6 blocks
   tall, built from boulders of dark grey-brown rock split by glowing orange seams, lava showing at the belly, the
   chest, the elbows, the wrists and the knees. Hunched forward like an ape: a massive back and huge shoulders rise
@@ -114,7 +115,8 @@ ticks, slow and heavy, the ground shaking under it (dust and rock particles, a d
 - **Hurt**: a short flinch back, the head jerking.
 - **Crusted** (cooled by snow): stiff and slow, every movement at half speed, its eyes dim.
 - **Enraged**: a roar (the jaw wide open, the head thrown back, the arms spread), then every movement faster.
-- **Death**: it drops to its knees, slumps forward on its fists and stays still as its glow fades.
+- **Death** (vanilla's second before it is gone): it drops to its knees, slumps forward on its fists and stays still
+  as its glow fades.
 
 ## 3. Boss or not ✅
 

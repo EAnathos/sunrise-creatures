@@ -80,6 +80,8 @@ stay in the vulture until a second mod needs them, except friends (§6.2) and th
   `mods/<mod>/assets/models/<model>.bbmodel` into a `pub static <MODEL>: Part` in the mod's crate.
 - `draw(host, draw, part, texture, pose)`: draws the tree with the mod's texture; `pose(group)` gives each group's
   animation for the frame. Called from the mod's `mob_submit` hook, which then cancels the template's model.
+- `living_pose` (turned, scaled, tipped over as it dies) and `living_pose_upright` (without the tip, for a death pose
+  of its own).
 - `draw_layer` (every cube grown: a layer drawn over the model), `draw_attached` (a callback after each group, in its
   posed space: what a creature holds follows its hand, the Magma Golem's glob).
 - Users: every mob of the series.

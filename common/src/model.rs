@@ -31,6 +31,18 @@ pub fn tint(mob: Option<&LivingRenderState>) -> u32 {
 /// world: the screen lights them itself, and lit twice an underside comes out black. A spin of nothing does that
 /// (a spinning part keeps its colour, the shader lights it).
 pub fn living_pose(draw: &mut dyn BlockEntityDrawContext, entity: &EntityRenderState) {
+    living_pose_upright(draw, entity);
+    if let Some(mob) = entity.living.as_ref()
+        && mob.death_time > 0.0
+    {
+        let f = ((mob.death_time - 1.0) / 20.0 * 1.6).max(0.0).sqrt().min(1.0);
+        draw.rotate_about([0.0, 0.0, 1.0], f * 90.0, [0.0, 0.0, 0.0]);
+    }
+}
+
+/// `living_pose` without the tip onto its side as it dies: for a creature with a death pose of its own (the Magma
+/// Golem kneels and slumps).
+pub fn living_pose_upright(draw: &mut dyn BlockEntityDrawContext, entity: &EntityRenderState) {
     if entity.id == IN_A_SCREEN {
         draw.spin([0.0, 1.0, 0.0], [0.0; 3], 0.0, 0.0);
     }
@@ -40,10 +52,6 @@ pub fn living_pose(draw: &mut dyn BlockEntityDrawContext, entity: &EntityRenderS
     // Our models face +z (south) at rest, as Blockbench builds them: turned by the body's yaw alone (vanilla's
     // `180 - bodyRot` is for its own models, which face north).
     draw.rotate_about([0.0, 1.0, 0.0], -mob.body_rot, [0.0, 0.0, 0.0]);
-    if mob.death_time > 0.0 {
-        let f = ((mob.death_time - 1.0) / 20.0 * 1.6).max(0.0).sqrt().min(1.0);
-        draw.rotate_about([0.0, 0.0, 1.0], f * 90.0, [0.0, 0.0, 0.0]);
-    }
     if mob.scale != 1.0 {
         draw.scale([mob.scale; 3]);
     }

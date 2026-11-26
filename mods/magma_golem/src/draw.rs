@@ -1,6 +1,7 @@
 //! Its drawing (SPECS §2.1): its model posed from its render state and what its tick shows of it (`golem::shown`,
 //! single player), then its seams drawn full-bright over it (`GLOW`, the texture's glowing pixels alone): pulsing
 //! slowly asleep, its eyes dark; blazing enraged; gone dark crusted. The glob it is about to throw is drawn in its fist.
+use creature::state::EntityMap;
 use mod_api::{BlockEntityDrawContext, EntityRenderState, EntityRenderer};
 
 use crate::golem::{self, Attack, Mode, Shown};
@@ -24,7 +25,19 @@ const HELD_SIZE: f32 = 1.1;
 const TORN: f32 = 0.4;
 const RAISED: f32 = 0.6;
 
-/// What its pose reads of a frame: its walk's progress and speed, its head's turn and pitch (degrees), its age (ticks).
+/// Its flinch when hurt: how long (ticks), and when each golem's began (its age then; single player, by its id).
+const FLINCH: f32 = 8.0;
+static FLINCHES: EntityMap<f32> = EntityMap::new();
+/// Its death (vanilla's 20 ticks, then it is gone): down on its knees by `KNEELED`, slumped on its fists from `SLUMP`.
+const DEATH: f32 = 20.0;
+const KNEELED: f32 = 0.4;
+const SLUMP: f32 = 0.3;
+/// How far it sinks kneeling (blocks: its shins' length), and slumped.
+const KNEEL_DROP: f32 = 1.05;
+const SLUMP_DROP: f32 = 0.3;
+
+/// What its pose reads of a frame: its walk's progress and speed, its head's turn and pitch (degrees), its age (ticks),
+/// how far into its flinch and its death (0 to 1).
 #[derive(Clone, Copy, Debug, Default)]
 pub(crate) struct Frame {
     pub walk: f32,
@@ -32,6 +45,8 @@ pub(crate) struct Frame {
     pub head_yaw: f32,
     pub pitch: f32,
     pub age: f32,
+    pub flinch: f32,
+    pub dying: f32,
 }
 
 impl Frame {
@@ -43,7 +58,56 @@ impl Frame {
             head_yaw: mob.map_or(0.0, |m| m.y_rot),
             pitch: mob.map_or(0.0, |m| m.x_rot),
             age: entity.age,
+            flinch: flinch(entity),
+            dying: mob.map_or(0.0, |m| (m.death_time / DEATH).clamp(0.0, 1.0)),
         }
+    }
+}
+
+/// Its flinch this frame, 0 to 1: from the moment its hurt flash shows, up and back over `FLINCH` ticks.
+fn flinch(entity: &EntityRenderState) -> f32 {
+    let red = entity.living.as_ref().is_some_and(|m| m.has_red_overlay);
+    if entity.id == creature::model::IN_A_SCREEN {
+        return 0.0;
+    }
+    let mut all = FLINCHES.locked();
+    if !red {
+        all.remove(&entity.id);
+        return 0.0;
+    }
+    let since = entity.age - *all.entry(entity.id).or_insert(entity.age);
+    ((since / FLINCH).clamp(0.0, 1.0) * std::f32::consts::PI).sin()
+}
+
+/// How far down on its knees and slumped it is, `dying` into its death.
+fn fallen(dying: f32) -> (f32, f32) {
+    (
+        (dying / KNEELED).min(1.0),
+        ((dying - SLUMP) / (1.0 - SLUMP)).clamp(0.0, 1.0),
+    )
+}
+
+/// Its death (SPECS §2.1): it drops to its knees (the shins folded back under it), then slumps forward on its fists.
+fn death(name: &str, dying: f32) -> [f32; 3] {
+    let (knees, slump) = fallen(dying);
+    match name {
+        "shin_left" | "shin_right" => [85.0 * knees, 0.0, 0.0],
+        "body" => [35.0 * slump, 0.0, 0.0],
+        "head" => [30.0 * slump, 0.0, 0.0],
+        "arm_left" | "arm_right" => [-30.0 * slump, 0.0, 0.0],
+        "jaw" => [20.0 * slump, 0.0, 0.0],
+        _ => [0.0; 3],
+    }
+}
+
+/// Its flinch (SPECS §2.1): its body jerked back, its head thrown back and aside.
+fn flinched(name: &str, flinch: f32) -> [f32; 3] {
+    match name {
+        "body" => [-8.0 * flinch, 0.0, 0.0],
+        "head" => [-18.0 * flinch, 10.0 * flinch, 0.0],
+        "arm_left" => [0.0, 0.0, -8.0 * flinch],
+        "arm_right" => [0.0, 0.0, 8.0 * flinch],
+        _ => [0.0; 3],
     }
 }
 
@@ -108,13 +172,19 @@ pub(crate) fn pose(name: &str, now: &Frame, shown: &Shown) -> [f32; 3] {
         "arm_right" => [stride * 0.7, 0.0, 0.0],
         _ => [0.0; 3],
     };
-    let attack = attack(name, shown);
-    let roar = roar(name, shown);
+    // Dying, its attack and roar are let go.
+    let (attack, roar) = if now.dying > 0.0 {
+        ([0.0; 3], [0.0; 3])
+    } else {
+        (attack(name, shown), roar(name, shown))
+    };
+    let death = death(name, now.dying);
+    let flinched = flinched(name, now.flinch);
     let c = curled(shown.mode);
     let m = mound(name);
     let mut out = [0.0; 3];
     for k in 0..3 {
-        out[k] = (standing[k] + attack[k] + roar[k]) * (1.0 - c) + m[k] * c;
+        out[k] = (standing[k] + attack[k] + roar[k] + death[k] + flinched[k]) * (1.0 - c) + m[k] * c;
     }
     out
 }
@@ -187,6 +257,12 @@ fn roar(name: &str, shown: &Shown) -> [f32; 3] {
     }
 }
 
+/// A grey of brightness `v` (0 to 1), opaque: a multiplier for a colour.
+fn grey(v: f32) -> u32 {
+    let v = (v.clamp(0.0, 1.0) * 255.0) as u32;
+    0xFF00_0000 | v << 16 | v << 8 | v
+}
+
 /// Its own model, posed (`pose`), and its seams full-bright over it.
 pub struct Draw;
 
@@ -196,18 +272,23 @@ impl EntityRenderer for Draw {
         let shown = golem::shown(entity.id);
         let now = Frame::of(entity);
         draw.push();
-        creature::model::living_pose(draw, entity);
+        // Upright as it dies: it kneels and slumps (`death`) rather than tipping over.
+        creature::model::living_pose_upright(draw, entity);
         // Its scale is for its client box only (`creature::mob::scale_client_box`): the model keeps its size.
         let scale = mob.map_or(1.0, |m| m.scale);
         if scale > 0.0 && scale != 1.0 {
             draw.scale([1.0 / scale; 3]);
         }
-        draw.translate([0.0, -MOUND_DROP * curled(shown.mode) - crouch_drop(&shown), 0.0]);
+        let (knees, slump) = fallen(now.dying);
+        let drop = MOUND_DROP * curled(shown.mode) + crouch_drop(&shown) + KNEEL_DROP * knees + SLUMP_DROP * slump;
+        draw.translate([0.0, -drop, 0.0]);
         let pose = |part: &str| pose(part, &now, &shown);
         let tint = creature::model::tint(mob);
         // The glob it is about to throw, in its left fist: torn off, growing, then lifted overhead.
         let held = match (shown.attack, glob::magma_block()) {
-            (Attack::Glob(_), Some(key)) => windup(shown.attack).map(|(t, _)| (key, (t / TORN).min(1.0))),
+            (Attack::Glob(_), Some(key)) if now.dying == 0.0 => {
+                windup(shown.attack).map(|(t, _)| (key, (t / TORN).min(1.0)))
+            }
             _ => None,
         };
         creature::model::draw_attached(draw, &model::MAGMA_GOLEM, TEXTURE, &pose, tint, &mut |part, draw| {
@@ -227,14 +308,14 @@ impl EntityRenderer for Draw {
         let asleep = shown.mode == Mode::Dormant;
         if !shown.crusted {
             let colour = if asleep {
-                let pulse = 0.55 + 0.25 * (now.age * 0.05).sin();
-                let v = (pulse * 255.0) as u32;
-                0xFF00_0000 | v << 16 | v << 8 | v
+                grey(0.55 + 0.25 * (now.age * 0.05).sin())
             } else if shown.enraged {
                 GLOW_RAGE
             } else {
                 GLOW_AWAKE
             };
+            // Dying, its glow fades out.
+            let colour = 0xFF00_0000 | creature::model::multiply(colour, grey(1.0 - now.dying));
             draw.set_light(FULL_BRIGHT);
             let lit = |part: &str| !(asleep && part.starts_with("eye_"));
             creature::model::draw_layer(draw, &model::MAGMA_GOLEM, GLOW, &pose, &lit, colour, GLOW_OVER);
@@ -263,6 +344,25 @@ mod tests {
         let left = pose("leg_left", &walking, &awake)[0];
         let right = pose("leg_right", &walking, &awake)[0];
         assert!(left != 0.0 && (left + right).abs() < 1e-4, "the legs swing opposite");
+    }
+
+    #[test]
+    fn dying_it_kneels_then_slumps_forward() {
+        let awake = Shown {
+            mode: Mode::Awake,
+            ..Shown::default()
+        };
+        let at = |dying: f32, part: &str| {
+            let now = Frame {
+                dying,
+                ..Frame::default()
+            };
+            pose(part, &now, &awake)[0]
+        };
+        assert_eq!(at(0.0, "shin_left"), 0.0);
+        assert_eq!(at(KNEELED, "shin_left"), 85.0);
+        assert_eq!(at(KNEELED, "body"), 35.0 * fallen(KNEELED).1);
+        assert_eq!(at(1.0, "body"), 35.0);
     }
 
     #[test]
