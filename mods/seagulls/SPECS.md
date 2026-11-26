@@ -24,7 +24,8 @@ the meat, the guide's page and facts, its own sounds.
   common/SPECS.md §6.1), and so did the feather recipes (§3.8); a mod can add its creature as a hunter of another
   mod's prey (§3.7).
 - Sunrise gives no hold on a player's fishing bobber (it is no entity a mod finds): its place is guessed from the
-  cast (`player_fish`), about 6 blocks ahead along the player's look on the water (docs/SUNRISE-ISSUES.md).
+  cast (`player_fish`), about 6 blocks ahead along the player's look on the water (sunrise-org/sunrise#6100,
+  docs/SUNRISE-ISSUES.md).
 
 ## 1. Technical context
 

@@ -6,7 +6,8 @@
 //! nothing behind, with no cleanup of its own for each module to remember. What a creature does at its death (a
 //! module's `living_death`) stays the module's.
 //!
-//! Single player: the server's hooks and the client's renderers share these statics by entity id.
+//! Single player: the server's hooks and the client's renderers share these statics by entity id, since a living
+//! entity's renderer gets none of its synced attachments (sunrise-org/sunrise#6099; docs/ARCHITECTURE.md §8).
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Mutex, MutexGuard};

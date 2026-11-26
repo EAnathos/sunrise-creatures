@@ -192,7 +192,7 @@ What a renderer can read of the server, at our pin:
 - **Not the entity's synced attachments.** Sunrise hands them to a renderer (`EntityRenderState::attachments`) only for
   a general entity type (`declare_general_entity`); our creatures are living entities copying the wandering trader,
   for which it is always none. (Tried on 2026-11-26 with the Phasmids: the renderer then saw nothing, and the change
-  was undone.) Asked of Sunrise: docs/SUNRISE-ISSUES.md, "To open".
+  was undone.) Asked of Sunrise: [sunrise-org/sunrise#6099](https://github.com/sunrise-org/sunrise/issues/6099).
 - **A synced attachment through a client hook.** A `ClientHost` reads attachments (`TYPE.get(host, holder)`): a
   client hook (`client_tick_post`) could read a synced `creature:` attachment of each creature in view and keep it in
   client-side statics by entity id, which the renderers read. This is the way, until Sunrise gives living renderers

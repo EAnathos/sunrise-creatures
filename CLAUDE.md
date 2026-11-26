@@ -98,8 +98,9 @@ only). How the port went is in the history (`git show 2c09384:docs/SUNRISE-PORT.
 - `EntityRef::leash_holder` answers `Some(LeashHolder::Unleashed)` for a mob without a lead.
 - A payload's string holds at most 4096 bytes (`PAYLOAD_MAX_STRING_BYTES`).
 - Hosts are split by side (`ServerHost`, `ClientHost`, `HostSide`); per-type behaviour is a Part
-  (`r.entity_part`, `r.item_part`: `use_item`, `use_on`, `tooltip`). A renderer has no host: per-entity render state
-  is kept in statics by entity id (single player).
+  (`r.entity_part`, `r.item_part`: `use_item`, `use_on`, `tooltip`). A renderer has no host, and a living entity's
+  gets none of its synced attachments (sunrise-org/sunrise#6099): per-entity render state is kept in statics by
+  entity id (single player; `docs/ARCHITECTURE.md` §8).
 - A type only its content file declares has no attribute row: `declare_entity_attributes` (with the JSON's values)
   before `modify_entity_attributes`, or the game crashes at load. Particle keys are handed out at registration only
   (`creature::particles`). `finalize_spawn` gives a mob's spawn reason.

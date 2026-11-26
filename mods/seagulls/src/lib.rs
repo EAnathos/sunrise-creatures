@@ -175,7 +175,7 @@ const BOBBER_RANGE: f64 = 24.0;
 const LOOK_EVERY: i32 = 10;
 
 /// The players fishing: where they cast from and along which look, and when (the game's time). Sunrise's fishing
-/// bobber is no entity the mod can find, so its place is guessed from the cast (`bobber`), and it is forgotten at the
+/// bobber is no entity the mod can find (sunrise-org/sunrise#6100), so its place is guessed from the cast (`bobber`), and it is forgotten at the
 /// reel-in, when the rod leaves the player's hands, or after `CAST_FOR` ticks.
 /// A cast: the player's eyes and look, and the game's time.
 type Cast = ([f64; 3], [f64; 3], i64);
@@ -224,9 +224,7 @@ fn tick(host: &mut dyn ServerHost, dimension: &str, id: u32) {
         look_around(host, id);
     }
     let kept = creature::friend::of(id).is_some();
-    if creature::mob::despawn_far(host, dimension, id, kept) {
-        forget(id);
-    }
+    creature::mob::despawn_far(host, dimension, id, kept);
 }
 
 /// What seagull `id` finds around it (`coast::Around`).
@@ -453,13 +451,6 @@ fn fished(host: &mut dyn ServerHost, event: &mut ItemFishedEvent<'_>) {
     }
 }
 
-fn forget(id: u32) {
-    creature::body::forget(id);
-    creature::friend::forget(id);
-    coast::forget(id);
-    FLYING.locked().remove(&id);
-}
-
 /// How it holds itself this frame: in flight its body takes the flight's pitch and banks with the turn, its wings
 /// beat or glide, swept back in a dive and folded back for a plunge; on the ground or the water its wings fold along
 /// its flanks.
@@ -653,7 +644,6 @@ impl Hooks for Seagulls {
             {
                 drop_item(host, event.entity, &item, at);
             }
-            forget(event.entity);
         }
         Flow::Continue
     }
