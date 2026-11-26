@@ -63,6 +63,16 @@ Everything the workflow needs is committed in the module's folder:
 - **`CHANGELOG.md`**: a section per version (`## 0.1.0`).
 - **Its release workflow** (above): `cargo creature check` fails without it.
 
+## A new module
+
+A new mod is registered once, before its first release: its folder with its release files committed and pushed
+(`cargo sunrise-mod release setup` in it writes its workflow; then `cargo creature pages`, its `Cargo.lock`), it is
+added to the repository's registration by a "Register a repository" issue on sunrise-mods (or the form at
+[playsunrise.net/mods/submit](https://playsunrise.net/mods/submit)) naming **only the new folder**: the check reads
+every folder named, and a list of all of them runs out of time (#609, the Magma Golem's). Its registration pull
+request gives it a project ID; once merged, it is released as the others, after the library version it needs is
+listed. The registry's maintainers add it to the collection.
+
 ## Releasing a version
 
 You need the newest `cargo sunrise-mod` (the `mod-tool` release: "Newest tool from main" in Sunrise's
