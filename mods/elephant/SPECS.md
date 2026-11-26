@@ -17,8 +17,10 @@ redone after:
 - **Step 1**: the elephant as an entity (`elephant:elephant`, its spawn egg), 4.4 × 5.2 blocks, its model drawn at
   twice its size (tried in game: at its model's size it was too small; hit where its trunk and tail reach too: the
   library's `creature::pick`); walking one foot at a time (hind left, front left, hind right, front right), each foot
-  planted while the body passes over it and swung forward quickly, the body dipping at each footfall, its ears fanning with a wide flap now and then, its trunk swaying, its tail flicking, its
-  head following what it looks at; its gear hidden; its spawning (savanna and savanna plateau, weight 2, groups of 2
+  planted while the body passes over it and swung forward quickly, the body dipping at each footfall; its ears
+  fanning with a wide flap now and then, its trunk swaying, its tail flicking, its head nodding; its gear hidden; it
+  walks along the bottom of water rather than floating (it breathes through its trunk) and, moving itself (ridden,
+  charging, fleeing), hops up a step of one block; its spawning (savanna and savanna plateau, weight 2, groups of 2
   to 4, on open, about flat ground, not in water); its charge (`charge.rs`: hit, it runs at its attacker within 8
   blocks, strikes once for 4 damage and throws them back, then lets them go, 3 seconds before the next); its guide
   page (uncommon); its sounds (`sources/sounds.toml`, cut from CC0 freesound recordings: trumpets from a zoo's and a
@@ -39,7 +41,8 @@ redone after:
   on a flank (holding at least two; the left first), drawn as the `chest_left` and `chest_right` groups, a 54-slot pack
   a side (`creature:pack`). Its owner's sneak + right-click opens its screen: a gear page (its saddle, a click taking it
   off and its riders down; staying or following; a chest per fitted side, a click opening that side's page, a
-  shift-click taking its chests off with what they hold) and a 6-row page per side. Its saddle, its chests and all
+  shift-click taking its chests off with what they hold; each button named, with a line saying what a click does) and
+  a 6-row page per side. Its saddle, its chests and all
   they hold drop when it dies. The guide's "Packed" and "Both sides".
 - **Step 5**: breeding and growth (the library's `creature::growth`, moved from the Vulture): a hay bale puts a grown,
   rested tamed elephant in love (or heals it when hurt); two in love meet and have a baby, tamed to the owner, its

@@ -334,9 +334,15 @@ pub(crate) fn clicked(host: &mut dyn ServerHost, event: &MenuClickedEvent) {
     grid.write(host, player, &open);
 }
 
-/// The screen shown again in place, on `page` (closed if that page can't show).
+/// The screen shown again, on `page`: in place for the same page, another page after the old one closes (a page of
+/// other rows); closed if that page can't show.
 fn open_again(host: &mut dyn ServerHost, uuid: u128, open: &Open, page: u8) {
-    if !self::open(host, uuid, open.creature, open.screens, page, MenuReplace::InPlace) {
+    let replace = if page == open.page {
+        MenuReplace::InPlace
+    } else {
+        MenuReplace::CloseFirst
+    };
+    if !self::open(host, uuid, open.creature, open.screens, page, replace) {
         host.close_menu(uuid);
     }
 }

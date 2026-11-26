@@ -17,5 +17,13 @@
   "bestiary.vulture.item.cooked_vulture.burnt": "Dropped by a vulture that burns",
   "bestiary.vulture.item.cooked_vulture.use": "Food, as cooked chicken",
   "key.vulture.talons": "Talons (catch / release)",
-  "key.categories.vulture": "Vulture"
+  "key.categories.vulture": "Vulture",
+  "container.vulture.saddle": "Saddle",
+  "container.vulture.saddle_off": "Click: take it off (its chests first)",
+  "container.vulture.sitting": "Sits here",
+  "container.vulture.to_follow": "Click: follow you",
+  "container.vulture.following": "Follows you",
+  "container.vulture.to_sit": "Click: sit here",
+  "container.vulture.chest": "Chest",
+  "container.vulture.take_off": "Click: take it off"
 }

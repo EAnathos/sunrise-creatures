@@ -70,6 +70,7 @@ impl Behaviour for Charge {
         m.stop_walking = true;
         m.velocity.x = dx / across * SPEED;
         m.velocity.z = dz / across * SPEED;
+        crate::hop(m, cx, [dx, dz]);
     }
 
     fn stop(&mut self, m: &mut Body, _: &World<'_>) {

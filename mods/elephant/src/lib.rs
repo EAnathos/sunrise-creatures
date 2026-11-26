@@ -26,8 +26,9 @@ use creature::state::EntityMap;
 use mod_api::{
     BlockEntityDrawContext, EntityInteractEvent, EntityJoinLevelEvent, EntityMountEvent, EntityRenderState,
     EntityRenderer, EntityTickPostEvent, Flow, GoalSpec, HitHost, Hooks, Host, HostSide, InteractionResult,
-    LivingDeathEvent, LivingDropsEvent, LivingIncomingDamageEvent, MobSpawnPlacementCheckEvent,
-    RegisterEntityRenderersEvent, Registrar, RegistrationContext, ServerHost, SoundSource, SpawnCheck,
+    LivingBreatheEvent, LivingDeathEvent, LivingDropsEvent, LivingIncomingDamageEvent, LoopContext,
+    MobSpawnPlacementCheckEvent, RegisterEntityRenderersEvent, Registrar, RegistrationContext, ServerHost, SoundSource,
+    SpawnCheck,
 };
 
 pub const ELEPHANT: &str = "elephant:elephant";
@@ -365,6 +366,27 @@ impl EntityRenderer for Draw {
     }
 }
 
+/// Moving itself (ridden, charging, fleeing) along `dir`, it climbs a step of one block: on the ground, with a block
+/// at its feet just past its front edge and room over it, it hops (the game's step height lifts a creature this wide
+/// only where all its box fits at once).
+pub(crate) fn hop(m: &mut creature::body::Body, cx: &creature::body::World<'_>, dir: [f64; 2]) {
+    let len = dir[0].hypot(dir[1]);
+    if !m.on_ground || len < 1e-3 {
+        return;
+    }
+    let reach = f64::from(SIZE.width) / 2.0 * Stage::of(m.id).size() + 0.4;
+    let x = (m.position.x + dir[0] / len * reach).floor() as i32;
+    let z = (m.position.z + dir[1] / len * reach).floor() as i32;
+    let y = m.position.y.floor() as i32;
+    let open = |p: [i32; 3]| creature::creep::passable(cx, p);
+    if !open([x, y, z]) && open([x, y + 1, z]) && open([x, y + 2, z]) {
+        m.velocity.y = HOP;
+    }
+}
+
+/// Its hop up a step (blocks a tick up: a little over a block).
+const HOP: f64 = 0.5;
+
 /// In love: a heart now and then, as vanilla's animals show.
 fn hearts(host: &mut dyn ServerHost, id: u32) {
     if !creature::growth::in_love(id) {
@@ -479,6 +501,8 @@ impl Hooks for Elephant {
             },
         );
         m.add_goal(host, 7, &GoalSpec::RandomLookAround);
+        // It walks along the bottom rather than floating at the top (SPECS §2), breathing through its trunk.
+        let _ = m.remove_goal(host, "float");
         Flow::Continue
     }
 
@@ -538,6 +562,13 @@ impl Hooks for Elephant {
             creature::ride::left(player);
         }
         Flow::Continue
+    }
+
+    /// It breathes through its trunk: deep water never drowns it.
+    fn living_breathe(&self, _: &dyn LoopContext, event: &mut LivingBreatheEvent<'_>) {
+        if event.kind == ELEPHANT {
+            event.can_breathe = true;
+        }
     }
 
     /// A young one drops nothing (SPECS §5): no meat, no tusk.

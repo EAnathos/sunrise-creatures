@@ -297,7 +297,6 @@ impl Screens for ElephantScreens {
 
     fn page(&self, host: &dyn ServerHost, id: u32, page: u8) -> Option<Page> {
         let gear = of(id);
-        let item = |name: &str| creature::hand::stack(host, name, 1);
         let side = |storage: std::ops::Range<usize>, title: &str| Page {
             rows: 6,
             title: Text::translate(title, vec![]),
@@ -308,18 +307,33 @@ impl Screens for ElephantScreens {
         match page {
             GEAR_PAGE => {
                 let staying = creature::friend::of(id).is_some_and(|f| f.staying);
-                let mut buttons = vec![
-                    (SADDLE_BUTTON, if gear.saddle { item(SADDLE) } else { None }),
-                    (
-                        STAY_BUTTON,
-                        item(if staying { "minecraft:lead" } else { "minecraft:feather" }),
-                    ),
-                ];
+                let button = |id: &str, name: &str, hint: &str| creature::hand::button(host, id, name, Some(hint));
+                let saddle = || button(SADDLE, "container.elephant.saddle", "container.elephant.take_off");
+                let stay = if staying {
+                    button(
+                        "minecraft:lead",
+                        "container.elephant.staying",
+                        "container.elephant.to_follow",
+                    )
+                } else {
+                    button(
+                        "minecraft:feather",
+                        "container.elephant.following",
+                        "container.elephant.to_stay",
+                    )
+                };
+                let mut buttons = vec![(SADDLE_BUTTON, gear.saddle.then(saddle).flatten()), (STAY_BUTTON, stay)];
                 if gear.left {
-                    buttons.push((LEFT_BUTTON, item(CHEST)));
+                    buttons.push((
+                        LEFT_BUTTON,
+                        button(CHEST, "container.elephant.left", "container.elephant.chests"),
+                    ));
                 }
                 if gear.right {
-                    buttons.push((RIGHT_BUTTON, item(CHEST)));
+                    buttons.push((
+                        RIGHT_BUTTON,
+                        button(CHEST, "container.elephant.right", "container.elephant.chests"),
+                    ));
                 }
                 Some(Page {
                     rows: 1,
@@ -404,7 +418,7 @@ impl Behaviour for Ride {
     fn can_use(&mut self, m: &mut Body, _: &World<'_>) -> bool {
         creature::ride::of(m.id).is_some()
     }
-    fn tick(&mut self, m: &mut Body, _: &World<'_>) {
+    fn tick(&mut self, m: &mut Body, cx: &World<'_>) {
         m.stop_walking = true;
         let Some(rider) = creature::ride::of(m.id) else {
             return;
@@ -426,6 +440,7 @@ impl Behaviour for Ride {
         // Facing (-sin, cos); its left (cos, sin).
         m.velocity.x = (-sin * forward + cos * sideways) * speed;
         m.velocity.z = (cos * forward + sin * sideways) * speed;
+        crate::hop(m, cx, [m.velocity.x, m.velocity.z]);
     }
 }
 

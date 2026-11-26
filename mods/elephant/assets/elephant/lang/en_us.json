@@ -26,5 +26,12 @@
   "item.elephant.raw_elephant": "Raw Elephant",
   "item.elephant.cooked_elephant": "Cooked Elephant",
   "item.elephant.ivory_tusk": "Ivory Tusk",
-  "item.elephant.ceremonial_trumpet": "Ceremonial Trumpet"
+  "item.elephant.ceremonial_trumpet": "Ceremonial Trumpet",
+  "container.elephant.saddle": "Saddle",
+  "container.elephant.take_off": "Click: take it off",
+  "container.elephant.staying": "Stays here",
+  "container.elephant.to_follow": "Click: follow you",
+  "container.elephant.following": "Follows you",
+  "container.elephant.to_stay": "Click: stay here",
+  "container.elephant.chests": "Click: open; shift-click: take them off"
 }

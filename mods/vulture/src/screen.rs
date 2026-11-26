@@ -109,30 +109,40 @@ impl Screens for VultureScreens {
     fn page(&self, host: &dyn ServerHost, id: u32, _: u8) -> Option<Page> {
         let saved = state::saved(id);
         let storage = PER_CHEST * usize::from(saved.chests);
-        let item = |id: &str| creature::hand::stack(host, id, 1);
-        let mut buttons = vec![
-            (
-                HARNESS,
-                if saved.harness {
-                    item(crate::interaction::SADDLE)
-                } else {
-                    None
-                },
-            ),
-            (
-                SIT,
-                item(if saved.sitting {
-                    "minecraft:lead"
-                } else {
-                    "minecraft:feather"
-                }),
-            ),
-        ];
+        let button = |id: &str, name: &str, hint: &str| creature::hand::button(host, id, name, Some(hint));
+        let saddle = || {
+            button(
+                crate::interaction::SADDLE,
+                "container.vulture.saddle",
+                "container.vulture.saddle_off",
+            )
+        };
+        let chest = || {
+            button(
+                "minecraft:chest",
+                "container.vulture.chest",
+                "container.vulture.take_off",
+            )
+        };
+        let sit = if saved.sitting {
+            button(
+                "minecraft:lead",
+                "container.vulture.sitting",
+                "container.vulture.to_follow",
+            )
+        } else {
+            button(
+                "minecraft:feather",
+                "container.vulture.following",
+                "container.vulture.to_sit",
+            )
+        };
+        let mut buttons = vec![(HARNESS, saved.harness.then(saddle).flatten()), (SIT, sit)];
         if saved.chests >= 1 {
-            buttons.push((CHEST_LEFT, item("minecraft:chest")));
+            buttons.push((CHEST_LEFT, chest()));
         }
         if saved.chests >= 2 {
-            buttons.push((CHEST_RIGHT, item("minecraft:chest")));
+            buttons.push((CHEST_RIGHT, chest()));
         }
         Some(Page {
             rows: (1 + storage.div_ceil(ROW)) as u8,

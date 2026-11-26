@@ -14,6 +14,8 @@ Each version's section says what changed in it (`cargo creature release` needs o
 - `creature::growth`: babies, growth and breeding (a creature's age, saved as `creature:age`; love; `Mate`; the babies
   born tamed with inherited stats); moved from the Vulture for the Elephant.
 - `creature::pick`: a young creature's outline shrinks with its box.
+- `creature::hand::button`: a screen's button named, with a line saying what a click does (the Vulture's and the
+  Elephant's screens); a page changed closes the old screen first.
 - A creature's box follows its `minecraft:scale` beyond its client box's (a young elephant's stage).
 - `creature::anger::provoke`: a creature set on someone who didn't hit it (whoever hit its rider: the Elephant).
 

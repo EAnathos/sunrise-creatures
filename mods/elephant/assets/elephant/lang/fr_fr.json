@@ -26,5 +26,12 @@
   "item.elephant.raw_elephant": "Éléphant cru",
   "item.elephant.cooked_elephant": "Éléphant cuit",
   "item.elephant.ivory_tusk": "Défense d'ivoire",
-  "item.elephant.ceremonial_trumpet": "Trompe cérémonielle"
+  "item.elephant.ceremonial_trumpet": "Trompe cérémonielle",
+  "container.elephant.saddle": "Selle",
+  "container.elephant.take_off": "Clic : l'enlever",
+  "container.elephant.staying": "Reste ici",
+  "container.elephant.to_follow": "Clic : vous suivre",
+  "container.elephant.following": "Vous suit",
+  "container.elephant.to_stay": "Clic : rester ici",
+  "container.elephant.chests": "Clic : ouvrir ; Maj + clic : les enlever"
 }

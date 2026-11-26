@@ -39,6 +39,16 @@ pub fn stack(host: &dyn Host, id: &str, count: u32) -> Option<ItemStack> {
     host.item_from_snbt(&format!("{{id:\"{id}\",count:{count}}}"))
 }
 
+/// A button of a creature's screen (`pack`): one of item `id` named by language key `name`, with a line under it saying
+/// what a click does (`hint`, a language key), or a plain one if the game can't read the name.
+pub fn button(host: &dyn Host, id: &str, name: &str, hint: Option<&str>) -> Option<ItemStack> {
+    let lore = hint.map_or(String::new(), |h| {
+        format!(",\"minecraft:lore\":[{{translate:\"{h}\",italic:0b}}]")
+    });
+    let snbt = format!("{{id:\"{id}\",count:1,components:{{\"minecraft:item_name\":{{translate:\"{name}\"}}{lore}}}}}");
+    host.item_from_snbt(&snbt).or_else(|| stack(host, id, 1))
+}
+
 /// Gives `stack` to `player`, or drops it at their feet when their inventory is full.
 pub fn give(host: &mut dyn ServerHost, player: PlayerRef, stack: ItemStack) {
     if player.give_stack(host, stack.clone()).is_err() {

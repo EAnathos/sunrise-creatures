@@ -56,7 +56,7 @@ impl Behaviour for Flee {
     fn can_use(&mut self, m: &mut Body, _: &World<'_>) -> bool {
         FRIGHT.locked().contains_key(&m.id)
     }
-    fn tick(&mut self, m: &mut Body, _: &World<'_>) {
+    fn tick(&mut self, m: &mut Body, cx: &World<'_>) {
         let from = {
             let mut all = FRIGHT.locked();
             let Some((from, left)) = all.get_mut(&m.id) else {
@@ -74,6 +74,7 @@ impl Behaviour for Flee {
         m.stop_walking = true;
         m.velocity.x = dx / away * SPEED;
         m.velocity.z = dz / away * SPEED;
+        crate::hop(m, cx, [dx, dz]);
         let yaw = creature::flight::heading_of(dx, dz);
         m.yaw = yaw;
         m.body_yaw = yaw;

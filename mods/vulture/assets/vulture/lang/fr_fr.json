@@ -17,5 +17,13 @@
   "bestiary.vulture.item.cooked_vulture.burnt": "Lâchée par un vautour qui brûle",
   "bestiary.vulture.item.cooked_vulture.use": "Nourriture, comme le poulet cuit",
   "key.vulture.talons": "Serres (attraper / lâcher)",
-  "key.categories.vulture": "Vautour"
+  "key.categories.vulture": "Vautour",
+  "container.vulture.saddle": "Selle",
+  "container.vulture.saddle_off": "Clic : l'enlever (ses coffres d'abord)",
+  "container.vulture.sitting": "Reste assis ici",
+  "container.vulture.to_follow": "Clic : vous suivre",
+  "container.vulture.following": "Vous suit",
+  "container.vulture.to_sit": "Clic : s'asseoir ici",
+  "container.vulture.chest": "Coffre",
+  "container.vulture.take_off": "Clic : l'enlever"
 }
