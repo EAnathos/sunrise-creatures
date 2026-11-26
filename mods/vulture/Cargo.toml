@@ -1,6 +1,7 @@
 [package]
 name = "mod-vulture"
-version = "0.2.4"
+# The module's version is its sunrise-mod.toml's (`cargo creature bump`): the crate's stays 0.0.0.
+version = "0.0.0"
 edition = "2024"
 
 [dependencies]

@@ -160,7 +160,8 @@ tools/                  the Rust build tools (`cargo creature ...`), shared by e
 - **CI** (`.github/workflows/ci.yml`), on every push to `main` and pull request: rustfmt, Clippy and the tools' tests,
   `cargo creature check`, `cargo creature native-check`, then `cargo creature build` with the packages as an artifact.
   The game build itself happens in the launcher (`cargo creature install`).
-- **Versions** are semver, per module (`version` in `sunrise-mod.toml` and in `Cargo.toml`, kept equal). Mods require
+- **Versions** are semver, per module (`version` in `sunrise-mod.toml`, raised by `cargo creature bump`; every crate's
+  `Cargo.toml` stays `0.0.0`, as Sunrise's own `release` raises only the manifest's). Mods require
   the library by `^<major>.<minor>` while it is `0.x`. A breaking change in the library bumps its minor version (0.x)
   and every mod's requirement with it.
 - A mod is released with the library version it was tested with.

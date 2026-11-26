@@ -62,10 +62,11 @@ You need the newest `cargo sunrise-mod` (the `mod-tool` release: "Newest tool fr
 [Install the mod tool](https://github.com/sunrise-org/sunrise/blob/main/docs/modding/src/start/install-tool.md);
 `cargo sunrise-mod self-update` keeps it current).
 
-1. **Version.** Raise `version` in the module's `sunrise-mod.toml` and `Cargo.toml` (semver: a mod's
-   `[dependencies] creature` names the library version whose API it uses), write its `CHANGELOG.md` section, and run
-   `cargo creature pages` (the page's links follow the version's tag). A released version never changes: any change,
-   even one byte, is a new version.
+1. **Version.** `cargo creature bump <patch|minor|major> <module...>`: it raises the version in the module's
+   `sunrise-mod.toml` (its only version: every crate's `Cargo.toml` stays `0.0.0`), adds its `CHANGELOG.md` section
+   and writes its release files again (the page's links follow the version's tag). Write the section (`cargo creature
+   check` refuses the placeholder the command leaves), and raise a mod's `[dependencies] creature` to the library
+   version whose API it uses. A released version never changes: any change, even one byte, is a new version.
 2. **Check.** `cargo creature check` and `cargo creature native-check`, and try the module in game
    (`cargo creature install`). Commit, and push `main`.
 3. **Tag.** `cargo creature release [module...]` (default: every published module): on a clean checkout, for each
@@ -75,8 +76,8 @@ You need the newest `cargo sunrise-mod` (the `mod-tool` release: "Newest tool fr
    pushed with the commit that adds its workflow): the library's first; the mods' once the library's release is
    listed. Watch each run under the repository's Actions, then the registry's pull request on sunrise-mods.
 
-Sunrise's own `cargo sunrise-mod release patch` does steps 1, 3 and 4 for a single package, but raises only the
-manifest's version (ours keeps `Cargo.toml`'s equal, `cargo creature check`): use `cargo creature release`.
+Sunrise's own `cargo sunrise-mod release patch` does steps 1, 3 and 4 for a single package, but writes no changelog
+section nor page, and pushes the tag with the branch: use `cargo creature bump` and `cargo creature release`.
 
 A release whose workflow failed can be run again: delete its tag (`git tag -d <tag>`,
 `git push origin :refs/tags/<tag>`) and its draft GitHub release if one was made, fix, commit, then tag again. Once

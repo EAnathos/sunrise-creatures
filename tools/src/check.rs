@@ -121,6 +121,10 @@ fn native_pins(t: &toml::Table) -> Option<(String, String)> {
     ))
 }
 
+/// Every module's crate version: the module's version is its `sunrise-mod.toml`'s alone (Sunrise's `release` raises
+/// only that one), so the crate's never changes.
+pub const CRATE_VERSION: &str = "0.0.0";
+
 /// The `Cargo.toml` dependency line every module's crate takes the API from.
 const API: &str = "sunrise-mod-api = { path = \".sunrise/sdk/api/crates/sunrise-mod-api\" }";
 
@@ -170,23 +174,21 @@ fn module(m: &Module, mods: &[Module], revision: &(String, String), errors: &mut
             if !text.contains(API) {
                 push(format!("{}: the API is not the pinned SDK's ({API})", rel(&cargo)));
             }
-            versions.extend(
-                text.lines()
-                    .find_map(|l| l.trim().strip_prefix("version = \"")?.strip_suffix('"'))
-                    .map(str::to_owned),
-            );
+            // The version is the manifest's alone (`cargo creature bump`); the crate's stays `CRATE_VERSION`.
+            let crate_version = text
+                .lines()
+                .find_map(|l| l.trim().strip_prefix("version = \"")?.strip_suffix('"'));
+            if crate_version != Some(CRATE_VERSION) {
+                push(format!(
+                    "{}: version is not {CRATE_VERSION:?} (a module's version is its sunrise-mod.toml's)",
+                    rel(&cargo)
+                ));
+            }
         }
     } else if !m.creative.is_empty() {
         push(format!(
             "{}: creative items but no package",
             rel(&m.dir.join("module.toml"))
-        ));
-    }
-    if versions.windows(2).any(|v| v[0] != v[1]) {
-        push(format!(
-            "{}: sunrise-mod.toml and Cargo.toml versions differ ({})",
-            m.id,
-            versions.join(", ")
         ));
     }
     // A published module: its release files up to date (its page as the registry checks it, its pictures, icon,
@@ -196,10 +198,16 @@ fn module(m: &Module, mods: &[Module], revision: &(String, String), errors: &mut
             Ok(problems) => problems.into_iter().for_each(&mut push),
             Err(e) => push(e),
         }
-        if let Some(version) = versions.first()
-            && let Err(e) = crate::release::changelog(m, version)
-        {
-            push(e);
+        if let Some(version) = versions.first() {
+            match crate::release::changelog(m, version) {
+                Ok(text) if text.contains(crate::bump::PLACEHOLDER) => push(format!(
+                    "{}: say what changed in {version} (`cargo creature bump` left {:?})",
+                    rel(&m.dir.join("CHANGELOG.md")),
+                    crate::bump::PLACEHOLDER
+                )),
+                Ok(_) => {}
+                Err(e) => push(e),
+            }
         }
         let workflow = crate::root().join(format!(".github/workflows/sunrise-release-{}.yml", m.id));
         let path = rel(&m.dir);

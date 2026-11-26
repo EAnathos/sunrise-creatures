@@ -2,6 +2,14 @@
 
 Each version's section says what changed in it (`cargo creature release` needs one before it tags the version).
 
+## 0.3.6
+
+- What the series keeps about each creature lives in `creature::state` (`EntityMap`, `EntitySet`), which the library
+  empties of an entity when it leaves the level: no module keeps anything about a creature that is gone.
+- Each settings struct the mods build (`Creeping`, `Soaring`, `Light`, `Species`, `Spawning`...) has a `DEFAULT`, for
+  their literals to end with `..Type::DEFAULT`: a field added later no longer breaks the mods built before it.
+- The licences are in the README (its last section) rather than as copies of `LICENSE` and `LICENSE-ART.md`.
+
 ## 0.3.5
 
 - Released through Sunrise's new registry: built from this repository by the registry's release workflow, attested by
