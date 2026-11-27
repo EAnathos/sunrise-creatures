@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:campfire_cooking",
+  "category": "food",
+  "ingredient": "toucan:raw_toucan",
+  "result": {
+    "id": "toucan:cooked_toucan"
+  },
+  "experience": 0.35,
+  "cookingtime": 600
+}

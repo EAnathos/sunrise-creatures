@@ -1,5 +1,12 @@
 # Toucan's description for the repository's tools (docs/ARCHITECTURE.md); not shipped in the mod.
 id = "toucan"
 name = "Toucan"
-status = "planned"
-creative = []
+status = "playable"
+# Its items in the series' creative tab, in order.
+creative = [
+  "toucan:toucan_spawn_egg",
+  "toucan:raw_toucan",
+  "toucan:cooked_toucan",
+]
+# Its Rust is built on Sunrise's mod_api.
+ported = true

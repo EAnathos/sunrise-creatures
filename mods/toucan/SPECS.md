@@ -9,14 +9,30 @@ canopy, with a large colourful bill. Tame one with melon slices.
 
 ## 0. Status
 
-Planned: the spec and model, no mod implementation yet.
+Playable (0.1.0, validated in game, not released yet: its registry page waits for its in-game picture): the toucan as an entity (`toucan:toucan`, its spawn egg),
+0.8 × 1.2 blocks, 8 health, drawn with its model (feet on the ground; on a perch its tail bobbing and its head, the bill its child in the model, turned about; in flight its body
+pitched and banked, its wings beating or held out, its legs tucked back); its spawning by day on the top of the leaves
+(with two open blocks over them) of the three jungles, alone or in pairs, at most 2 within 48 blocks of a player (the library's spawning of small
+creatures, `creature::flutter::spawns_on_leaves`), despawning far from players unless tamed or named; its behaviours
+(`canopy.rs`): hops about the branches (never off the canopy's edge), short flights to the leaves of a tree 5 to 14
+blocks off, each after a rest of 5 to 10 seconds on its perch (hopping about, not fleeing a player meanwhile) (only a perch with a clear way there, flown on beating wings straight to the point over it
+then down onto it; a flight that stops getting nearer for 1.5 s is given up), a flight to the nearest perch when it falls or lands in water, fleeing 8 to 16 blocks to a
+perch away from a monster within 8 blocks or, wild, a player within 6 (3 when they sneak), all on the library's
+flight (`creature::flight`); a melon slice on the ground within 10 blocks, flown straight down to and eaten, one thrown by a
+player taming it for them one time in four (hearts or smoke), the tamed one following (the library's `Follow`) or
+staying on its friend's right-click: staying, it sits back on its rump and keeps still (not fleeing, not eating)
+until told to follow, when it gets up; its drops (0 to 2 feathers, a raw toucan, cooked by fire or a smelting weapon,
+more with Looting) and the cooked toucan's recipes; its guide page (rare, the `Feed` fact) and its two items' pages.
+Its sounds are cut from CC0 recordings (`sources/sounds.toml`: a keel-billed toucan's croaks, a calling pair and a
+chestnut-mandibled toucan; the vulture's wing beats); its item icons are our drawing. Drawn the right way round: the
+model faces -z where the series' face +z, so it is turned half round when drawn.
 
 - **The model** (`sources/models/toucan.bbmodel`; [front](../../docs/models/toucan-toucan-front.png) and
   [back](../../docs/models/toucan-toucan-back.png) previews): the approved 48-cube design has a dark body, pale chest,
   colourful bill, layered wings and a raised, pale-tipped tail. Its 64 × 64 texture is a flat-colour blockout; every
   face maps at one texel per model unit.
 
-Next: finish the pixel texture, then the code, on Sunrise.
+Next: its in-game picture and its first release; the pixel texture (a flat-colour blockout for now).
 
 ## 1. Technical context
 

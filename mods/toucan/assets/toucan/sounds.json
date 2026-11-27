@@ -1,0 +1,43 @@
+{
+  "entity.toucan.call": {
+    "subtitle": "subtitles.entity.toucan.call",
+    "sounds": [
+      "toucan:toucan/call1",
+      "toucan:toucan/call2",
+      "toucan:toucan/call3",
+      "toucan:toucan/call4",
+      "toucan:toucan/call5",
+      "toucan:toucan/call6",
+      "toucan:toucan/call7"
+    ]
+  },
+  "entity.toucan.flap": {
+    "subtitle": "subtitles.entity.toucan.flap",
+    "sounds": [
+      "toucan:toucan/flap1",
+      "toucan:toucan/flap2",
+      "toucan:toucan/flap3"
+    ]
+  },
+  "entity.toucan.takeoff": {
+    "subtitle": "subtitles.entity.toucan.takeoff",
+    "sounds": [
+      "toucan:toucan/takeoff1",
+      "toucan:toucan/takeoff2"
+    ]
+  },
+  "entity.toucan.hurt": {
+    "subtitle": "subtitles.entity.toucan.hurt",
+    "sounds": [
+      "toucan:toucan/hurt1",
+      "toucan:toucan/hurt2"
+    ]
+  },
+  "entity.toucan.death": {
+    "subtitle": "subtitles.entity.toucan.death",
+    "sounds": [
+      "toucan:toucan/death1",
+      "toucan:toucan/death2"
+    ]
+  }
+}

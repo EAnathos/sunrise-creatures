@@ -1,0 +1,159 @@
+# The toucan's sounds, made by `cargo creature sounds toucan` from freesound downloads (all CC0, nothing to credit).
+# A downloaded file keeps the name freesound gives it: it is found by its number. Each clip: a slice of a source
+# (`start` and `length` in seconds of the output), resampled by `pitch`, faded out over `fade` seconds, `gain` in dB.
+out = "sounds/toucan"
+
+[sources]
+keel = 845715      # TheKingOfGeeks360, Toucans - Keel-billed Toucan
+pair = 812935      # zachrau, Toucans calling
+chestnut = 163115  # agarwalkunal, chestnut-mandibled toucan (filtered)
+wings = 670509     # 2create, Huge wing flaps (the vulture's)
+
+# Its croaking call: the keel-billed toucan's three croaks, and calls of the Costa Rican pair and of a chestnut-mandibled toucan.
+[[clip]]
+name = "call1"
+source = "keel"
+start = 0.1
+length = 0.4
+pitch = 1.0
+fade = 0.12
+gain = -2.0
+
+[[clip]]
+name = "call2"
+source = "keel"
+start = 0.75
+length = 0.4
+pitch = 1.0
+fade = 0.12
+gain = -2.0
+
+[[clip]]
+name = "call3"
+source = "keel"
+start = 1.35
+length = 0.42
+pitch = 1.0
+fade = 0.12
+gain = -2.0
+
+[[clip]]
+name = "call4"
+source = "pair"
+start = 0.5
+length = 0.45
+pitch = 1.0
+fade = 0.15
+gain = -4.0
+
+[[clip]]
+name = "call5"
+source = "pair"
+start = 5.25
+length = 0.5
+pitch = 1.0
+fade = 0.15
+gain = -4.0
+
+[[clip]]
+name = "call6"
+source = "chestnut"
+start = 8.4
+length = 0.35
+pitch = 1.0
+fade = 0.12
+gain = -6.0
+
+[[clip]]
+name = "call7"
+source = "chestnut"
+start = 12.8
+length = 0.35
+pitch = 1.0
+fade = 0.12
+gain = -6.0
+
+
+# Hurt: a croak, sharper; dying: a croak falling lower.
+[[clip]]
+name = "hurt1"
+source = "keel"
+start = 0.75
+length = 0.3
+pitch = 1.25
+fade = 0.1
+gain = -2.0
+
+[[clip]]
+name = "hurt2"
+source = "pair"
+start = 12.0
+length = 0.3
+pitch = 1.2
+fade = 0.1
+gain = -3.0
+
+[[clip]]
+name = "death1"
+source = "pair"
+start = 17.2
+length = 0.5
+pitch = 0.8
+fade = 0.25
+gain = -3.0
+
+[[clip]]
+name = "death2"
+source = "chestnut"
+start = 12.8
+length = 0.5
+pitch = 0.75
+fade = 0.25
+gain = -5.0
+
+
+# Its wing beats: the vulture's recording, higher for a smaller bird; its take-off a louder beat.
+[[clip]]
+name = "flap1"
+source = "wings"
+start = 1.0
+length = 0.4
+pitch = 0.9
+fade = 0.12
+gain = -7.0
+
+[[clip]]
+name = "flap2"
+source = "wings"
+start = 2.42
+length = 0.5
+pitch = 0.9
+fade = 0.12
+gain = -7.0
+
+[[clip]]
+name = "flap3"
+source = "wings"
+start = 3.7
+length = 0.4
+pitch = 0.9
+fade = 0.12
+gain = -7.0
+
+[[clip]]
+name = "takeoff1"
+source = "wings"
+start = 1.0
+length = 0.5
+pitch = 0.85
+fade = 0.15
+gain = -3.0
+
+[[clip]]
+name = "takeoff2"
+source = "wings"
+start = 3.7
+length = 0.5
+pitch = 0.85
+fade = 0.15
+gain = -3.0

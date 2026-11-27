@@ -18,6 +18,7 @@
     "seagulls:seagull_spawn_egg",
     "sporelins:sporelin_spawn_egg",
     "storm_spirits:storm_spirit_spawn_egg",
+    "toucan:toucan_spawn_egg",
     "vulture:vulture_spawn_egg",
     "worms:worm_spawn_egg",
     "creature:guide",
@@ -47,6 +48,8 @@
     "seagulls:raw_seagull",
     "seagulls:cooked_seagull",
     "storm_spirits:spark",
+    "toucan:raw_toucan",
+    "toucan:cooked_toucan",
     "vulture:raw_vulture",
     "vulture:cooked_vulture"
   ],

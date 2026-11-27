@@ -1,0 +1,9 @@
+{
+  "template": "minecraft:chicken",
+  "components": {
+    "minecraft:item_model": "toucan:raw_toucan",
+    "minecraft:item_name": {
+      "translate": "item.toucan.raw_toucan"
+    }
+  }
+}

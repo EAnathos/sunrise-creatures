@@ -1,0 +1,14 @@
+{
+  "entity.toucan.toucan": "Toucan",
+  "item.toucan.toucan_spawn_egg": "Toucan Spawn Egg",
+  "item.toucan.raw_toucan": "Raw Toucan",
+  "item.toucan.cooked_toucan": "Cooked Toucan",
+  "bestiary.toucan.feed": "Feed",
+  "bestiary.toucan.item.raw_toucan.use": "Food, as raw chicken; cooks into a cooked toucan",
+  "bestiary.toucan.item.cooked_toucan.use": "Food, as cooked chicken",
+  "subtitles.entity.toucan.call": "Toucan croaks",
+  "subtitles.entity.toucan.flap": "Toucan flaps",
+  "subtitles.entity.toucan.takeoff": "Toucan takes off",
+  "subtitles.entity.toucan.hurt": "Toucan hurts",
+  "subtitles.entity.toucan.death": "Toucan dies"
+}

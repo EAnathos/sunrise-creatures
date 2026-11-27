@@ -4288,7 +4288,7 @@
       },
       "origin": [
         0,
-        5,
+        8,
         0
       ],
       "rotation": [
@@ -4333,18 +4333,18 @@
             "5b3c170d-220e-ab3b-89b7-cda0205020d5",
             "2dac67b1-50d1-702d-7d4c-b7ef717c4fdc",
             "d41e6ef2-99a9-0a0e-2980-9aa18cf48f8e",
-            "b7a0266c-b0a3-102f-c38a-0da84e3f738c"
-          ]
-        },
-        {
-          "uuid": "e857c655-d85a-6b97-ac95-e4ced279aaef",
-          "isOpen": true,
-          "children": [
-            "edcdc712-16c7-68f3-925c-3a52d594b158",
-            "da1efe92-5dfc-385b-a99b-e017295433c2",
-            "cf1477ac-4ef2-6364-2d37-f7370e722ba6",
-            "d361c431-0ab3-db2c-de09-066661ba7a68",
-            "7ed85504-dafb-88a9-856b-fcb2c292e170"
+            "b7a0266c-b0a3-102f-c38a-0da84e3f738c",
+            {
+              "uuid": "e857c655-d85a-6b97-ac95-e4ced279aaef",
+              "isOpen": true,
+              "children": [
+                "edcdc712-16c7-68f3-925c-3a52d594b158",
+                "da1efe92-5dfc-385b-a99b-e017295433c2",
+                "cf1477ac-4ef2-6364-2d37-f7370e722ba6",
+                "d361c431-0ab3-db2c-de09-066661ba7a68",
+                "7ed85504-dafb-88a9-856b-fcb2c292e170"
+              ]
+            }
           ]
         },
         {

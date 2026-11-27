@@ -1,0 +1,14 @@
+{
+  "entity.toucan.toucan": "Toucan",
+  "item.toucan.toucan_spawn_egg": "Œuf d'apparition de toucan",
+  "item.toucan.raw_toucan": "Toucan cru",
+  "item.toucan.cooked_toucan": "Toucan cuit",
+  "bestiary.toucan.feed": "Nourrir",
+  "bestiary.toucan.item.raw_toucan.use": "Nourriture, comme le poulet cru ; se cuit en toucan cuit",
+  "bestiary.toucan.item.cooked_toucan.use": "Nourriture, comme le poulet cuit",
+  "subtitles.entity.toucan.call": "Un toucan coasse",
+  "subtitles.entity.toucan.flap": "Un toucan bat des ailes",
+  "subtitles.entity.toucan.takeoff": "Un toucan s'envole",
+  "subtitles.entity.toucan.hurt": "Un toucan est blessé",
+  "subtitles.entity.toucan.death": "Un toucan meurt"
+}
