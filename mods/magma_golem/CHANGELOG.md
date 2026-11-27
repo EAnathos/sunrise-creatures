@@ -2,6 +2,10 @@
 
 Each version's section says what changed in it (`cargo creature release` needs one before it tags the version).
 
+## 0.1.2
+
+- In the creature guide, drawn standing awake and centred in its frame, no longer as a sleeping mound low in it.
+
 ## 0.1.1
 
 - Its own sounds, cut from CC0 recordings: a low roar as it wakes and is enraged, rock knocked and falling apart,

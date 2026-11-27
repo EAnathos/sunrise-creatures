@@ -269,7 +269,15 @@ pub struct Draw;
 impl EntityRenderer for Draw {
     fn submit(&self, entity: &EntityRenderState, draw: &mut dyn BlockEntityDrawContext) -> Result<(), String> {
         let mob = entity.living.as_ref();
-        let shown = golem::shown(entity.id);
+        // In the guide's 3D view (no golem of the world), it stands awake rather than as its default, a sleeping mound.
+        let shown = if entity.id == creature::model::IN_A_SCREEN {
+            Shown {
+                mode: Mode::Awake,
+                ..Shown::default()
+            }
+        } else {
+            golem::shown(entity.id)
+        };
         let now = Frame::of(entity);
         draw.push();
         // Upright as it dies: it kneels and slumps (`death`) rather than tipping over.
