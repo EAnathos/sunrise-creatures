@@ -120,7 +120,7 @@ with the registry's rules, and `cargo sunrise-mod collection` pushes it to the b
 of sunrise-mods and prints the link that opens its pull request. A maintainer merges it. History: the registry's
 maintainers made it ([#325](https://github.com/sunrise-org/sunrise-mods/pull/325), restored by
 [#330](https://github.com/sunrise-org/sunrise-mods/pull/330) after [#329](https://github.com/sunrise-org/sunrise-mods/pull/329));
-the Magma Golem and the Elephant are the first members we add.
+the Magma Golem and the Elephant are the first members we add ([#626](https://github.com/sunrise-org/sunrise-mods/pull/626)), then the Toucan ([#663](https://github.com/sunrise-org/sunrise-mods/pull/663)).
 
 ## Updates and takedowns
 
@@ -139,7 +139,7 @@ On the new registry (since 2026-11-24): each release is the GitHub release `<id>
 | library 0.4.2 (2026-11-26) | Vanilla feathers in place of the mods' own | [#617](https://github.com/sunrise-org/sunrise-mods/pull/617), merged |
 | library 0.4.3, Elephant 0.1.0 (new), Vulture 0.2.6, Sporelins 0.1.4, Magma Golem 0.1.1 (2026-11-26) | The Elephant (registered by [#619](https://github.com/sunrise-org/sunrise-mods/pull/619), project `ZnPqHvTo`), and what moved to the library for it from the Vulture and the Sporelins (stats, following on foot, riders, packs and the screen, growth and breeding); the Magma Golem's own sounds | [#620](https://github.com/sunrise-org/sunrise-mods/pull/620) (library), merged; the mods' opened by the registry's bot, under review |
 | library 0.4.4, Magma Golem 0.1.2, Vanilla Bestiary 0.1.6 (2026-11-27) | The guide's view: Minecraft's small creatures shown larger, the camel husk the camel's size, the Magma Golem standing awake; the Toucan's items in the library's tab | [#657](https://github.com/sunrise-org/sunrise-mods/pull/657) (library), [#658](https://github.com/sunrise-org/sunrise-mods/pull/658) (Magma Golem), merged; [#662](https://github.com/sunrise-org/sunrise-mods/pull/662) (Vanilla Bestiary), under review |
-| Toucan 0.1.0 (new) (2026-11-27) | The Toucan; no registration needed: a registered repository's new package folder gets its project with its first release (its registration issue [#656](https://github.com/sunrise-org/sunrise-mods/issues/656) was answered "already registered"), project `9SYOjvcc` | [#661](https://github.com/sunrise-org/sunrise-mods/pull/661), under review; into the collection once listed |
+| Toucan 0.1.0 (new) (2026-11-27) | The Toucan; no registration needed: a registered repository's new package folder gets its project with its first release (its registration issue [#656](https://github.com/sunrise-org/sunrise-mods/issues/656) was answered "already registered"), project `9SYOjvcc` | [#661](https://github.com/sunrise-org/sunrise-mods/pull/661), merged; into the collection: [#663](https://github.com/sunrise-org/sunrise-mods/pull/663), under review |
 
 On the old registry (2026-11-18 to 2026-11-24, deleted with the new launcher; its entries, signed with the series'
 minisign key, are in this repository's history, `registry/` before 2026-11-24):
