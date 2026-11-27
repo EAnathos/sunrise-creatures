@@ -133,8 +133,8 @@ pub fn register(species: &'static Species) {
     }
 }
 
-/// The size of the creatures the book's view can't take by default (a ghast, the ender dragon, a vulture's wings), by
-/// entity type: width and height, in blocks.
+/// The size of the creatures the book's view can't take by default (a ghast, the ender dragon, a vulture's wings; a
+/// fish, too small in it), by entity type: width and height, in blocks.
 static VIEW_SIZES: Mutex<BTreeMap<&'static str, [f32; 2]>> = Mutex::new(BTreeMap::new());
 
 /// From a mod's `register`: creature `kind` is `width` × `height` blocks, for the book's 3D view to fit it: a vanilla

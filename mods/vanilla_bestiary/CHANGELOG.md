@@ -2,6 +2,11 @@
 
 Each version's section says what changed in it (`cargo creature release` needs one before it tags the version).
 
+## 0.1.6
+
+- In the creature guide, the cod, the tropical fish, the pufferfish and the tadpole shown larger, and the camel husk
+  the size of the camel. Needs Sunrise Creatures 0.4.4.
+
 ## 0.1.5
 
 - In the guide, a creature not met yet shows its spawn egg as a grey shadow, as the series' own do (Minecraft's egg

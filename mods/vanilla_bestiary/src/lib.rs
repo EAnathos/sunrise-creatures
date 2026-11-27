@@ -220,6 +220,7 @@ const BIG: &[(&str, f32, f32)] = &[
     ("minecraft:creaking", 0.9, 2.7),
     ("minecraft:wither_skeleton", 0.7, 2.4),
     ("minecraft:camel", 1.7, 2.375),
+    ("minecraft:camel_husk", 1.7, 2.375),
     ("minecraft:ravager", 1.95, 2.2),
     ("minecraft:elder_guardian", 1.9975, 1.9975),
     ("minecraft:llama", 0.9, 1.87),
@@ -256,6 +257,15 @@ const BIG: &[(&str, f32, f32)] = &[
     ("minecraft:creeper", 0.6, 1.7),
 ];
 
+/// The creatures too small in the book's view by default, framed as if this big (width, height in blocks: about twice
+/// their own, so they fill their view about as a chicken does rather than all of it).
+const SMALL: &[(&str, f32, f32)] = &[
+    ("minecraft:cod", 1.0, 0.5),
+    ("minecraft:tropical_fish", 1.0, 0.5),
+    ("minecraft:pufferfish", 1.0, 0.5),
+    ("minecraft:tadpole", 0.8, 0.4),
+];
+
 /// In a placed jar a vanilla creature draws nothing (none is caught; the book draws it itself).
 fn no_drawing(_: &mut dyn BlockEntityDrawContext, _: Option<creature::colours::Look>) {}
 
@@ -268,7 +278,7 @@ impl Hooks for VanillaBestiary {
         for c in CREATURES {
             creature::bestiary::register(Box::leak(Box::new(species(c))));
         }
-        for &(kind, width, height) in BIG {
+        for &(kind, width, height) in BIG.iter().chain(SMALL) {
             creature::bestiary::view_size(kind, width, height);
         }
     }

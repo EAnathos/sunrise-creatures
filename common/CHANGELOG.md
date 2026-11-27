@@ -2,6 +2,12 @@
 
 Each version's section says what changed in it (`cargo creature release` needs one before it tags the version).
 
+## 0.4.4
+
+- The creature guide: a Minecraft creature given a size smaller than its view (a fish) is shown larger, no longer
+  framed as if 1.4 blocks tall.
+- The Toucan's items in the creative tab, and its recipes in the guide's Items tab.
+
 ## 0.4.3
 
 - `creature::stats`: a creature's own stats (its maximum health and its pace), rolled within its kind's ranges, saved

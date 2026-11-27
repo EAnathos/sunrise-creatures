@@ -285,8 +285,8 @@ enum Subject {
 fn view(host: &dyn ClientHost, batch: &mut dyn DrawContext, rect: [f32; 4], subject: Subject) {
     let yaw = (millis() % SPIN) as f32 / SPIN as f32 * 360.0;
     match subject {
-        // A creature drawn itself, as in the world: a vanilla one about 1.4 blocks to the box's two thirds (a big one,
-        // `view_size`, by its size), ours by their own box (its height, or half its width for a creature seen side on). Sunrise centres a screen's
+        // A creature drawn itself, as in the world: a vanilla one about 1.4 blocks to the box's two thirds (a big or a
+        // small one, `view_size`, by its size), ours by their own box (its height, or half its width for a creature seen side on). Sunrise centres a screen's
         // entity by its type's height, our template's (a trader's: sunrise-org/sunrise#1134), so ours are moved to
         // stand by their own.
         Subject::Creature(species, look) => {
@@ -298,9 +298,11 @@ fn view(host: &dyn ClientHost, batch: &mut dyn DrawContext, rect: [f32; 4], subj
                     shown.unwrap_or(s.height.max(s.width / 2.0)),
                     (s.height - crate::mob::TEMPLATE_HEIGHT) / 2.0,
                 ),
-                // A vanilla creature stands centred by its own height: only its size changes the scale.
-                None => super::view_size_of(species.id)
-                    .map_or((1.4, 0.0), |[w, h]| ((h.max(w / 2.0) * MODEL_MARGIN).max(1.4), 0.0)),
+                // A vanilla creature stands centred by its own height: only its size changes the scale, up for a big one,
+                // down for a small one (a fish, a tadpole) shown larger.
+                None => {
+                    super::view_size_of(species.id).map_or((1.4, 0.0), |[w, h]| (h.max(w / 2.0) * MODEL_MARGIN, 0.0))
+                }
             };
             let view = GuiEntityView::new(
                 [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]],
