@@ -9,7 +9,7 @@ canopy, with a large colourful bill. Tame one with melon slices.
 
 ## 0. Status
 
-Playable (0.1.0, validated in game, not released yet: its registry page waits for its in-game picture): the toucan as an entity (`toucan:toucan`, its spawn egg),
+Playable (0.1.0, validated in game; its first release: registered on the registry, then released): the toucan as an entity (`toucan:toucan`, its spawn egg),
 0.8 × 1.2 blocks, 8 health, drawn with its model (feet on the ground; on a perch its tail bobbing and its head, the bill its child in the model, turned about; in flight its body
 pitched and banked, its wings beating or held out, its legs tucked back); its spawning by day on the top of the leaves
 (with two open blocks over them) of the three jungles, alone or in pairs, at most 2 within 48 blocks of a player (the library's spawning of small
@@ -32,7 +32,7 @@ model faces -z where the series' face +z, so it is turned half round when drawn.
   colourful bill, layered wings and a raised, pale-tipped tail. Its 64 × 64 texture is a flat-colour blockout; every
   face maps at one texel per model unit.
 
-Next: its in-game picture and its first release; the pixel texture (a flat-colour blockout for now).
+Next: the pixel texture (a flat-colour blockout for now).
 
 ## 1. Technical context
 
