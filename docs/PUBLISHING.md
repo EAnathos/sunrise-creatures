@@ -65,7 +65,9 @@ Everything the workflow needs is committed in the module's folder:
 
 ## A new module
 
-A new mod is registered once, before its first release: its folder with its release files committed and pushed
+Since 2026-11-27 a new package folder of this repository needs no registration of its own: its first release, once its
+workflow is committed, creates its project (the Toucan's, `9SYOjvcc`; a registration issue is answered "already
+registered"). Before that, a new mod was registered once, before its first release: its folder with its release files committed and pushed
 (`cargo sunrise-mod release setup` in it writes its workflow; then `cargo creature pages`, its `Cargo.lock`), it is
 added to the repository's registration by a "Register a repository" issue on sunrise-mods (or the form at
 [playsunrise.net/mods/submit](https://playsunrise.net/mods/submit)) naming **only the new folder**: the check reads
@@ -136,7 +138,8 @@ On the new registry (since 2026-11-24): each release is the GitHub release `<id>
 | library 0.4.1, Vanilla Bestiary 0.1.5, Magma Golem 0.1.0 (new) (2026-11-26) | The bestiary's species met of all and the unmet as shadows; the Magma Golem (registered by [#613](https://github.com/sunrise-org/sunrise-mods/pull/613), project `o7DGgKeA`), and what it brought to the library (`pick`, `draw_attached`, `living_pose_upright`, particles) | [#611](https://github.com/sunrise-org/sunrise-mods/pull/611) (library), [#614](https://github.com/sunrise-org/sunrise-mods/pull/614) (Vanilla Bestiary), [#615](https://github.com/sunrise-org/sunrise-mods/pull/615) (Magma Golem), all merged |
 | library 0.4.2 (2026-11-26) | Vanilla feathers in place of the mods' own | [#617](https://github.com/sunrise-org/sunrise-mods/pull/617), merged |
 | library 0.4.3, Elephant 0.1.0 (new), Vulture 0.2.6, Sporelins 0.1.4, Magma Golem 0.1.1 (2026-11-26) | The Elephant (registered by [#619](https://github.com/sunrise-org/sunrise-mods/pull/619), project `ZnPqHvTo`), and what moved to the library for it from the Vulture and the Sporelins (stats, following on foot, riders, packs and the screen, growth and breeding); the Magma Golem's own sounds | [#620](https://github.com/sunrise-org/sunrise-mods/pull/620) (library), merged; the mods' opened by the registry's bot, under review |
-| library 0.4.4, Magma Golem 0.1.2, Vanilla Bestiary 0.1.6 (2026-11-27) | The guide's view: Minecraft's small creatures shown larger, the camel husk the camel's size, the Magma Golem standing awake; the Toucan's items in the library's tab | library and Magma Golem released (GitHub releases), the registry's pull requests to come; Vanilla Bestiary tagged once library 0.4.4 is listed |
+| library 0.4.4, Magma Golem 0.1.2, Vanilla Bestiary 0.1.6 (2026-11-27) | The guide's view: Minecraft's small creatures shown larger, the camel husk the camel's size, the Magma Golem standing awake; the Toucan's items in the library's tab | [#657](https://github.com/sunrise-org/sunrise-mods/pull/657) (library), [#658](https://github.com/sunrise-org/sunrise-mods/pull/658) (Magma Golem), merged; [#662](https://github.com/sunrise-org/sunrise-mods/pull/662) (Vanilla Bestiary), under review |
+| Toucan 0.1.0 (new) (2026-11-27) | The Toucan; no registration needed: a registered repository's new package folder gets its project with its first release (its registration issue [#656](https://github.com/sunrise-org/sunrise-mods/issues/656) was answered "already registered"), project `9SYOjvcc` | [#661](https://github.com/sunrise-org/sunrise-mods/pull/661), under review; into the collection once listed |
 
 On the old registry (2026-11-18 to 2026-11-24, deleted with the new launcher; its entries, signed with the series'
 minisign key, are in this repository's history, `registry/` before 2026-11-24):
