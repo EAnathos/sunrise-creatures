@@ -57,7 +57,7 @@ shepherd, shy fairies, scorpions, spirits of living lightning, jellyfish, flying
   </tr>
   <tr>
     <td width="50%"><img src="mods/elephant/page/1-elephant.jpg" alt="An elephant with a pair of chests on its flank on a savanna by a river"><br><sub>An elephant packed with chests</sub></td>
-    <td width="50%"></td>
+    <td width="50%"><img src="mods/toucan/page/1-toucan.jpg" alt="A toucan perched on the leaves of a jungle tree"><br><sub>A toucan on the jungle's leaves</sub></td>
   </tr>
 </table>
 
