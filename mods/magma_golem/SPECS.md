@@ -127,6 +127,7 @@ event. Summoning one (a ritual with magma blocks, as the iron golem or the Withe
 
 ## 4. Bestiary page ✅
 
+Its 3D view shows it standing awake (a golem drawn in a screen has no state of the world: not its default, asleep).
 The biomes met in, and the facts: "Awake" (woke one), "Crust" (cooled one with snow or water), "Lava bath" (saw one
 heal in lava), "Heart" (took its heart).
 

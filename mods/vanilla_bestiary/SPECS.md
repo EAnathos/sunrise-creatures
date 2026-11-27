@@ -11,8 +11,8 @@ it fills (§7). Like every module of the series, it needs no other mod.
 
 ## 0. Status
 
-Done and tested in game in single player: meeting wild ones, each page's creature turning in 3D (the big ones fitted:
-`BIG`, `creature::bestiary::view_size`), its facts, a spawn egg's creature tagged not wild.
+Done and tested in game in single player: meeting wild ones, each page's creature turning in 3D (the big ones fitted,
+`BIG`, and the small ones shown larger, `SMALL`: `creature::bestiary::view_size`; the camel husk the camel's size), its facts, a spawn egg's creature tagged not wild.
 
 - **The creatures** (`src/creatures.rs`): 83 of the 88 with a spawn egg, each with its rarity, where it
   lives besides its natural spawns, and its facts. Left out: the copper and snow golems (built), the happy ghast

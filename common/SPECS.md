@@ -131,7 +131,8 @@ of its biomes, at its hours. Wild ones far from players despawn, so they come an
 (butterflies, moths), Fireflies, Fairies, and the **Phasmids** ✅, whose groups are placed **on the top of leaves**
 instead of over the ground (`spawns_on_leaves`, mods/phasmids/SPECS.md §3), and the **Dung Beetles** ✅, on grass, dirt
 or coarse dirt, or sand next to grass (`spawns_on`, the blocks a mod's function accepts, mods/dung_beetles/SPECS.md §2),
-and the **Sporelins** ✅, on their soil in the dark (mods/sporelins/SPECS.md §2); **Ladybugs** ✅ (their short flights
+and the **Sporelins** ✅, on their soil in the dark (mods/sporelins/SPECS.md §2), and the **Toucan** ✅, on leaves with two
+open blocks over them (`spawns_on`, flying its own way: mods/toucan/SPECS.md §2); **Ladybugs** ✅ (their short flights
 and spawning, mods/ladybugs/SPECS.md §3). A kind of given blocks comes out on the highest of them in the column with
 air over it, under leaves too: a sporelin on the soil under a dark forest's canopy, a phasmid on the canopy's top.
 
@@ -230,14 +231,15 @@ circle drifting along a random way for a roaming flier, the seagull: `Soar::roam
 floats), then a glide down onto a high perch near it, one of those within a block of the highest at random
 (`landing_spot`, its `perch` rule; over a flat sea, any way); one that floats lands only on the water or within 4
 blocks of it when there is water around, so a seagull keeps to the coast.
-Riding stays the vulture's. Users: **Vulture**, **Seagulls**.
+Riding stays the vulture's. Users: **Vulture**, **Seagulls**, **Toucan** (its short flights between the trees on
+`hover` alone, and `Follow`: mods/toucan/SPECS.md §2, §3).
 
 ### 3.15 Food on the ground (`creature::food`) ✅
 
 A creature's tick looks for the nearest item it wants lying near it (`nearest`: its entity, where it is, its id and
 who threw it, for a thrown food that may befriend), its behaviour goes to it, and its tick eats one of the stack
 (`take_one`). Users: **Vulture** (raw meat, a thrown raw chicken may tame it), **Seagulls** (fish and food, a thrown
-raw fish may befriend it).
+raw fish may befriend it), **Toucan** (a melon slice, a thrown one may tame it).
 
 ### 3.16 Creeping (`creature::creep`) ✅
 
@@ -347,7 +349,7 @@ Each moves here when a second mod needs it. Until then it stays in the vulture.
 |---|---|---|
 | 6.1 | **Riding and flight**: mount by right-click, **dynamic ridden flight** (steered by the look, banking into arc turns like a plane, vulture/SPECS.md §6.2), dismount, mount hearts (vanilla's), a saddle | the flight itself (glide, soaring, landing) moved here with the Seagulls ✅ (`creature::flight`, §3.14); the rider and their keys ✅ in the library (`creature::ride`, moved for the Elephant, which walks ridden); the ridden flight and the wing poses stay in the mods |
 | 6.2 | **Taming and ownership**: owner on the entity, sit / follow, defend the owner, healing food, only the owner rides | following in flight ✅ in the library (`creature::flight::Follow`, §3.14: the vulture and the seagull); **friends** ✅ in the library (`creature::friend`: the friend's UUID and staying, saved on the creature as `creature:friend`, kept in the glass jar), used by the **Fairies**, the **Seagulls** (befriended with a fish), the **Sporelins** (with a mushroom), the **Elephant** (with thrown sugar
-cane); **following on foot** ✅ in the library (`creature::friend::Follow`, moved from the Sporelins for the Elephant) and the **Vulture** (its owner and sitting; a save from before, which held them in `vulture:state`, is moved over once, tested in game); defending and riding come with the Living Flowers (planned) |
+cane), the **Toucan** (with a thrown melon slice); **following on foot** ✅ in the library (`creature::friend::Follow`, moved from the Sporelins for the Elephant) and the **Vulture** (its owner and sitting; a save from before, which held them in `vulture:state`, is moved over once, tested in game); defending and riding come with the Living Flowers (planned) |
 | 6.3 | **Babies and growth**: smaller model, growth time, faster when fed; breeding; inherited stats | ✅ in the library (`creature::growth`: the age, love, `Mate`, births; `creature::stats`, §3.18), moved for the Elephant; the young's models and poses stay in the mods |
 | 6.4 | **Ridden special attack**: a key that makes the mount attack (the vulture's talons) | in the vulture |
 | 6.5 | **Packs and the equipment screen**: storage carried, saved on the creature; the owner's screen (sneak + right-click), every chest click | ✅ in the library (`creature::pack`, moved for the Elephant: the vulture's one page, the elephant's gear page and a 54-slot page per side) |
@@ -374,6 +376,8 @@ A book about the series' creatures, given to every player.
   the heading "Drops", and the facts wrap onto as many lines as they need; `bestiary::players_near` gives the players
   who saw something happen. The right page lists the series' species, then, below a line, Minecraft's own
   (`minecraft:` ids), and the wheel scrolls it when they don't fit.
+  A vanilla creature is framed about 1.4 blocks tall; one given a size (`bestiary::view_size`) is framed by it,
+  larger for a big one (a ghast) and smaller, so shown larger, for a small one (a fish, a tadpole).
 - **Operators' commands** ✅ (level 2), to check the pages: `/bestiary unlock <species>` (its id, or the part after the
   colon when one species has it: `cow`) writes down everything about it for the player who runs it: every biome it
   spawns in, every fact, every look its varieties can roll; `/bestiary unlock all` does it for every species;
@@ -424,7 +428,7 @@ What each item of the series is for, so a player knows how to make it and what t
   fails when it is out of date. A page
   can't show a recipe the game doesn't have.
 - Users: the library (the glass jar, the guide), Vulture (feather, raw and cooked meat), Butterflies (dust, confetti),
-  Cyclops (eye, club, shepherd's crook), Fairies (fairy dust), Dung Beetles (dung ball).
+  Cyclops (eye, club, shepherd's crook), Fairies (fairy dust), Dung Beetles (dung ball), Toucan (raw and cooked meat).
 
 ## 8. Out of scope for v1
 
